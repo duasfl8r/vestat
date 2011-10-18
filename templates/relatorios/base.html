@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+
+{% block head %} 
+<link rel="stylesheet" type="text/css" href="/m/css/vestat.css" media="screen, projection"/>
+<link rel="stylesheet" type="text/css" href="/m/css/relatorios.css" media="all"/>
+{% endblock %}
+
+
+{% block body %}
+    <div class="container">
+        <div class="span-24 title">
+            <nav>
+                <ul id="menu">
+                    <li><a href="/caixa/">Caixa</a></li>
+                    <li><a href="/relatorios/">Relatórios</a></li>
+                    <li><a href="/config/">Configurações</a></li>
+                </ul>
+            </nav>
+
+            {% block title %}
+            <h1>{{ title }}</h1>
+            {% endblock title %}
+        </div>
+    </div>
+    <div class="content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="box{% if message.tags %} {{ message.tags }}{% endif %}">
+                    {{ message|safe }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}
+        {% endblock content %}
+    </div>
+{% endblock body %}

@@ -1,0 +1,55 @@
+{% extends "relatorios/base.html" %}
+{% load vestat_extras %}
+
+{% block content %}
+    {% if dados.ajustes %}
+        <table id="rel_ajustes">
+            <colgroup>
+                <col class="data" />
+                <col class="valor" />
+                <col class="desc" />
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>Dia</th>
+                    <th>Valor</th>
+                    <th>Descrição</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for ajuste in dados.ajustes %}
+                <tr>
+                    <td>
+                        <a href="{{ ajuste.dia.get_absolute_url }}">
+                            {{ ajuste.dia.data|date:"SHORT_DATE_FORMAT" }}
+                        </a>
+                    </td>
+                    <td>{{ ajuste.valor|colorir_num }}</td>
+                    <td>{{ ajuste.descricao }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <table id="rel_ajustes_total">
+            <thead>
+                <tr>
+                    <th>Total</th>
+                    <th>Total > 0</th>
+                    <th>Total < 0</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ dados.total|colorir_num }}</td>
+                    <td>{{ dados.positivo|colorir_num }}</td>
+                    <td>{{ dados.negativo|colorir_num }}</td>
+                </tr>
+            </tbody>
+        </table>
+    {% else %}
+        <p class="info large">
+            Nenhum ajuste de caixa.
+        </p>
+    {% endif %}
+{% endblock %}

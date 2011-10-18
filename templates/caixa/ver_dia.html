@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% load vestat_extras %}
+
+{% block head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="/m/css/tablesorter_blue/style.css" type="text/css" media="print, projection, screen" />
+    <script type="text/javascript" src="/m/js/jquery.js"></script>
+    <script type="text/javascript" src="/m/js/jquery.maskedinput.min.js" ></script>
+    <script type="text/javascript" src="/m/js/clock.js"></script>
+    <script type="text/javascript" src="/m/js/ver_dia.js"></script>
+    <script type="text/javascript" src="/m/js/mudar_dia.js"></script>
+    {% block javascript %}
+    {% endblock %}
+{% endblock %}
+
+{% block title %}
+    <a href="{{ dia.get_absolute_url }}remover" id="remover_dia" class="botao">Remover dia</a>
+    {% include "data.html" %}
+{% endblock %}
+
+{% block content %}
+    <div id="info">
+        <span class="caixa">
+            <strong>Caixa:</strong> {{ dia.caixa_de_hoje|colorir_num }}
+        </span>
+
+        <span class="caixa gorjeta">
+            <strong>10% a pagar:</strong>
+            {{ dia.gorjeta_descontada_de_hoje|colorir_num }}
+        </span>
+
+        <form action="" id="feriado" name="feriado_form" method="post">
+            <input type="checkbox" name="feriado" onclick="document.forms.feriado_form.submit();" id="id_feriado"{% if dia.feriado %} checked=checked {% endif %} />
+            <label for="id_feriado">Feriado?</label>
+        </form>
+        
+        <br />
+        <span><a class="botao" href="{{ dia.get_absolute_url }}imprimir">Ver tudo / imprimir</a></span>
+
+        {% if not dia.anotacoes %}
+        <span class="botao_anotacoes last">
+            <a class="botao" href="{{ dia.get_absolute_url }}anotacoes" title="Fazer anotação"><img src="/m/icones/anotacoes.png" width="16" height="16" class="icone"/> Anotação</a>
+        </span>
+        {% endif %}
+    </div>
+
+    <div id="form" class="span-24">
+        {% block form %}
+        {% endblock %}
+    </div>
+
+    {% block anotacoes %}
+    {% if dia.anotacoes %}
+        <div id="anotacoes_trunc" class="notice">
+            <ul>
+                <li><a href="{{ dia.get_absolute_url }}anotacoes">Editar</a></li>
+                <li><a href="#" id="expandir">Expandir</a></li>
+            </ul>
+            {{ dia.anotacoes|truncatewords:5 }}
+        </div>
+        <div id="anotacoes" class="notice hide"> 
+            <ul>
+                <li><a href="{{ dia.get_absolute_url }}anotacoes">Editar</a></li>
+                <li><a href="#" id="contrair">Contrair</a></li>
+            </ul>
+            {{ dia.anotacoes|linebreaks|safe }}
+        </div>
+    {% endif %}
+    {% endblock %}
+
+    <div id="vendas" class="span-14 push-1 border">
+        <h2 class="caixa">Vendas</h2>
+        
+
+        <a id="botao_adicionar_venda" class="botao" href="{{ dia.get_absolute_url }}venda/adicionar"><img class="icone" width="16" height="16" alt="Adicionar venda" src="/m/icones/adicionar.png" />Adicionar venda</a>
+
+        <h3 class="caixa">Abertas</h3>
+
+        <table id="vendas_abertas" class="tablesorter">
+            <colgroup>
+                <col class="mesa" />
+                <col class="hora_entrada" />
+                <col class="num_pessoas" />
+                <col class="categoria" />
+                <col class="icone" />
+                <col class="icone" />
+                <col class="icone" />
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>Mesa</th>
+                    <th>Entrada</th>
+                    <th>Pessoas</th>
+                    <th>Categoria</th>
+                    <th class="icone"></th>
+                    <th class="icone"></th>
+                    <th class="icone"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for venda in dia.vendas_abertas %}
+                <tr>
+                    <td>{{ venda.mesa }}</td>
+                    <td>{{ venda.hora_entrada|time:"H:i" }}</td>
+                    <td>{{ venda.num_pessoas }}</td>
+                    <td>{{ venda.get_categoria_display }}</td>
+                    <td><a href="{{ venda.get_absolute_url }}entrada"><img class="icone" width="16" height="16" title="Editar" alt="Editar" src="/m/icones/editar.png" /></a></td>
+                    <td><a href="{{ venda.get_absolute_url }}saida"><img class="icone" width="16" height="16" title="Fechar Conta" alt="Fechar Conta" src="/m/icones/fechar_conta.png" /></a> </td>
+                    <td> <a class="remover" href="{{ venda.get_absolute_url }}remover"><img class="icone" width="16" height="16" title="Remover" alt="Remover" src="/m/icones/remover.png" /></a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3 class="caixa">Fechadas</h3>
+
+        <table id="vendas_fechadas" class="tablesorter">
+            <colgroup>
+                <col class="mesa" />
+                <col class="hora_entrada" />
+                <col class="hora_saida" />
+                <col class="conta" />
+                <col class="gorjeta" />
+                <col class="categoria" />
+                <col class="pagou_dinheiro" />
+                <col class="pagou_cheque" />
+                <col class="pagou_cartao" />
+                <col class="icone" />
+                <col class="icone" />
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>Mesa</th>
+                    <th>Entrada</th>
+                    <th>Saída</th>
+                    <th>Conta</th>
+                    <th>10%</th>
+                    <th>Categoria</th>
+                    <th>DIN</th>
+                    <th>CHE</th>
+                    <th>CAR</th>
+                    <th class="icone"></th>
+                    <th class="icone"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for venda in dia.vendas_fechadas %}
+                <tr>
+                    <td>{{ venda.mesa }}</td>
+                    <td>{{ venda.hora_entrada|time:"H:i" }}</td>
+                    <td>{{ venda.hora_saida|time:"H:i" }}</td>
+                    <td>{{ venda.conta|colorir_num }}</td>
+                    <td>{{ venda.gorjeta|colorir_num }}</td>
+                    <td>{{ venda.get_categoria_display }}</td>
+                    {% if venda.pgto_dinheiro %}
+                        <td class="pos" title="Em dinheiro: R$ {{ venda.pgto_dinheiro }}">✔</td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                    {% if venda.pgto_cheque %}
+                        <td class="pos" title="Em cheque:R$ {{ venda.pgto_cheque }}">✔</td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                    {% if venda.pgto_cartao %}
+                        <td class="pos" title="Em cartão: R$ {{ venda.pgto_cartao }}">✔</td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                    <td><a href="{{ venda.get_absolute_url }}abrir"><img class="icone" width="16" height="16" title="Reabrir venda" alt="Reabrir" src="/m/icones/abrir_conta.png" /></a></td>
+                    <td><a class="remover" href="{{ venda.get_absolute_url }}remover"><img class="icone" width="16" height="16" title="Remover" alt="Remover" src="/m/icones/remover.png" /></a> </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if dia.vendas_fechadas %}
+        <h3 class="caixa">Totais</h3>
+            <table id="total_vendas_fechadas" class="tablesorter">
+                <thead>
+                    <tr>
+                        <th>Contas</th>
+                        <th>DIN</th>
+                        <th>CHE</th>
+                        <th>DEB</th>
+                        <th>CRED</th>
+                        <th>10% * 0,9</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ dia.faturamento|colorir_num }}</td>
+                        <td>{{ dia.faturamento_dinheiro|colorir_num }}</td>
+                        <td>{{ dia.faturamento_cheque|colorir_num }}</td>
+                        <td>{{ dia.faturamento_cartao_debito|colorir_num }}</td>
+                        <td>{{ dia.faturamento_cartao_credito|colorir_num }}</td>
+                        <td>{{ dia.gorjeta|colorir_num }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+    <div id="outros" class="span-9 push-1 last">
+        <div id="despesas">
+            <h2 class="caixa">Despesas de caixa</h2>
+
+            <a id="botao_adicionar_despesa" class="botao" href="{{ dia.get_absolute_url }}despesa/adicionar"><img class="icone" width="16" height="16" alt="Adicionar" src="/m/icones/adicionar.png" />Adicionar despesa de caixa</a>
+
+            <table id="despesas" class="tablesorter">
+                <colgroup>
+                    <col class="valor" />
+                    <col class="categoria" />
+                    <col class="icone" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>Valor</th>
+                        <th>Categoria</th>
+                        <th class="icone"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for despesa in dia.despesadecaixa_set.all %}
+                    <tr>
+                        <td id="valor" class="num">{{ despesa.valor|colorir_num }}</td>
+                        <td id="categoria">{{ despesa.get_categoria_display }}</td>
+                        <td class="icone"><a class="remover" href="{{ despesa.get_absolute_url }}remover"><img class="icone" width="16" height="16" title="Remover" alt="Remover" src="/m/icones/remover.png" /></a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if dia.despesadecaixa_set.count %}
+                <p class="total"><strong>Total:</strong> {{ dia.despesas_de_caixa|colorir_num }}</p>
+            {% endif %}
+        </div>
+
+        <div id="movbancarias">
+            <h2 class="caixa">Movimentações bancárias</h2>
+
+            <a id="botao_adicionar_movbancaria" class="botao" href="{{ dia.get_absolute_url }}movbancaria/adicionar"><img class="icone" width="16" height="16" alt="Adicionar" src="/m/icones/adicionar.png" />Adicionar movimentação bancária</a>
+
+            <table id="movbancarias" class="tablesorter">
+                <colgroup>
+                    <col class="valor" />
+                    <col class="categoria" />
+                    <col class="icone" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>Valor</th>
+                        <th>Categoria</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movbancaria in movbancarias %}
+                    <tr>
+                        <td id="valor" class="num">{{ movbancaria.valor|colorir_num }}</td>
+                        <td id="categoria">{{ movbancaria.get_categoria_display }}</td>
+                        <td class="icone"><a class="remover" href="{{ movbancaria.get_absolute_url }}remover"><img class="icone" width="16" height="16" title="Remover" alt="Remover" src="/m/icones/remover.png" /></a></td>
+                    </tr>
+                    {% endfor %}
+                    {% if taxas_cartao %}
+                        <tr>
+                            <td id="valor" class="num">{{ taxas_cartao|colorir_num }}</td>
+                            <td id="categoria">Taxas</td>
+                            <td id="desc">Cartões de crédito</td>
+                            <td class="icone"></td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            {% if dia.movimentacaobancaria_set.count %}
+                <p class="total"><strong>Total:</strong> {{ dia.movimentacoes_bancarias|colorir_num }}</p>
+            {% endif %}
+        </div>
+        <div id="ajustes">
+            <h2 class="caixa">Ajustes de caixa</h2>
+
+            <a id="botao_adicionar_ajuste" class="botao" href="{{ dia.get_absolute_url }}ajuste/adicionar"><img class="icone" width="16" height="16" alt="Adicionar" src="/m/icones/adicionar.png" />Adicionar ajuste de caixa</a>
+
+            <table id="ajustes" class="tablesorter">
+                <colgroup>
+                    <col class="valor" />
+                    <col class="descricao" />
+                    <col class="icone" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>Valor</th>
+                        <th>Descrição</th>
+                        <th class="icone"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ajuste in dia.ajustedecaixa_set.all %}
+                    <tr>
+                        <td id="valor" class="num">{{ ajuste.valor|colorir_num }}</td>
+                        <td id="descricao" class="num">{{ ajuste.descricao }}</td>
+                        <td class="icone"><a class="remover" href="{{ ajuste.get_absolute_url }}remover"><img class="icone" width="16" height="16" title="Remover" alt="Remover" src="/m/icones/remover.png" /></a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if dia.ajustedecaixa_set.count %}
+                <p class="total"><strong>Total:</strong> {{ dia.ajustes_de_caixa|colorir_num }}</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+

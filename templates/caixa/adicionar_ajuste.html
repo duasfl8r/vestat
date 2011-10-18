@@ -1,0 +1,24 @@
+{% extends "caixa/ver_dia.html" %}
+
+{% block javascript %}
+    <script type="text/javascript" src="/m/js/autofocus.js"></script>
+    <script type="text/javascript" src="/m/js/jquery.maskMoney.js"></script>
+    <script type="text/javascript" src="/m/js/dinheiro.js"></script>
+{% endblock %}
+
+{% block form %}
+        <form id="adicionar_ajuste" class="info" name="adicionar_ajuste_form" action="" method="POST">
+            <a href="{{ dia.get_absolute_url }}" title="Fechar" class="fechar">x</a>
+            <h3>Nova ajuste</h3>
+            <span id="valor" class="dinheiro{% if form_ajuste.valor.errors %} error{% endif %}">
+                {{ form_ajuste.valor.label_tag }} {{ form_ajuste.valor }}
+            </span>
+            <span id="categoria"{% if form_ajuste.categoria.errors %} class="error"{% endif %}>
+                {{ form_ajuste.categoria.label_tag }} {{ form_ajuste.categoria }}
+            </span>
+            <span id="descricao"{% if form_ajuste.descricao.errors %} class="error"{% endif %}>
+                {{ form_ajuste.descricao.label_tag }} {{ form_ajuste.descricao }}
+            </span>
+            <input type="submit" name="adicionar_ajuste" value="Adicionar" />
+        </form>
+{% endblock %}

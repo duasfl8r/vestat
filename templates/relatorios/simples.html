@@ -1,0 +1,140 @@
+{% extends "relatorios/base.html" %}
+{% load vestat_extras %}
+
+{% block head %}
+    {{ block.super }}
+    <script type="text/javascript" src="/m/js/jquery.js"></script>
+{% endblock %}
+
+{% block content %}
+    <form id="filtro_form" name="filtro">
+        <span{% if filtro_form.de.errors %} class="error"{% endif %}>{{ filtro_form.de.label_tag }} {{ filtro_form.de }}</span>
+        <span{% if filtro_form.ateh.errors %} class="error"{% endif %}>{{ filtro_form.ateh.label_tag }} {{ filtro_form.ateh }}</span>
+        <input type="submit" value="Filtrar">
+    </form>
+
+    {% if dados.dias %}
+        <table>
+            <colgroup>
+                <col class="data" />
+                <col class="semana" />
+                <col class="valor" />
+                <col class="hora" />
+                <col class="valor" />
+                <col class="valor" />
+                <col class="valor" />
+                <col class="valor" />
+                <col class="valor" />
+                <col class="valor" />
+                <col class="valor" />
+                <col class="valor" />
+                <col class="valor" />
+                <col class="valor" />
+            </colgroup>
+            
+            <thead>
+                <tr>
+                    <th colspan="4"></th>
+                    <th colspan="6">Faturamento</th>
+                    <th colspan="5"></th>
+                </tr>
+                <tr>
+                    <th colspan="2">Dia</th>
+                    <th>Pess</th>
+                    <th>Vendas</th>
+                    <th>Perm M</th>
+                    <th>Dinheiro</th>
+                    <th>Cheque</th>
+                    <th>C. Débito</th>
+                    <th>C. Crédito</th>
+                    <th>Total</th>
+                    <th>Per capita</th>
+                    <th>Desp Cx</th>
+                    <th>Banco</th>
+                    <th>Resultado</th>
+                    <th>10%</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for dia in dados.dias %}
+                <tr>
+                    <td>
+                        <strong>
+                        <a href="{{ dia.get_absolute_url }}">
+                            {{ dia.data|date:"SHORT_DATE_FORMAT" }}
+                        </a>
+                            {% if dia.anotacoes %}
+                            <img class="icone" width="16" height="16" title="{{ dia.anotacoes }}" alt="A" src="/m/icones/anotacoes.png" />
+                            {% endif %}
+                        </strong>
+                    </td>
+                    <td class="{{ dia.categoria_semanal }}">
+                        {{ dia.data|date:"D" }}{% if dia.feriado %}, F{% endif %}
+                    </td>
+                    <td>{{ dia.num_pessoas }}</td>
+                    <td>
+                        {{ dia.vendas_fechadas.count }}
+                        {% if dia.vendas_abertas %}
+                        <img class="icone" width="16" height="16" title="Existem {{ dia.vendas_abertas.count }} vendas abertas" alt="!" src="/m/icones/alerta.png" />
+                        {% endif %}
+                    </td>
+                    <td>{{ dia.permanencia_media|default:"00:00"|time:"H:i" }}</td>
+                    <td>R$ {{ dia.faturamento_dinheiro|floatformat:"2" }}</td>
+                    <td>R$ {{ dia.faturamento_cheque|floatformat:"2" }}</td>
+                    <td>R$ {{ dia.faturamento_cartao_debito|floatformat:"2" }}</td>
+                    <td>R$ {{ dia.faturamento_cartao_credito|floatformat:"2" }}</td>
+                    <td><strong>R$ {{ dia.faturamento }}</strong></td>
+                    <td>R$ {{ dia.captacao_por_pessoa|floatformat:"2" }}</td>
+                    <td><strong>R$ {{ dia.despesas_de_caixa|floatformat:"2" }}</strong></td>
+                    <td><strong>R$ {{ dia.movimentacoes_bancarias|floatformat:"2" }}</strong></td>
+                    <td><strong>{{ dia.resultado|colorir_num }}</strong></td>
+                    <td><strong>R$ {{ dia.gorjeta|floatformat:"2" }}</strong></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Pess</th>
+                    <th>Vendas</th>
+                    <th>Perm M</th>
+                    <th>Dinheiro</th>
+                    <th>Cheque</th>
+                    <th>C. Débito</th>
+                    <th>C. Crédito</th>
+                    <th>Total</th>
+                    <th>Per capita</th>
+                    <th>Desp Cx</th>
+                    <th>Banco</th>
+                    <th>Resultado</th>
+                    <th>10%</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th>Total</th>
+                    <td>{{ dados.num_pessoas_total }}</td>
+                    <td>{{ dados.vendas_total }}</td>
+                    <td>{{ dados.permanencia_media_total|default:"00:00"|time:"H:i" }}</td>
+                    <td>R$ {{ dados.faturamento_total.dinheiro|floatformat:"2" }}</td>
+                    <td>R$ {{ dados.faturamento_total.cheque|floatformat:"2" }}</td>
+                    <td>R$ {{ dados.faturamento_total.cartao_debito|floatformat:"2" }}</td>
+                    <td>R$ {{ dados.faturamento_total.cartao_credito|floatformat:"2" }}</td>
+                    <td>R$ {{ dados.faturamento_total.total|floatformat:"2" }}</td>
+                    <td>R$ {{ dados.captacao_por_pessoa_total|floatformat:"2" }}</td>
+                    <td>R$ {{ dados.despesas_de_caixa_total|floatformat:"2" }}</td>
+                    <td>R$ {{ dados.movimentacoes_bancarias_total|floatformat:"2" }}</td>
+                    <td>{{ dados.resultado_total|colorir_num }}</td>
+                    <td>R$ {{ dados.gorjeta_total|floatformat:"2" }}</td>
+                </tr>
+            </tbody>
+        </table>
+    {% else %}
+        <p class="info large">
+            Nenhum dia de trabalho.
+        </p>
+    {% endif %}
+{% endblock %}

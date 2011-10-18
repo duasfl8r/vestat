@@ -1,0 +1,32 @@
+body {
+    font-size: 11px;
+}
+
+.content {
+    width: 95%;
+    margin: 0 auto;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+td, th {
+    border: 1px solid black;
+}
+
+thead {
+    border: 1px solid black !important;
+}
+
+tbody tr:nth-child(even) td, tbody tr.even td {background:#e5ecf9 !important;}
+
+form#filtro_form { text-align: center; }
+
+
+td.feriado { font-weight: bold; color: brown !important; }
+td.sexta { font-weight: bold; color: green !important; }
+td.sabado { font-weight: bold; color: blue !important; }
+td.domingo { font-weight: bold; color: red !important; }
+
+td.semana, td.feriado, td.sexta, td.sabado, td.domingo { text-transform: uppercase; }

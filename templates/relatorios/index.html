@@ -1,0 +1,84 @@
+{% extends "relatorios/base.html" %}
+
+{% block head %}
+    {{ block.super }}
+    <script type="text/javascript" src="/m/js/jquery.js"></script>
+{% endblock %}
+
+{% block content %}
+    <h2>Relatório Simples</h2>
+    <form action="simples/" name="relatorio_simples">
+        <p>Consolida os dias de trabalho entre duas datas (ambas opcionais). Fornece valores totais.</p>
+        <p>
+            {{ relatorio_simples_form.de.label_tag }} {{ relatorio_simples_form.de }}
+            {{ relatorio_simples_form.ateh.label_tag }} {{ relatorio_simples_form.ateh }}
+            <input type="submit" value="Gerar">
+        </p>
+    </form>
+
+    <hr />
+
+    <h2>Relatório Anual</h2>
+    <form action="anual/" name="relatorio_anual">
+        <p>Consolida os dias de trabalho de um ano, dividindo-os em meses e fornecendo valores totais e acumulados.</p>
+        <p>
+            {{ relatorio_anual_form.ano.label_tag }} {{ relatorio_anual_form.ano }}
+            <input type="submit" value="Gerar">
+        </p>
+    </form>
+
+    <hr />
+
+    <h2>Relatório de Vendas</h2>
+    <form action="vendas/" name="relatorio_vendas">
+        <p>Mostra dados de vendas agrupados por mesa, categoria, cidade e dia da semana.</p>
+        <p>
+            {{ relatorio_simples_form.de.label_tag }} {{ relatorio_simples_form.de }}
+            {{ relatorio_simples_form.ateh.label_tag }} {{ relatorio_simples_form.ateh }}
+            <input type="submit" value="Gerar">
+        </p>
+    </form>
+
+    <hr />
+
+    <h2>Relatório de Cartões</h2>
+    <form action="pgtos_por_bandeira/" name="relatorio_cartao">
+        <p>Mostra pagamentos com cartão de crédito agrupados por bandeira e categoria (crédito / débito)</p>
+        <p>
+            {{ relatorio_simples_form.de.label_tag }} {{ relatorio_simples_form.de }}
+            {{ relatorio_simples_form.ateh.label_tag }} {{ relatorio_simples_form.ateh }}
+            <input type="submit" value="Gerar">
+        </p>
+    </form>
+
+    <hr />
+
+    <h2>Relatório de Despesas de Caixa</h2>
+    <form action="despesas_por_categoria/" name="relatorio_cartao">
+        <p>Mostra despesas de caixa agrupadas por categoria</p>
+        <p>
+            {{ relatorio_simples_form.de.label_tag }} {{ relatorio_simples_form.de }}
+            {{ relatorio_simples_form.ateh.label_tag }} {{ relatorio_simples_form.ateh }}
+            <input type="submit" value="Gerar">
+        </p>
+    </form>
+
+    <hr />
+
+    <h2>Relatório de Movimentações bancárias</h2>
+    <form action="movbancarias_por_categoria/" name="relatorio_cartao">
+        <p>Mostra movimentações bancárias agrupadas por categoria</p>
+        <p>
+            {{ relatorio_simples_form.de.label_tag }} {{ relatorio_simples_form.de }}
+            {{ relatorio_simples_form.ateh.label_tag }} {{ relatorio_simples_form.ateh }}
+            <input type="submit" value="Gerar">
+        </p>
+    </form>
+
+    <hr />
+
+    <h2>Ajustes de Caixa</h2>
+    <p>Lista todos os ajustes de caixa.</p>
+    <p><form action="ajustes/"><input type="submit" value="Gerar" /></form></p>
+    <hr />
+{% endblock %}

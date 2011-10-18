@@ -1,0 +1,245 @@
+body {
+    font-family: helvetica, arial, sans-serif;
+    font-size: 13px;
+}
+
+h1 {
+    text-align: center;
+    margin-top: 10px;
+    color: #5f0070;
+}
+
+h2.caixa {
+    padding-right: 20px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0px;
+}
+
+h3.caixa {
+    margin-bottom: 0px;
+    margin-top: 5px;
+}
+
+ul#menu {
+    list-style-type: none;
+    font-size: large;
+    margin: 0 auto;
+    width: 400px;
+    font-variant: small-caps;
+    margin-bottom: 0;
+}
+
+ul#menu li {
+    display: inline;
+    margin-right: 10px;
+}
+
+#clock {
+    position: relative;
+    clear: right;
+    font-size: 3em;
+    float: right;
+    top: 10px;
+    font-family: monospace;
+    border: 1px solid #aac;
+    background-color: #cce;
+    padding: 3px 7px;
+}
+
+#outros {
+    padding-left: 3px;
+}
+
+a#criar_dia {
+    display: block;
+    font-size: 1.5em;
+    text-align: center;
+    font-variant: small-caps;
+    text-decoration: underline;
+}
+
+
+a.botao {
+    font-size: 14px;
+    border-width: 1px 2px 2px 1px;
+    border-color: black;
+    border-style: solid;
+    padding: 3px;
+    text-decoration: none;
+}
+
+a.botao img {
+    margin-right: 3px;
+}
+
+#botao_adicionar_venda, #botao_adicionar_despesa, #botao_adicionar_movbancaria, #botao_adicionar_ajuste {
+    display: block;
+    width: 250px;
+    text-align: center;
+    margin-bottom: 5px;
+    margin: 0 auto;
+}
+
+h1 a {
+    text-decoration: none;
+    color: #5f0070;
+    font-family: helvetica, arial, sans-serif;
+}
+
+h1 a:hover {
+    color: #5f0070;
+}
+
+a#remover_dia {
+    font-size: large;
+    text-transform: uppercase;
+    color: red;
+    position: relative;
+    float: right;
+}
+
+.title {
+    position: relative;
+}
+
+p.total {
+    text-align: center;
+    font-size: large;
+}
+
+.error { background:#fbe3e4 ! important; }
+
+img.icone { vertical-align: middle; }
+
+img#logo { margin: 10px auto 0 auto; display: block; }
+
+.pos { color: green ! important; }
+.neg { color: red ! important; }
+
+table#lista_dias { margin-top: 10px; }
+table#lista_dias { margin-left: auto; margin-right: auto; }
+table#lista_dias th, table#lista_dias td { border: 1px solid #999; padding: 3px 3px 3px 3px; text-align: left }
+
+table#rel_ajustes, table#rel_ajustes_total { width: 600px; margin: 0 auto; }
+table#rel_ajustes { border-bottom: 1px solid #ccc; padding-bottom: 20px; margin-bottom: 20px; }
+
+table#pgtos_cartao {
+    width: 400px;
+}
+table#pgtos_cartao caption {
+    text-align: center;
+    font-size: 1.2em;
+}
+table#pgtos_cartao #id_valor {
+    width: 50px;
+}
+
+#info > form, #info > span {
+    display: inline;
+    padding-right: 30px;
+}
+
+#info #last {
+    padding-right: 0px;
+}
+
+#info {
+    text-align: center;
+    margin: 0 auto;
+    font-size: 1.5em;
+    padding-bottom: 20px;
+    width: 80%;
+}
+
+div#despesas, div#movbancarias {
+    border-bottom: 1px solid #dddddd;
+}
+
+form #id_ano { width: 50px; }
+form #id_de { width: 70px; }
+form #id_ateh { width: 70px; }
+
+form #id_mesa { width: 30px; }
+form #id_hora_entrada { width: 50px; }
+form #id_num_pessoas { width: 30px; }
+form #categoria { padding-right: 10px; }
+form #id_cidade_de_origem { width: 100px; }
+form #id_pousada_que_indicou { width: 100px; }
+form #id_hora_saida { width: 50px; }
+form #id_conta { width: 50px; }
+form #id_gorjeta { width: 50px; }
+form #id_pgto_dinheiro { width: 50px; }
+form #id_pgto_cheque { width: 50px; }
+form #id_valor { width: 50px; }
+
+th { text-transform: uppercase; }
+
+form label {
+    text-transform: uppercase;
+    margin-left: 5px;
+}
+form#feriado label {
+    text-transform: none;
+    font-variant: normal;
+    margin-left: 0px;
+}
+
+form label:after, #adicionar_despesa label:after, #adicionar_movbancaria label:after
+    { content: ':'; }
+
+form#feriado label:after { content: '' }
+
+a.fechar {
+    float: right;
+    font-size: 1.5em;
+    line-height: 0.5em;
+    border: 1px solid #ccc;
+    padding: 3px 3px 7px 3px;
+    color: #ff0000 !important;
+    text-decoration: none;
+}
+a.fechar:hover {
+    background-color: #ffdddd;
+    text-decoration: none;
+}
+
+label {
+    font-variant: small-caps;
+}
+
+form input:focus, select:focus, textarea:focus, a:focus, a:hover {
+    background-color: #fffdbc;
+}
+
+a:active {
+    background-color: #ffddbb;
+}
+
+#anotacoes, #anotacoes_trunc {
+    width: 300px;
+    margin: 0 auto;
+    margin-bottom: 15px;
+}
+
+#anotacoes_trunc {
+    height: 1.2em;
+}
+
+#anotacoes textarea {
+    height: 100px;
+    width: 290px;
+}
+
+#anotacoes ul, #anotacoes_trunc ul {
+    float: right;
+    margin: 0;
+}
+#anotacoes li, #anotacoes_trunc li {
+    display: inline;
+    padding-left: 5px;
+    padding-right: 0;
+}
+#anotacoes li a, #anotacoes_trunc li a {
+    text-decoration: underline;
+}

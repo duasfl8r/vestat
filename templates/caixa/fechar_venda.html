@@ -1,0 +1,58 @@
+{% extends "caixa/ver_dia.html" %}
+{% load vestat_extras %}
+
+{% block javascript %}
+    <script type="text/javascript" src="/m/js/autofocus.js"></script>
+    <script type="text/javascript" src="/m/js/fechar_venda.js"></script>
+    <script type="text/javascript" src="/m/js/jquery.maskMoney.js"></script>
+    <script type="text/javascript" src="/m/js/dinheiro.js"></script>
+{% endblock %}
+
+{% block form %}
+        {% if erro %}
+            <div class="error">{{ erro }}</div>
+        {% endif %}
+        <form id="fechar_venda" class="info" name="fechar_venda_form" action="" method="POST">
+            <a href="{{ dia.get_absolute_url }}" title="Fechar" class="fechar">x</a>
+            <h3>Fechar Venda</h3>
+            <span id="hora_saida"{% if form_fechar_venda.hora_saida.errors %} class="error"{% endif %}>
+                {{ form_fechar_venda.hora_saida.label_tag }} {{ form_fechar_venda.hora_saida }}
+            </span>
+            <span id="conta" class="dinheiro{% if form_fechar_venda.conta.errors %} error{% endif %}">
+                {{ form_fechar_venda.conta.label_tag }} {{ form_fechar_venda.conta }}
+            </span>
+            <span id="gorjeta" class="dinheiro{% if form_fechar_venda.gorjeta.errors %} error{% endif %}">
+                    {{ form_fechar_venda.gorjeta.label_tag }} {{ form_fechar_venda.gorjeta }}
+            </span>
+            <span id="pgto_dinheiro" class="dinheiro {% if form_fechar_venda.pgto_dinheiro.errors %} error{% endif %}">
+                {{ form_fechar_venda.pgto_dinheiro.label_tag }} {{ form_fechar_venda.pgto_dinheiro }}
+            </span>
+            <span id="pgto_cheque" class="dinheiro {% if form_fechar_venda.pgto_cheque.errors %} error{% endif %}">
+                {{ form_fechar_venda.pgto_cheque.label_tag }} {{ form_fechar_venda.pgto_cheque }}
+            </span>
+            
+                <table id="pgtos_cartao" class="tablesorter">
+                <caption>Pagamentos com Cartão</caption>
+                <tbody>
+                {% for pgto_cartao in pgtos_cartao %}
+                    <tr>
+                        <td>{{ pgto_cartao.valor|colorir_num }}</td>
+                        <td>{{ pgto_cartao.bandeira }}</td>
+                        <td>{{ pgto_cartao.get_categoria_display }}</td>
+                        <td><a href="{{ pgto_cartao.get_absolute_url }}remover">Remover</a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td class="dinheiro{% if form_cartao.valor.errors %} error{% endif %}" >{{ form_cartao.valor }}</td>
+                        <td{% if form_cartao.bandeira.errors %} class="error"{% endif %}>{{ form_cartao.bandeira }}</td>
+                        <td{% if form_cartao.categoria.errors %} class="error"{% endif %}>{{ form_cartao.categoria }}</td>
+                        <td><input type="submit" name="adicionar_pgto_cartao" value="Adicionar" /></td>
+                    </tr>
+                </tfoot>
+                </table>
+
+            <p><input type="submit" name="fechar_venda" value="Fechar venda" /></p>
+        </form>
+{% endblock %}

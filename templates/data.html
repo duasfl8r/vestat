@@ -1,0 +1,7 @@
+{% load vestat_extras %}
+<span id="clock">&nbsp;</span>
+<h1>
+    <a class="botao" href="/caixa/{{ data|ontem|date:"Y/m/d" }}" title="{{ data|ontem }}">&lt;</a>
+    <a href="#" title="Mudar dia" id="mudar_dia">Dia: {{ data|date:"d/m/Y" }}</a>
+    <a class="botao" href="/caixa/{{ data|amanha|date:"Y/m/d" }}" title="{{ data|amanha }}">&gt;</a>
+</h1>

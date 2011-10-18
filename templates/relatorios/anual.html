@@ -1,0 +1,205 @@
+{% extends "relatorios/base.html" %}
+{% load vestat_extras %}
+{% load i18n %}
+
+{% block head %}
+    {{ block.super }}
+    <script type="text/javascript" src="/m/js/jquery.js"></script>
+    <script type="text/javascript" src="/m/js/mostrar_dias.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<form id="filtro_form" name="relatorio_anual">
+    {{ filtro_form.ano }}
+    <input type="submit" value="Outro ano">
+</form>
+
+{% if ano %}
+    {% for n, mes in ano.meses.items %}
+        <h2>{{ mes.nome|capfirst }}</h2>
+        <a href="#" class="mostrar_dias">Mostrar / esconder dias</a>
+
+        <table class="hide">
+            <colgroup>
+                <col class="data" />
+                <col class="semana" />
+                <col class="valor" />
+                <col class="hora" />
+                <col class="valor" />
+                <col class="valor" />
+                <col class="valor" />
+                <col class="valor" />
+                <col class="valor" />
+                <col class="valor" />
+                <col class="valor" />
+                <col class="valor" />
+                <col class="valor" />
+                <col class="valor" />
+            </colgroup>
+            
+            <thead>
+                <tr>
+                    <th colspan="4"></th>
+                    <th colspan="8">Faturamento</th>
+                    <th colspan="3">Despesas</th>
+                    <th colspan="1">Resultado</th>
+                </tr>
+                <tr>
+                    <th colspan="2">Dia</th>
+                    <th>Pess</th>
+                    <th>Vendas</th>
+                    <th>Perm M</th>
+                    <th>Dinheiro</th>
+                    <th>Cheque</th>
+                    <th>C. Débito</th>
+                    <th>C. Crédito</th>
+                    <th>Per capita</th>
+                    <th>10%</th>
+                    <th>Total</th>
+                    <th>Desp Caixa</th>
+                    <th>Banco</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for dia in mes.dias %}
+                <tr>
+                    <td>
+                        <strong>
+                        <a href="{{ dia.get_absolute_url }}">
+                            {{ dia.data|date:"SHORT_DATE_FORMAT" }}
+                        </a>
+                        </strong>
+                        {% if dia.anotacoes %}
+                        <img class="icone" width="16" height="16" title="{{ dia.anotacoes }}" alt="A" src="/m/icones/anotacoes.png" />
+                        {% endif %}
+                    </td>
+                    <td class="{{ dia.categoria_semanal }}">
+                        {{ dia.data|date:"D" }}{% if dia.feriado %}, F{% endif %}
+                    </td>
+                    <td>{{ dia.num_pessoas }}</td>
+                    <td>
+                        {{ dia.vendas_fechadas.count }}
+                        {% if dia.vendas_abertas %}
+                        <img class="icone" width="16" height="16" title="Existem {{ dia.vendas_abertas.count }} vendas abertas" alt="!" src="/m/icones/alerta.png" />
+                        {% endif %}
+                    </td>
+                    <td>{{ dia.permanencia_media|default:"00:00"|time:"H:i" }}</td>
+                    <td>R$ {{ dia.faturamento_dinheiro|floatformat:"2" }}</td>
+                    <td>R$ {{ dia.faturamento_cheque|floatformat:"2" }}</td>
+                    <td>R$ {{ dia.faturamento_cartao_debito|floatformat:"2" }}</td>
+                    <td>R$ {{ dia.faturamento_cartao_credito|floatformat:"2" }}</td>
+                    <td>R$ {{ dia.captacao_por_pessoa|floatformat:"2" }}</td>
+                    <td>R$ {{ dia.gorjeta|floatformat:"2" }}</td>
+                    <td><strong>{{ dia.faturamento|colorir_num }}</strong></td>
+                    <td>R$ {{ dia.despesas_de_caixa|floatformat:"2" }}</td>
+                    <td>R$ {{ dia.movimentacoes_bancarias|floatformat:"2" }}</td>
+                    <td><strong>{{ dia.despesas|colorir_num }}</strong></td>
+                    <td><strong>{{ dia.resultado|colorir_num }}</strong></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Pess</th>
+                    <th>Vendas</th>
+                    <th>Perm M</th>
+                    <th>Faturamento</th>
+                    <th>Desp Cx</th>
+                    <th>Banco</th>
+                    <th>Resultado</th>
+                    <th>Per capita</th>
+                    <th>10%</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th>Total</th>
+                    <td>{{ mes.num_pessoas }}</td>
+                    <td>{{ mes.vendas }}</td>
+                    <td>{{ mes.permanencia_media|default:"00:00"|time:"H:i" }}</td>
+                    <td>R$ {{ mes.faturamento|floatformat:"2" }}</td>
+                    <td>R$ {{ mes.despesas_de_caixa|floatformat:"2" }}</td>
+                    <td>R$ {{ mes.movimentacoes_bancarias|floatformat:"2" }}</td>
+                    <td>{{ mes.resultado|colorir_num }}</td>
+                    <td>R$ {{ mes.captacao_por_pessoa|floatformat:"2" }}</td>
+                    <td>R$ {{ mes.gorjeta|floatformat:"2" }}</td>
+                </tr>
+                <tr></td>
+                    <th>Acumulado</th>
+                    <td>---</td>
+                    <td>---</td>
+                    <td>---</td>
+                    <td>R$ {{ mes.faturamento_acumulado|floatformat:"2" }}</td>
+                    <td>R$ {{ mes.despesas_de_caixa_acumulado|floatformat:"2" }}</td>
+                    <td>R$ {{ mes.movimentacoes_bancarias_acumulado|floatformat:"2" }}</td>
+                    <td>{{ mes.resultado_acumulado|colorir_num }}</td>
+                    <td>---</td>
+                    <td>R$ {{ mes.gorjeta_acumulado|floatformat:"2" }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <hr />
+    {% empty %}
+        <p class="info large">
+            Nenhum dia de trabalho nesse ano.
+        </p>
+    {% endfor %}
+
+    {% if ano.meses %}
+    <h2>Ano todo</h2>
+    <table>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Pess</th>
+                    <th>Vendas</th>
+                    <th>Perm M</th>
+                    <th>Faturamento</th>
+                    <th>Desp Cx</th>
+                    <th>Banco</th>
+                    <th>Resultado</th>
+                    <th>Per capita</th>
+                    <th>10%</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th>Total</th>
+                    <td>{{ ano.num_pessoas }}</td>
+                    <td>{{ ano.vendas }}</td>
+                    <td>{{ ano.permanencia_media|default:"00:00"|time:"H:i" }}</td>
+                    <td>R$ {{ ano.faturamento|floatformat:"2" }}</td>
+                    <td>R$ {{ ano.despesas_de_caixa|floatformat:"2" }}</td>
+                    <td>R$ {{ ano.movimentacoes_bancarias|floatformat:"2" }}</td>
+                    <td>{{ ano.resultado|colorir_num }}</td>
+                    <td>R$ {{ ano.captacao_por_pessoa|floatformat:"2" }}</td>
+                    <td>R$ {{ ano.gorjeta|floatformat:"2" }}</td>
+                </tr>
+                <tr>
+                    <th>Acumulado</th>
+                    <td>---</td>
+                    <td>---</td>
+                    <td>---</td>
+                    <td>R$ {{ ano.faturamento_acumulado|floatformat:"2" }}</td>
+                    <td>R$ {{ ano.despesas_de_caixa_acumulado|floatformat:"2" }}</td>
+                    <td>R$ {{ ano.movimentacoes_bancarias_acumulado|floatformat:"2" }}</td>
+                    <td>{{ ano.resultado_acumulado|colorir_num }}</td>
+                    <td>---</td>
+                    <td>R$ {{ ano.gorjeta_acumulado|floatformat:"2" }}</td>
+                </tr>
+        </tbody>
+    </table>
+    {% endif %}
+{% else %}
+        <p class="alert large">
+            O ano está em branco ou não é um número.
+        </p>
+{% endif %}
+
+{% endblock %}

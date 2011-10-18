@@ -1,0 +1,8 @@
+[
+    {"pk": 1, "model": "caixa.bandeira", "fields": {"nome": "Visa",
+    "taxa_credito": "0.033", "taxa_debito": "0.02"}},
+    {"pk": 2, "model": "caixa.bandeira", "fields": {"nome": "Mastercard",
+    "taxa_credito": "0.033", "taxa_debito": "0.02"}},
+    {"pk": 3, "model": "caixa.bandeira", "fields": {"nome": "Diners",
+    "taxa_credito": "0.033", "taxa_debito": "0.02"}}
+]

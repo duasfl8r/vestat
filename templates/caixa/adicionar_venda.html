@@ -1,0 +1,33 @@
+{% extends "caixa/ver_dia.html" %}
+
+{% block javascript %}
+    <script type="text/javascript" src="/m/js/autofocus.js"></script>
+    <script type="text/javascript" src="/m/js/adicionar_venda.js"></script>
+{% endblock %}
+
+{% block form %}
+        <form id="adicionar_venda" class="info" name="adicionar_venda_form" action="" method="POST">
+            <a href="{{ dia.get_absolute_url }}" title="Fechar" class="fechar">x</a>
+            <h3>Nova Venda</h3>
+            <span id="mesa"{% if form_venda.mesa.errors %} class="error"{% endif %}>
+                {{ form_venda.mesa.label_tag }} {{ form_venda.mesa }}
+            </span>
+            <span id="hora_entrada"{% if form_venda.hora_entrada.errors %} class="error"{% endif %}>
+                {{ form_venda.hora_entrada.label_tag }} {{ form_venda.hora_entrada }}
+            </span>
+            <span id="num_pessoas"{% if form_venda.num_pessoas.errors %} class="error"{% endif %}>
+                {{ form_venda.num_pessoas.label_tag }} {{ form_venda.num_pessoas }}
+            </span>
+            <span id="categoria"{% if form_venda.categoria.errors %} class="error"{% endif %}>
+                    {{ form_venda.categoria.label_tag }} {{ form_venda.categoria }}
+            </span>
+            <span id="cidade_de_origem"{% if form_venda.cidade_de_origem.errors %} class="error"{% endif %}>
+                {{ form_venda.cidade_de_origem.label_tag }} {{ form_venda.cidade_de_origem }}
+            </span>
+            <span id="pousada_que_indicou"{% if form_venda.pousada_que_indicou.errors %} class="error"{% endif %}>
+                {{ form_venda.pousada_que_indicou.label_tag }} {{ form_venda.pousada_que_indicou }}
+            </span>
+            <br />
+            <input type="submit" name="adicionar_venda" value="Adicionar" />
+        </form>
+{% endblock %}

@@ -1,0 +1,28 @@
+h2, h3 {
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+}
+
+ul#info li {
+    display: inline;
+    padding-right: 50px;
+}
+
+ul#menu {
+    display: none;
+}
+
+a.botao {
+    font-size: 14px;
+    border-width: 1px 2px 2px 1px;
+    border-color: black;
+    border-style: solid;
+    padding: 3px;
+    text-decoration: none;
+}
+
+@media print {
+    a.botao {
+        display: none;
+    }
+}

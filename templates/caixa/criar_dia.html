@@ -1,0 +1,17 @@
+{% extends "caixa/base.html" %}
+
+{% block head %}
+    {{ block.super }}
+    <script type="text/javascript" src="/m/js/jquery.js"></script>
+    <script type="text/javascript" src="/m/js/clock.js"></script>
+    <script type="text/javascript" src="/m/js/mudar_dia.js"></script>
+    <title>Dia: {{ data }}</title>
+{% endblock %}
+
+{% block title %}
+    {% include "data.html" %}
+{% endblock %}
+
+{% block content %}
+<a id="criar_dia" href="criar">Criar dia de trabalho</a>
+{% endblock %}

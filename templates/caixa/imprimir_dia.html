@@ -1,0 +1,252 @@
+{% extends "caixa/base.html" %}
+{% load vestat_extras %}
+
+{% block head %}
+    <link rel="stylesheet" href="/m/css/tablesorter_blue/style.css" type="text/css" media="print, projection, screen" />
+    <link rel="stylesheet" href="/m/css/vestat_print.css" type="text/css" media="print, projection, screen" />
+{% endblock %}
+
+{% block title %}
+    <h1>{{ data }}{% if dia.feriado %}, feriado {% endif %}</h1>
+    <a class="botao" href="{{ dia.get_absolute_url }}"><< Voltar</a></p>
+{% endblock %}
+
+{% block content %}
+    <ul id="info">
+        <li><strong>Caixa:</strong> {{ dia.caixa_de_hoje|colorir_num }}</li>
+        <li><strong>10% a pagar:</strong> {{ dia.gorjeta_descontada_de_hoje|colorir_num }}</li>
+    </ul>
+    
+    <hr />
+
+    {% block anotacoes %}
+    {% if dia.anotacoes %}
+        <p>
+            <strong>Anotação: </strong><br />
+            {{ dia.anotacoes|linebreaks|safe }}
+        </p>
+        
+        <hr />
+    {% endif %}
+    {% endblock %}
+
+    <h2>Vendas</h2>
+        {% if dia.vendas_abertas.count %}
+            <h3>Abertas</h3>
+        
+            <table id="vendas_abertas" class="tablesorter">
+                <colgroup>
+                    <col class="mesa" />
+                    <col class="hora_entrada" />
+                    <col class="num_pessoas" />
+                    <col class="categoria" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>Mesa</th>
+                        <th>Entrada</th>
+                        <th>Pessoas</th>
+                        <th>Categoria</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for venda in dia.vendas_abertas %}
+                    <tr>
+                        <td>{{ venda.mesa }}</td>
+                        <td>{{ venda.hora_entrada }}</td>
+                        <td>{{ venda.num_pessoas }}</td>
+                        <td>{{ venda.get_categoria_display }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
+        <h3>Fechadas</h3>
+        {% if dia.vendas_fechadas.count %}
+    
+            <table id="vendas_fechadas" class="tablesorter">
+                <colgroup>
+                    <col class="mesa" />
+                    <col class="num_pessoas" />
+                    <col class="hora_entrada" />
+                    <col class="hora_saida" />
+                    <col class="permanencia" />
+                    <col class="conta" />
+                    <col class="gorjeta" />
+                    <col class="pagou_dinheiro" />
+                    <col class="pagou_cheque" />
+                    <col class="pagou_cartao" />
+                    <col class="categoria" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>Mesa</th>
+                        <th>Pessoas</th>
+                        <th>Entrada</th>
+                        <th>Saída</th>
+                        <th>Perm</th>
+                        <th>Conta</th>
+                        <th>10%</th>
+                        <th>DIN</th>
+                        <th>CHE</th>
+                        <th>CAR</th                </tr>
+                        <th>Categoria</th>
+                </thead>
+                <tbody>
+                    {% for venda in dia.vendas_fechadas %}
+                    <tr>
+                        <td>{{ venda.mesa }}</td>
+                        <td>{{ venda.num_pessoas }}</td>
+                        <td>{{ venda.hora_entrada }}</td>
+                        <td>{{ venda.hora_saida }}</td>
+                        <td>{{ venda.permanencia_time }}</td>
+                        <td>{{ venda.conta|colorir_num }}</td>
+                        <td>{{ venda.gorjeta|colorir_num }}</td>
+                        {% if venda.pgto_dinheiro %}
+                            <td>{{ venda.pgto_dinheiro|colorir_num }}</td>
+                        {% else %}
+                            <td></td>
+                        {% endif %}
+                        {% if venda.pgto_cheque %}
+                            <td>{{ venda.pgto_cheque|colorir_num }}</td>
+                        {% else %}
+                            <td></td>
+                        {% endif %}
+                        {% if venda.pgto_cartao %}
+                            <td>{{ venda.pgto_cartao|colorir_num }}</td>
+                        {% else %}
+                            <td></td>
+                        {% endif %}
+                        <td>{{ venda.get_categoria_display }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h3 class="caixa">Totais</h3>
+                <table id="total_vendas_fechadas" class="tablesorter">
+                    <thead>
+                        <tr>
+                            <th>Contas</th>
+                            <th>10%</th>
+                            <th>DIN</th>
+                            <th>CHE</th>
+                            <th>CAR</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ dia.faturamento|colorir_num }}</td>
+                            <td>{{ dia.gorjeta|colorir_num }}</td>
+                            <td>{{ dia.caixa|colorir_num }}</td>
+                            <td>{{ dia.pgtos_com_cheque|colorir_num }}</td>
+                            <td>{{ dia.pgtos_com_cartao|colorir_num }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+        {% else %}
+            <p>Nenhuma!</p>
+        {% endif %}
+    
+    <hr />
+
+        <h2>Despesas de caixa</h2>
+
+        {% if dia.despesadecaixa_set.count %}
+            <table id="despesas" class="tablesorter">
+                <colgroup>
+                    <col class="valor" />
+                    <col class="categoria" />
+                    <col class="descricao" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>Valor</th>
+                        <th>Categoria</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for despesa in dia.despesadecaixa_set.all %}
+                    <tr>
+                        <td id="valor" class="num">{{ despesa.valor|colorir_num }}</td>
+                        <td id="categoria">{{ despesa.get_categoria_display }}</td>
+                        <td id="descricao" class="num">{{ despesa.descricao }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p class="total"><strong>Total:</strong> {{ dia.despesas_de_caixa|colorir_num }}</p>
+        {% else %}
+            <p>Nenhuma!</p>
+        {% endif %}
+    
+    <hr />
+
+        <h2>Movimentações bancárias</h2>
+            {% if movbancarias.count or taxas.count%}
+
+                <table id="movbancarias" class="tablesorter">
+                    <colgroup>
+                        <col class="valor" />
+                        <col class="descricao" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Valor</th>
+                            <th>Descrição</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for movbancaria in movbancarias %}
+                        <tr>
+                            <td id="valor" class="num">{{ movbancaria.valor|colorir_num }}</td>
+                            <td id="desc">{{ movbancaria.descricao }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% if taxas %}
+                            <tr>
+                                <td id="valor" class="num">{{ taxas|colorir_num }}</td>
+                                <td id="desc">Cartões de crédito</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+                <p class="total"><strong>Total:</strong> {{ dia.movimentacoes_bancarias|colorir_num }}</p>
+            {% else %}
+                <p>Nenhuma!</p>
+            {% endif %}
+    
+    <hr />
+    
+            <h2>Ajustes de caixa</h2>
+
+            {% if dia.ajustedecaixa_set.all %}
+                <table id="ajustes" class="tablesorter">
+                    <colgroup>
+                        <col class="valor" />
+                        <col class="descricao" />
+                        <col class="icone" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Valor</th>
+                            <th>Descrição</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ajuste in dia.ajustedecaixa_set.all %}
+                        <tr>
+                            <td id="valor" class="num">{{ ajuste.valor|colorir_num }}</td>
+                            <td id="descricao" class="num">{{ ajuste.descricao }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <p class="total"><strong>Total:</strong> {{ dia.ajustes_de_caixa|colorir_num }}</p>
+            {% else %}
+                <p>Nenhum!</p>
+            {% endif %}
+{% endblock %}
+

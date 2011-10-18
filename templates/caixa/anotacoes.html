@@ -1,0 +1,15 @@
+{% extends "caixa/ver_dia.html" %}
+
+{% block javascript %}
+    <script type="text/javascript" src="/m/js/autofocus_textarea.js"></script>
+{% endblock %}
+
+{% block anotacoes %}
+        <form id="anotacoes" class="notice" name="anotacoes_form" action="" method="POST">
+            {{ form_anotacoes.anotacoes }}
+            {{ form_anotacoes.errors }}
+            <p>Pra remover, salve a anotação em branco.</p>
+            <input type="submit" name="salvar_anotacoes" value="Salvar" />
+            <input type="reset" value="Limpar" />
+        </form>
+{% endblock %}

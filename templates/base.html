@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="/m/css/blueprint/screen.css" media="screen, projection"/>
+    <link rel="stylesheet" type="text/css" href="/m/css/blueprint/print.css" media="print"/>
+    <!--[if lt IE 8]>
+      <link rel="stylesheet" href="/m/css/blueprint/ie.css" type="text/css" media="screen, projection">
+    <![endif]-->
+    {% block head %} 
+    <link rel="stylesheet" type="text/css" href="/m/css/vestat.css" media="screen, projection"/>
+    <link rel="stylesheet" type="text/css" href="/m/css/vestat_print.css" media="print"/>
+    {% endblock %}
+    <title>{{ title }}</title>
+  </head>
+  
+  <body>
+    {% block body %}
+    <div class="container">
+        <div class="span-24 title">
+            <nav>
+                <ul id="menu">
+                    <li><a href="/caixa/">Caixa</a></li>
+                    <li><a href="/relatorios/">Relatórios</a></li>
+                    <li><a href="/config/">Configurações</a></li>
+                </ul>
+            </nav>
+
+            {% block title %}
+            <h1>{{ title }}</h1>
+            {% endblock title %}
+        </div>
+
+        <div class="span-24 content">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="box{% if message.tags %} {{ message.tags }}{% endif %}">
+                        {{ message|safe }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% block content %}
+            {% endblock content %}
+        </div>
+    </div>
+  {% endblock body %}
+  </body>
+</html>

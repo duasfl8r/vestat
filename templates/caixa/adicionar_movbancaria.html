@@ -1,0 +1,21 @@
+{% extends "caixa/ver_dia.html" %}
+
+{% block javascript %}
+    <script type="text/javascript" src="/m/js/autofocus.js"></script>
+    <script type="text/javascript" src="/m/js/jquery.maskMoney.js"></script>
+    <script type="text/javascript" src="/m/js/dinheiro.js"></script>
+{% endblock %}
+
+{% block form %}
+        <form id="adicionar_movbancaria" class="info" name="adicionar_movbancaria_form" action="" method="POST">
+            <a href="{{ dia.get_absolute_url }}" title="Fechar" class="fechar">x</a>
+            <h3>Nova Mov. Bancária</h3>
+            <span id="valor" class="dinheiro{% if form_movbancaria.valor.errors %} error{% endif %}">
+                {{ form_movbancaria.valor.label_tag }} {{ form_movbancaria.valor }}
+            </span>
+            <span id="categoria"{% if form_movbancaria.categoria.errors %} class="error"{% endif %}>
+                {{ form_movbancaria.categoria.label_tag }} {{ form_movbancaria.categoria }}
+            </span>
+            <input type="submit" name="adicionar_movbancaria" value="Adicionar" />
+        </form>
+{% endblock %}

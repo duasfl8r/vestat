@@ -1,0 +1,82 @@
+{% extends "caixa/ver_dia.html" %}
+{% load vestat_extras %}
+
+{% block javascript %}
+    <script type="text/javascript" src="/m/js/autofocus.js"></script>
+    <script type="text/javascript" src="/m/js/jquery.maskMoney.js"></script>
+    <script type="text/javascript" src="/m/js/dinheiro.js"></script>
+{% endblock %}
+
+{% block form %}
+        {% if erro %}
+            <div class="error">{{ erro }}</div>
+        {% endif %}
+        <form id="editar_venda" class="info" name="editar_venda_form" action="" method="POST">
+            <a href="{{ dia.get_absolute_url }}" title="Fechar" class="fechar">x</a>
+
+            <h3>Editar Venda</h3>
+
+            <span id="mesa"{% if form_venda.mesa.errors %} class="error"{% endif %}>
+                {{ form_venda.mesa.label_tag }} {{ form_venda.mesa }}
+            </span>
+            <span id="hora_entrada"{% if form_venda.hora_entrada.errors %} class="error"{% endif %}>
+                <label for="id_hora_entrada">Entrada</label> {{ form_venda.hora_entrada|default:"00:00"|time:"H:i" }}
+            </span>
+            <span id="num_pessoas"{% if form_venda.num_pessoas.errors %} class="error"{% endif %}>
+                {{ form_venda.num_pessoas.label_tag }} {{ form_venda.num_pessoas }}
+            </span>
+            <span id="categoria"{% if form_venda.categoria.errors %} class="error"{% endif %}>
+                    {{ form_venda.categoria.label_tag }} {{ form_venda.categoria }}
+            </span>
+            <span id="cidade_de_origem"{% if form_venda.cidade_de_origem.errors %} class="error"{% endif %}>
+                {{ form_venda.cidade_de_origem.label_tag }} {{ form_venda.cidade_de_origem }}
+            </span>
+            <span id="pousada_que_indicou"{% if form_venda.pousada_que_indicou.errors %} class="error"{% endif %}>
+                {{ form_venda.pousada_que_indicou.label_tag }} {{ form_venda.pousada_que_indicou }}
+            </span>
+
+            <br />
+
+            <span id="hora_saida"{% if form_venda.hora_saida.errors %} class="error"{% endif %}>
+                {{ form_venda.hora_saida.label_tag }} {{ form_venda.hora_saida }}
+            </span>
+            <span id="conta" class="dinheiro{% if form_venda.conta.errors %} error{% endif %}">
+                <label for="id_conta">Entrada</label> {{ form_venda.conta }}
+            </span>
+            <span id="gorjeta"{% if form_venda.gorjeta.errors %} class="error"{% endif %}>
+                {{ form_venda.gorjeta.label_tag }} {{ form_venda.gorjeta }}
+            </span>
+            <span id="pgto_dinheiro" class="dinheiro{% if form_venda.pgto_dinheiro.errors %} error{% endif %}">
+                    {{ form_venda.pgto_dinheiro.label_tag }} {{ form_venda.pgto_dinheiro}}
+            </span>
+            <span id="pgto_cheque" class="dinheiro{% if form_venda.pgto_cheque.errors %} error{% endif %}">
+                {{ form_venda.pgto_cheque.label_tag }} {{ form_venda.pgto_cheque }}
+            </span>
+
+            <p><input type="submit" name="editar_venda" value="Salvar" /></p>
+
+            {% if pgtos_cartao %}
+                <table id="pgtos_cartao" class="tablesorter">
+                <caption>Pagamentos com Cartão</caption>
+                <tbody>
+                {% for pgto_cartao in pgtos_cartao %}
+                    <tr>
+                        <td>{{ pgto_cartao.valor|colorir_num }}</td>
+                        <td>{{ pgto_cartao.bandeira }}</td>
+                        <td>{{ pgto_cartao.get_categoria_display }}</td>
+                        <td><a href="{{ pgto_cartao.get_absolute_url }}remover">Remover</a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td>{{ form_cartao.valor }}</td>
+                        <td>{{ form_cartao.bandeira }}</td>
+                        <td>{{ form_cartao.categoria }}</td>
+                        <td><input type="submit" name="adicionar_pgto_cartao" value="Adicionar" /></td>
+                    </tr>
+                </tfoot>
+                </table>
+            {% endif %}
+        </form>
+{% endblock %}

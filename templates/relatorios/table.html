@@ -1,0 +1,40 @@
+{% extends "relatorios/base.html" %}
+{% load vestat_extras %}
+
+{% block head %}
+    {{ block.super }}
+    <script type="text/javascript" src="/m/js/jquery.js"></script>
+{% endblock %}
+
+{% block content %}
+    <form id="filtro_form" name="filtro">
+        <span{% if filtro_form.de.errors %} class="error"{% endif %}>{{ filtro_form.de.label_tag }} {{ filtro_form.de }}</span>
+        <span{% if filtro_form.ateh.errors %} class="error"{% endif %}>{{ filtro_form.ateh.label_tag }} {{ filtro_form.ateh }}</span>
+        <input type="submit" name="html" value="Filtrar">
+        <input type="submit" name="csv" value="Exportar pra CSV">
+    </form>
+
+    {% for table in tables %}
+        <h2>{{ table.title }}</h2>
+        <table>
+            <thead>
+                <tr>
+                {% for header in table.headers %}
+                    <th>{{ header }}</th>
+                {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in table.body %}
+                <tr>
+                    {% for data in row %}
+                    <td>
+                        {{ data }}
+                    </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
+{% endblock %}
