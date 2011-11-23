@@ -1,6 +1,12 @@
+# -*- encoding: utf-8 -*-
 import os.path
 import shutil
 import sys
+
+import settings
+from django.core.management import setup_environ
+setup_environ(settings)
+from django.conf import settings
 
 DIRETORIO_DE_INSTALACAO = "C:\\vestat"
 ARQUIVOS = (
@@ -8,7 +14,7 @@ ARQUIVOS = (
               "middleware.py", "settings.py", "urls.py", "views.py", "__init__.py"],
               "vestat"),
             
-            (["trecos\\Python27", "trecos\\iniciar_servidor.bat",
+            (["etc\\Python27", "trecos\\iniciar_servidor.bat",
               "trecos\\vestat.py"], "")
             )
 

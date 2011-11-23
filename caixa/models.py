@@ -12,7 +12,7 @@ from django.db.models.query_utils import Q
 from django.conf import settings
 from django.core import serializers
 import operator
-    
+
 MESES = ['janeiro', 'fevereiro', 'março', 'abril',
      'maio', 'junho', 'julho', 'agosto',
      'setembro', 'outubro', 'novembro',
@@ -72,17 +72,25 @@ class Dia(models.Model):
     def _anos(cls, objects=None):
         """Retorna um set com todos os anos (como string) de objetos Dia"""
 
-        if not objects: objects = Dia.objects.all()
-        return set([dia.data.year for dia in objects])
+        if objects is None: objects = Dia.objects.all()
+        return sorted(set([dia.data.year for dia in objects]))
 
     @classmethod
     def _meses(cls, ano, objects=None):
         """Retorna um set com todos os meses (como string) de objetos
         Dia do ano `ano`"""
 
-        if not objects: objects = Dia.objects.all()
+        if objects is None: objects = Dia.objects.all()
         objects = objects.filter(data__year=ano)
-        return set([dia.data.month for dia in objects])
+        return sorted(set([dia.data.month for dia in objects]))
+
+    @classmethod
+    def _dias(cls, ano, mes, objects=None):
+        """Retorna todos os dias (como string) de objetos
+        Dia do ano `ano` e mês `mes`"""
+
+        if objects is None: objects = Dia.objects.all()
+        return objects.filter(data__year=ano, data__month=mes)
     
     @classmethod
     def exportar(cls, format="json"):
@@ -115,7 +123,7 @@ class Dia(models.Model):
 
     @classmethod
     def permanencia_total(cls, objects=None):
-        if not objects: objects = Dia.objects.all()
+        if objects is None: objects = Dia.objects.all()
         objects = objects.filter(venda__fechada=True)
         perm = objects.aggregate(Sum('venda__permanencia'))['venda__permanencia__sum']
         return secs_to_time_str(float(perm))
@@ -123,7 +131,7 @@ class Dia(models.Model):
 
     @classmethod
     def permanencia_media_total(cls, objects=None):
-        if not objects: objects = Dia.objects.all()
+        if objects is None: objects = Dia.objects.all()
         objects = objects.filter(venda__fechada=True)
         perm = objects.aggregate(Sum('venda__permanencia'))['venda__permanencia__sum']
         if perm:
@@ -139,7 +147,7 @@ class Dia(models.Model):
 
     @classmethod
     def caixa_total(cls, objects=None):
-        if not objects: objects = Dia.objects.all()
+        if objects is None: objects = Dia.objects.all()
         objects = objects.filter(venda__fechada=True)
         dinheiro = objects.aggregate(Sum('venda__pgto_dinheiro'))['venda__pgto_dinheiro__sum']
         cheque = objects.aggregate(Sum('venda__pgto_cheque'))['venda__pgto_cheque__sum']
@@ -222,18 +230,42 @@ class Dia(models.Model):
 
     @classmethod
     def despesas_de_caixa_total(cls, objects=None):
-        if not objects: objects = Dia.objects.all()
+        if objects is None: objects = Dia.objects.all()
         despesas_de_caixa = objects.aggregate(Sum('despesadecaixa__valor'))['despesadecaixa__valor__sum']
         return despesas_de_caixa if despesas_de_caixa else 0
     
     @classmethod
     def movimentacoes_bancarias_total(cls, objects=None):
-        if not objects: objects = Dia.objects.all()
+        if objects is None: objects = Dia.objects.all()
         movbancarias = objects.aggregate(Sum('movimentacaobancaria__valor'))['movimentacaobancaria__valor__sum']
+        return movbancarias if movbancarias else 0
+    
+    @classmethod
+    def debitos_bancarios_total(cls, objects=None):
+        if objects is None: objects = Dia.objects.all()
+        movbancarias = objects.filter(movimentacaobancaria__valor__lt=0).\
+                        aggregate(Sum('movimentacaobancaria__valor'))['movimentacaobancaria__valor__sum']
+        return movbancarias if movbancarias else 0
+    
+    @classmethod
+    def creditos_bancarios_total(cls, objects=None):
+        if objects is None: objects = Dia.objects.all()
+        movbancarias = objects.filter(movimentacaobancaria__valor__gt=0).\
+                        aggregate(Sum('movimentacaobancaria__valor'))['movimentacaobancaria__valor__sum']
         return movbancarias if movbancarias else 0
     
     def movimentacoes_bancarias(self):
         movbancarias = self.movimentacaobancaria_set.aggregate(Sum('valor'))['valor__sum']
+        return movbancarias if movbancarias else 0
+    
+    def debitos_bancarios(self):
+        movbancarias = self.movimentacaobancaria_set.filter(valor__lt=0).\
+                        aggregate(Sum('valor'))['valor__sum']
+        return movbancarias if movbancarias else 0
+    
+    def creditos_bancarios(self):
+        movbancarias = self.movimentacaobancaria_set.filter(valor__gt=0).\
+                        aggregate(Sum('valor'))['valor__sum']
         return movbancarias if movbancarias else 0
     
     def ajustes_de_caixa(self):
@@ -257,7 +289,7 @@ class Dia(models.Model):
         """Retorna o total de despesas de `objects`, ou de
         todos os objetos Dia, se `objects` não for dado"""
 
-        if not objects: objects = Dia.objects.all()
+        if objects is None: objects = Dia.objects.all()
 
         despesas_de_caixa = Dia.despesas_de_caixa_total(objects)
         despesas_bancarias =  objects.filter(movimentacaobancaria__valor__lt=0).aggregate(Sum('movimentacaobancaria__valor'))['movimentacaobancaria__valor__sum']
