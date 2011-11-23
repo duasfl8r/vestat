@@ -1,0 +1,41 @@
+{% extends "relatorios/base.html" %}
+{% load vestat_extras %}
+{% load i18n %}
+
+{% block content %}
+
+<form id="filtro_form">
+    {{ filter_form.as_p }}
+    <input type="submit" value="Filtrar">
+</form>
+
+{{ report.tables.json }}
+
+{% for table in report.tables %}
+    <table>
+        <colgroup>
+        {% for field in table.fields %}
+                <col class="{{ field.classes|join:" " }}" />
+        {% endfor %}
+        </colgroup>
+        <thead>
+            <tr>
+            {% for field in table.fields %}
+                        <th>{{ field.header }}</th>
+            {% endfor %}
+            </tr>
+        </thead>
+        <thead>
+        <tbody>
+        {% for row in table %}
+                <tr>
+            {% for elem in row %}
+                    <td>{{ elem }}</td>
+            {% endfor %}
+                </tr>
+        {% endfor %}
+        </tbody>
+        </thead>
+    </table>
+{% endfor %}
+{% endblock %}

@@ -5,6 +5,7 @@ import datetime
 from vestat.caixa.models import *
 from vestat.settings import *
 from vestat.relatorios.forms import *
+from vestat.relatorios.reports import Table, Report, AnoFilterForm, TableField
 
 from django.shortcuts import redirect, render_to_response
 from django.template import RequestContext
@@ -21,31 +22,53 @@ def somar_dict(accum, key, d):
         accum[key] = d
 
 def anual(request):
-    filtro_form = RelatorioAnualForm(request.GET)
+    def feed_function(self, data):
+        for ano in Dia._anos(data):
+            for mes in Dia._meses(ano, data):
+                dias = Dia._dias(ano, mes, data)
+                self.append(["%04d-%02d" % (ano, mes),              # mes
+                             Dia.num_pessoas_total(dias),           # num pessoas
+                             Dia.vendas_total(dias),                # vendas
+                             Dia.permanencia_media_total(dias),     # permanencia medi
+                             Dia.faturamento_total(dias),           # faturamento
+                             Dia.despesas_de_caixa_total(dias),     # desp cx
+                             Dia.debitos_bancarios_total(dias),     # banco
+                             Dia.resultado_total(dias),             # resultado
+                             Dia.captacao_por_pessoa_total(dias),   # per capita
+                             Dia.gorjeta_total(dias),               # 10%
+                             ])
 
-    if filtro_form.is_valid():
-        ano = filtro_form.cleaned_data.get("ano")
+            self = self.sort(0)
 
-        anos = Dia.estruturar_dias()
-        if int(ano) in anos:
-            ano_estrutura = anos[int(ano)]
-        else:
-            ano_estrutura = { "nome": ano,
-                              "faturamento": 0, "faturamento_acumulado": 0,
-                              "despesas": 0, "despesas_acumulado": 0,
-                              "resultado": 0, "resultado_acumulado": 0,
-                              "meses": []}
+    table = Table(fields=[
+                TableField("Mês"),
+                TableField("Pessoas", slug="num_pessoas", classes=["number"]),
+                TableField("Vendas", classes=["number"]),
+                TableField("Perm Média", slug="permanencia_media", classes=["time"]),
+                TableField("Faturamento", classes=["currency"]),
+                TableField("Desp Cx", slug="despesas_de_caixa", classes=["currency"]),
+                TableField("Desp Banco", slug="debitos_bancarios", classes=["currency"]),
+                TableField("Resultado", slug="resultado", classes=["currency"]),
+                TableField("Per Capita", slug="per_capita", classes=["currency"]),
+                TableField("10%", slug="gorjeta", classes=["currency"]),
+            ],
+            feed=feed,
+    )
 
-        titulo = "Relatório anual: " + str(ano)
+    filter_form = AnoFilterForm(data=request.GET, datefield_name="data")
 
+    if filter_form.is_valid():
+        report = Report(data=Dia.objects.all(), filters=[filter_form], tables=[table])
+        title = "Relatório anual: " + str(filter_form.cleaned_data.get("ano"))
     else:
-        ano_estrutura = None
-        titulo = "Ano inválido"
+        report = None
+        title = "Ano inválido"
 
-    return render_to_response('relatorios/anual.html', {
-                              'title': titulo,
-                              'ano': ano_estrutura,
-                              'filtro_form': filtro_form,
+
+    return render_to_response('relatorios/report.html', {
+                              'report': report,
+                              'title': title,
+                              'filter_form': filter_form,
                               'voltar_link': '/relatorios/',
                               'voltar_label': 'Relatórios',
                              },
