@@ -3,6 +3,7 @@ import csv
 import datetime
 
 from vestat.caixa.models import *
+from vestat.caixa.templatetags.vestat_extras import colorir_num
 from vestat.settings import *
 from vestat.relatorios.forms import *
 from vestat.relatorios.reports import Table, Report, AnoFilterForm, TableField
@@ -22,20 +23,20 @@ def somar_dict(accum, key, d):
         accum[key] = d
 
 def anual(request):
-    def feed_function(self, data):
+    def process_data(self, data):
         for ano in Dia._anos(data):
             for mes in Dia._meses(ano, data):
                 dias = Dia._dias(ano, mes, data)
                 self.append(["%04d-%02d" % (ano, mes),              # mes
                              Dia.num_pessoas_total(dias),           # num pessoas
-                             Dia.vendas_total(dias),                # vendas
+                             colorir_num(Dia.vendas_total(dias)),                # vendas
                              Dia.permanencia_media_total(dias),     # permanencia medi
-                             Dia.faturamento_total(dias),           # faturamento
-                             Dia.despesas_de_caixa_total(dias),     # desp cx
-                             Dia.debitos_bancarios_total(dias),     # banco
-                             Dia.resultado_total(dias),             # resultado
-                             Dia.captacao_por_pessoa_total(dias),   # per capita
-                             Dia.gorjeta_total(dias),               # 10%
+                             colorir_num(Dia.faturamento_total(dias)),           # faturamento
+                             colorir_num(Dia.despesas_de_caixa_total(dias)),     # desp cx
+                             colorir_num(Dia.debitos_bancarios_total(dias)),     # banco
+                             colorir_num(Dia.resultado_total(dias)),             # resultado
+                             colorir_num(Dia.captacao_por_pessoa_total(dias)),   # per capita
+                             colorir_num(Dia.gorjeta_total(dias)),               # 10%
                              ])
 
             self = self.sort(0)
@@ -52,7 +53,7 @@ def anual(request):
                 TableField("Per Capita", slug="per_capita", classes=["currency"]),
                 TableField("10%", slug="gorjeta", classes=["currency"]),
             ],
-            feed=feed,
+            process_data=process_data,
     )
 
     filter_form = AnoFilterForm(data=request.GET, datefield_name="data")

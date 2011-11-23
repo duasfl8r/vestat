@@ -48,7 +48,7 @@ class Table(tablib.Dataset):
 
         super(Table, self).__init__(*args, **kwargs)
         self.fields = fields
-        self._process_data = process_data
+        self._process_data = types.MethodType(process_data, self, Table)
         self.headers = [f.header for f in self.fields]
 
     def process_data(self, *args, **kwargs):
@@ -124,7 +124,7 @@ class Report():
             table.wipe()
             table.headers = headers
 
-            table.feed(self.filtered_data)
+            table.process_data(self.filtered_data)
 
 
 
