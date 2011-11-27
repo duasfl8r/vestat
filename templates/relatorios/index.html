@@ -22,7 +22,7 @@
     <form action="anual/" name="relatorio_anual">
         <p>Consolida os dias de trabalho de um ano, dividindo-os em meses e fornecendo valores totais e acumulados.</p>
         <p>
-            {{ relatorio_anual_form.ano.label_tag }} {{ relatorio_anual_form.ano }}
+            {{ ano_filter_form.ano.label_tag }} {{ ano_filter_form.ano }}
             <input type="submit" value="Gerar">
         </p>
     </form>
@@ -35,6 +35,18 @@
         <p>
             {{ relatorio_simples_form.de.label_tag }} {{ relatorio_simples_form.de }}
             {{ relatorio_simples_form.ateh.label_tag }} {{ relatorio_simples_form.ateh }}
+            <input type="submit" value="Gerar">
+        </p>
+    </form>
+
+    <hr />
+
+    <h2>Relatório de Despesas</h2>
+    <form action="despesas/" name="relatorio_despesas">
+        <p>Lista despesas</p>
+        <p>
+            {{ date_filter_form.from_date.label_tag }} {{ date_filter_form.from_date }}
+            {{ date_filter_form.to_date.label_tag }} {{ date_filter_form.to_date }}
             <input type="submit" value="Gerar">
         </p>
     </form>

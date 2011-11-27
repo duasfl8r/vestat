@@ -4,12 +4,14 @@
 
 {% block content %}
 
-<form id="filtro_form">
-    {{ filter_form.as_p }}
-    <input type="submit" value="Filtrar">
-</form>
-
-{{ report.tables.json }}
+<p>
+    <form id="filtro_form">
+        {% for field in filter_form %}
+            {{ field.label_tag }} {{ field }}
+        {% endfor %}
+        <input type="submit" value="Filtrar">
+    </form>
+</p>
 
 {% for table in report.tables %}
     <table>
@@ -30,7 +32,7 @@
         {% for row in table %}
                 <tr>
             {% for elem in row %}
-                    <td>{{ elem }}</td>
+                    <td>{{ elem|safe }}</td>
             {% endfor %}
                 </tr>
         {% endfor %}

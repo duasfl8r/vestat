@@ -6,7 +6,7 @@ from vestat.caixa.models import *
 from vestat.caixa.templatetags.vestat_extras import colorir_num
 from vestat.settings import *
 from vestat.relatorios.forms import *
-from vestat.relatorios.reports import Table, Report, AnoFilterForm, TableField
+from vestat.relatorios.reports import Table, Report, AnoFilterForm, DateFilterForm, TableField
 
 from django.shortcuts import redirect, render_to_response
 from django.template import RequestContext
@@ -64,6 +64,49 @@ def anual(request):
     else:
         report = None
         title = "Ano inválido"
+
+
+    return render_to_response('relatorios/report.html', {
+                              'report': report,
+                              'title': title,
+                              'filter_form': filter_form,
+                              'voltar_link': '/relatorios/',
+                              'voltar_label': 'Relatórios',
+                             },
+                             context_instance=RequestContext(request))
+def lista_despesas(request):
+    def process_data(self, data):
+        def make_row(dia, despesa, tipo):
+            return ["<a href=\"%s\">%02d/%02d/%04d</a>" % (dia.get_absolute_url(),
+                                                           dia.data.day, dia.data.month,
+                                                           dia.data.year),
+                    colorir_num(despesa.valor),
+                    despesa.get_categoria_display(),
+                    tipo]
+
+        for dia in data.order_by("data"):
+            for despesa_cx in dia.despesadecaixa_set.all():
+                self.append(make_row(dia, despesa_cx, "Caixa"))
+            for despesa_bc in dia.movimentacaobancaria_set.filter(valor__lt=0):
+                self.append(make_row(dia, despesa_bc, "Banco"))
+
+    table = Table(fields=[
+                TableField("Dia"),
+                TableField("Valor", classes=["currency"]),
+                TableField("Categoria"),
+                TableField("C/B?"),            ],
+            process_data=process_data,
+    )
+
+    filter_form = DateFilterForm(data=request.GET, datefield_name="data")
+
+    if filter_form.is_valid():
+        report = Report(data=Dia.objects.all(), filters=[filter_form], tables=[table])
+        title = "Despesas: %s - %s" % (str(filter_form.cleaned_data.get("from_date")),
+                                       str(filter_form.cleaned_data.get("to_date")))
+    else:
+        report = None
+        title = "Período inválido"
 
 
     return render_to_response('relatorios/report.html', {
@@ -350,13 +393,21 @@ def index(request):
     hoje = datetime.date.today()
     inicio_do_mes = datetime.date(hoje.year, hoje.month, 1)
     
-    relatorio_simples_form = RelatorioSimplesForm({'de': inicio_do_mes.strftime("%d/%m/%y"),
-                                                   'ateh': hoje.strftime("%d/%m/%y"), })
+    relatorio_simples_form = RelatorioSimplesForm({'de': inicio_do_mes.strftime("%d/%m/%Y"),
+                                                   'ateh': hoje.strftime("%d/%m/%Y"), })
     relatorio_anual_form = RelatorioAnualForm({ 'ano': hoje.year, })
+    ano_filter_form = AnoFilterForm(initial={"ano": hoje.strftime("%Y")}, datefield_name="data")
+    date_filter_form = DateFilterForm(initial={
+                                        "from_date": inicio_do_mes.strftime("%d/%m/%Y"),
+                                        "to_date": hoje.strftime("%d/%m/%Y"),
+                                      }, datefield_name="data")
+
     return render_to_response('relatorios/index.html', {
                                 'title': "Relatórios",
                                 'relatorio_simples_form': relatorio_simples_form,
                                 'relatorio_anual_form': relatorio_anual_form,
+                                'ano_filter_form': ano_filter_form,
+                                'date_filter_form': date_filter_form,
                                   'voltar_link': '/',
                                   'voltar_label': 'Módulos',
                              },

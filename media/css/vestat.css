@@ -160,6 +160,8 @@ form #id_ano { width: 50px; }
 form #id_de { width: 70px; }
 form #id_ateh { width: 70px; }
 
+form .data { width: 70px; }
+
 form #id_mesa { width: 30px; }
 form #id_hora_entrada { width: 50px; }
 form #id_num_pessoas { width: 30px; }
