@@ -15,6 +15,7 @@ class PermanenciaTestCase(TestCase):
     def dummy_venda(self, hora_entrada, hora_saida):
         venda = Venda(dia=self.dia, mesa="10", hora_entrada=hora_entrada,
                       hora_saida=hora_saida, categoria="L")
+        venda.fechada = True
         venda.save()
         return venda
 
@@ -81,6 +82,7 @@ class PermanenciaTotalTestCase(TestCase):
     def dummy_venda(self, dia, hora_entrada, hora_saida):
         venda = Venda(dia=dia, mesa="10", hora_entrada=hora_entrada,
                       hora_saida=hora_saida, categoria="L")
+        venda.fechada = True
         venda.save()
         return venda
 
