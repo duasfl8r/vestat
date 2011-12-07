@@ -5,6 +5,8 @@ import random
 from django.test import TestCase
 from django.db.models import Sum, Count
 
+from django.test.client import Client
+
 from models import Dia, Venda, secs_to_time
 
 
@@ -157,3 +159,47 @@ class DiaTestCase(TestCase):
         self.assertEqual(dia_feriado.categoria_semanal(), 'feriado')
 
     
+
+
+
+class CaixaSemDiaDeTrabalhoTestCase(TestCase):
+    def setUp(self):
+        self.c = Client()
+        self.resp = self.c.get("/caixa/", follow=True)
+
+    def test_retornou_200(self):
+        self.assertEqual(self.resp.status_code, 200)
+
+    def test_sem_dia_de_trabalho(self):
+        self.assertTrue("dia" not in self.resp.context)
+
+class CaixaDiaDeTrabalhoZeradoTestCase(TestCase):
+    def setUp(self):
+        self.c = Client()
+        self.url_hoje = "/caixa/2011/12/07/"
+        self.resp = self.c.get(self.url_hoje + "criar", follow=True)
+
+    def test_retornou_200(self):
+        self.assertEqual(self.resp.status_code, 200)
+
+    def test_tem_dia(self):
+        self.assertTrue("dia" in self.resp.context)
+
+    def test_dia_vazio_caixa_0(self):
+        self.assertEqual(self.resp.context["dia"].caixa_de_hoje(), 0)
+
+    def test_gorjeta_inicial_1142(self):
+        self.assertEqual(self.resp.context["dia"].gorjeta_descontada_de_hoje(), 1142.0)
+
+    def test_nao_eh_feriado(self):
+        self.assertEqual(self.resp.context["dia"].feriado, False)
+
+    def test_virar_feriado(self):
+        resp = self.c.post(self.url_hoje, { "feriado": True })
+        self.assertEqual(resp.context["dia"].feriado, True)
+
+    def test_remover_dia(self):
+        resp = self.c.get(self.url_hoje + "remover", follow=True)
+        self.assertTrue("dia" not in resp.context)
+
+
