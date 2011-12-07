@@ -1,10 +1,26 @@
 # -*- encoding: utf8 -*-
 import datetime
+import random
 
 from django.test import TestCase
 from django.db.models import Sum, Count
 
 from models import Dia, Venda, secs_to_time
+
+
+def random_date(year=None, month=None, day=None):
+    """Returns a random `datetime.date` object, with fixed `year`,
+    `month` or `day`."""
+
+    year = year or random.randint(2008, 2011)
+    month = month or random.randint(1, 12)
+    day = day or random.randint(1, 31)
+
+    while True:
+        try:
+            return datetime.date(year, month, day)
+        except ValueError:
+            day -= 1
 
 class PermanenciaTestCase(TestCase):
     def setUp(self):
@@ -124,3 +140,20 @@ class PermanenciaTotalTestCase(TestCase):
     def test_permanencia_media_total(self):
         self.assertEqual(Dia.permanencia_media_total(), datetime.time(3))
 
+
+class DiaTestCase(TestCase):
+    def test_categoria_semanal_semana(self):
+        dias = [ ((2011, 11, 23), "semana"),
+                 ((2011, 11, 25), "sexta"),
+                 ((2011, 11, 26), "sabado"),
+                 ((2011, 11, 27), "domingo"),
+        ]
+
+        for data, resultado in dias:
+            dia = Dia(data=datetime.datetime(*data))
+            self.assertEqual(dia.categoria_semanal(), resultado)
+
+        dia_feriado = Dia(feriado=True)
+        self.assertEqual(dia_feriado.categoria_semanal(), 'feriado')
+
+    
