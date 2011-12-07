@@ -66,6 +66,18 @@ def anual(request):
         title = "Ano inválido"
 
 
+    if "csv" in request.GET:
+        response = render_to_response('relatorios/report_csv.html', {
+                              'report': report,
+                              'title': title,
+                             },
+                             context_instance=RequestContext(request),
+                             mimetype="text/csv")
+
+        response['Content-Disposition'] = 'attachment; filename=anual.csv'
+        return response
+
+
     return render_to_response('relatorios/report.html', {
                               'report': report,
                               'title': title,
@@ -97,7 +109,7 @@ def lista_despesas(request):
                 TableField("C/B?"),            ],
             process_data=process_data,
     )
-
+    
     filter_form = DateFilterForm(data=request.GET, datefield_name="data")
 
     if filter_form.is_valid():
@@ -107,6 +119,17 @@ def lista_despesas(request):
     else:
         report = None
         title = "Período inválido"
+
+    if "csv" in request.GET:
+        response = render_to_response('relatorios/report_csv.html', {
+                              'report': report,
+                              'title': title,
+                             },
+                             context_instance=RequestContext(request),
+                             mimetype="text/csv")
+
+        response['Content-Disposition'] = 'attachment; filename=despesas.csv'
+        return response
 
 
     return render_to_response('relatorios/report.html', {
@@ -275,17 +298,24 @@ def pgtos_por_bandeira(dias):
 def despesas_por_categoria(dias):
     despesas = DespesaDeCaixa.objects.filter(dia__in=dias)
     agrupado = despesas.values("categoria")
-    dados = agrupado.annotate(despesas=Count("id"),
+    dados1 = agrupado.annotate(despesas=Count("id"),
                               total=Sum("valor"))
+
+    despesas = MovimentacaoBancaria.objects.filter(dia__in=dias, valor__lt=0)
+    agrupado = despesas.values("categoria")
+    dados2 = agrupado.annotate(despesas=Count("id"),
+                              total=Sum("valor"))
+
     headers = ("categoria", "despesas", "total")
 
-    body = [[row[col] for col in headers] for row in dados]
+    body = [[row[col] for col in headers] for row in dados1]
+    body += [[row[col] for col in headers] for row in dados2]
 
     for row in body:
         row[0] = dict(DespesaDeCaixa.CATEGORIA_CHOICES)[row[0]]
 
     return {
-             "title": "Despesas de caixa por categoria",
+             "title": "Despesas por categoria",
              "headers": headers,
              "body": body
            }
@@ -344,7 +374,6 @@ def view_relatorio(request, titulo, tablemakers):
                              mimetype="text/csv")
 
         response['Content-Disposition'] = 'attachment; filename=dados_por_mesa.csv'
-        print response['Content-Type']
         return response
 
 

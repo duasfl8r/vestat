@@ -53,33 +53,21 @@
 
     <hr />
 
+    <h2>Relatório de Despesas agrupadas por categoria</h2>
+    <form action="despesas_por_categoria/" name="relatorio_cartao">
+        <p>Mostra despesas agrupadas por categoria</p>
+        <p>
+            {{ relatorio_simples_form.de.label_tag }} {{ relatorio_simples_form.de }}
+            {{ relatorio_simples_form.ateh.label_tag }} {{ relatorio_simples_form.ateh }}
+            <input type="submit" value="Gerar">
+        </p>
+    </form>
+
+    <hr />
+
     <h2>Relatório de Cartões</h2>
     <form action="pgtos_por_bandeira/" name="relatorio_cartao">
         <p>Mostra pagamentos com cartão de crédito agrupados por bandeira e categoria (crédito / débito)</p>
-        <p>
-            {{ relatorio_simples_form.de.label_tag }} {{ relatorio_simples_form.de }}
-            {{ relatorio_simples_form.ateh.label_tag }} {{ relatorio_simples_form.ateh }}
-            <input type="submit" value="Gerar">
-        </p>
-    </form>
-
-    <hr />
-
-    <h2>Relatório de Despesas de Caixa</h2>
-    <form action="despesas_por_categoria/" name="relatorio_cartao">
-        <p>Mostra despesas de caixa agrupadas por categoria</p>
-        <p>
-            {{ relatorio_simples_form.de.label_tag }} {{ relatorio_simples_form.de }}
-            {{ relatorio_simples_form.ateh.label_tag }} {{ relatorio_simples_form.ateh }}
-            <input type="submit" value="Gerar">
-        </p>
-    </form>
-
-    <hr />
-
-    <h2>Relatório de Movimentações bancárias</h2>
-    <form action="movbancarias_por_categoria/" name="relatorio_cartao">
-        <p>Mostra movimentações bancárias agrupadas por categoria</p>
         <p>
             {{ relatorio_simples_form.de.label_tag }} {{ relatorio_simples_form.de }}
             {{ relatorio_simples_form.ateh.label_tag }} {{ relatorio_simples_form.ateh }}

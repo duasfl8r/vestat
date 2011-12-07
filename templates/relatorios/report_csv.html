@@ -1,0 +1,6 @@
+{{ title }}
+{% for table in report.tables %}
+{% for field in table.fields %}{{ field.header }}{% if not forloop.last %}; {% endif %}{% endfor %}
+{% for row in table %}{% for elem in row %}{{ elem|striptags|safe }}{% if not forloop.last %}; {% endif %}{% endfor %}
+{% endfor %}
+{% endfor %}
