@@ -679,16 +679,27 @@ class DespesaDeCaixa(models.Model):
         verbose_name_plural = "Despesas de caixa"
 
     CATEGORIA_CHOICES = (
-        ('G', '10%'),
         ('A', 'Aluguel'),
+        ('C', 'Contador'),
+        ('E', 'Energia'),
         ('F', 'Fornecedor'),
+        ('L', 'Fornecedores - Alemães'),
+        ('Ç', 'Fornecedores - Açougue'),
+        ('Y', 'Fornecedores - Mercearia'),
+        ('V', 'Fornecedores - Vinho'),
         ('I', 'Impostos'),
+        ('P', 'Manutenção Predial'),
         ('M', 'Marketing'),
         ('O', 'Outros'),
-        ('P', 'Pessoal'),
+        ('G', 'Pessoal - 10%'),
+        ('X', 'Pessoal - Extra'),
+        ('P', 'Pessoal - Salário'),
         ('S', 'Prestação de serviço'),
+        ('U', 'Reposição Utensílios'),
         ('R', 'Retirada'),
+        ('B', 'Tarifas Bancárias'),
         ('T', 'Taxas'),
+        ('N', 'Telefone')
     )
 
     dia = models.ForeignKey('Dia', editable=False)
@@ -714,15 +725,27 @@ class MovimentacaoBancaria(models.Model):
         verbose_name_plural = "Movimentações bancárias"
 
     CATEGORIA_CHOICES = (
-        ('G', '10%'),
         ('A', 'Aluguel'),
+        ('C', 'Contador'),
+        ('E', 'Energia'),
         ('F', 'Fornecedor'),
+        ('L', 'Fornecedores - Alemães'),
+        ('Ç', 'Fornecedores - Açougue'),
+        ('Y', 'Fornecedores - Mercearia'),
+        ('V', 'Fornecedores - Vinho'),
+        ('I', 'Impostos'),
+        ('P', 'Manutenção Predial'),
         ('M', 'Marketing'),
         ('O', 'Outros'),
-        ('P', 'Pessoal'),
+        ('G', 'Pessoal - 10%'),
+        ('X', 'Pessoal - Extra'),
+        ('P', 'Pessoal - Salário'),
         ('S', 'Prestação de serviço'),
+        ('U', 'Reposição Utensílios'),
         ('R', 'Retirada'),
+        ('B', 'Tarifas Bancárias'),
         ('T', 'Taxas'),
+        ('N', 'Telefone')
     )
 
     dia = models.ForeignKey('Dia', editable=False)
