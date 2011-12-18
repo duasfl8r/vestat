@@ -1,6 +1,7 @@
 # -*- encoding: utf8 -*-
 import datetime
 import random
+from decimal import Decimal
 
 from django.test import TestCase
 from django.db.models import Sum, Count
@@ -158,48 +159,194 @@ class DiaTestCase(TestCase):
         dia_feriado = Dia(feriado=True)
         self.assertEqual(dia_feriado.categoria_semanal(), 'feriado')
 
-    
-
 
 
 class CaixaSemDiaDeTrabalhoTestCase(TestCase):
     def setUp(self):
         self.c = Client()
-        self.resp = self.c.get("/caixa/", follow=True)
+        self.response = self.c.get("/caixa/", follow=True)
 
     def test_retornou_200(self):
-        self.assertEqual(self.resp.status_code, 200)
+        self.assertEqual(self.response.status_code, 200)
 
     def test_sem_dia_de_trabalho(self):
-        self.assertTrue("dia" not in self.resp.context)
+        self.assertTrue("dia" not in self.response.context)
 
 class CaixaDiaDeTrabalhoZeradoTestCase(TestCase):
     def setUp(self):
         self.c = Client()
         self.url_hoje = "/caixa/2011/12/07/"
-        self.resp = self.c.get(self.url_hoje + "criar", follow=True)
+        self.response = self.c.get(self.url_hoje + "criar", follow=True)
 
     def test_retornou_200(self):
-        self.assertEqual(self.resp.status_code, 200)
+        self.assertEqual(self.response.status_code, 200)
 
     def test_tem_dia(self):
-        self.assertTrue("dia" in self.resp.context)
+        self.assertTrue("dia" in self.response.context)
 
     def test_dia_vazio_caixa_0(self):
-        self.assertEqual(self.resp.context["dia"].caixa_de_hoje(), 0)
+        self.assertEqual(self.response.context["dia"].caixa_de_hoje(), 0)
 
     def test_gorjeta_inicial_1142(self):
-        self.assertEqual(self.resp.context["dia"].gorjeta_descontada_de_hoje(), 1142.0)
+        self.assertEqual(self.response.context["dia"].gorjeta_descontada_de_hoje(), 1142.0)
 
     def test_nao_eh_feriado(self):
-        self.assertEqual(self.resp.context["dia"].feriado, False)
+        self.assertEqual(self.response.context["dia"].feriado, False)
 
     def test_virar_feriado(self):
-        resp = self.c.post(self.url_hoje, { "feriado": True })
-        self.assertEqual(resp.context["dia"].feriado, True)
+        response = self.c.post(self.url_hoje, { "feriado": True })
+        self.assertEqual(response.context["dia"].feriado, True)
 
     def test_remover_dia(self):
-        resp = self.c.get(self.url_hoje + "remover", follow=True)
-        self.assertTrue("dia" not in resp.context)
+        response = self.c.get(self.url_hoje + "remover", follow=True)
+        self.assertTrue("dia" not in response.context)
+
+class CaixaAdicionarVendaFormTestCase(TestCase):
+    def setUp(self):
+        self.c = Client()
+        self.url_hoje = "/caixa/2011/12/07/"
+        self.c.get(self.url_hoje + "criar", follow=True)
+
+    def test_retornou_200(self):
+        response = self.c.get(self.url_hoje + "venda/adicionar")
+        self.assertEqual(response.status_code, 200)
+
+class CaixaAdicionarVendaTestCase(TestCase):
+    def setUp(self):
+        self.c = Client()
+        self.url_hoje = "/caixa/2011/12/07/"
+        self.c.get(self.url_hoje + "criar", follow=True)
+
+        self.data = {
+            "mesa": "1",
+            "hora_entrada": "23:00",
+            "num_pessoas": 5,
+            "categoria": "T",
+            "cidade_de_origem": "Rio de Janeiro",
+            "pousada_que_indicou": "Amarylis",
+        }
+        self.response = self.c.post(self.url_hoje + "venda/adicionar", self.data, follow=True)
+        self.venda = self.response.context["dia"].venda_set.all()[0]
+
+    def test_retornou_200(self):
+        self.assertEqual(self.response.status_code, 200)
+
+    def test_adicionou_venda(self):
+        self.assertEqual(len(self.response.context["dia"].venda_set.all()), 1)
+
+    def test_dados_conferem(self):
+        self.assertEqual(self.venda.mesa, self.data["mesa"])
+        hora_entrada = map(int, self.data["hora_entrada"].split(":"))
+        self.assertEqual(self.venda.hora_entrada, datetime.time(*hora_entrada))
+        self.assertEqual(self.venda.num_pessoas, self.data["num_pessoas"])
+        self.assertEqual(self.venda.categoria, self.data["categoria"])
+        self.assertEqual(self.venda.cidade_de_origem, self.data["cidade_de_origem"])
+        self.assertEqual(self.venda.pousada_que_indicou, self.data["pousada_que_indicou"])
+
+
+
+class CaixaFecharVendaSemCartaoTestCase(TestCase):
+    fixtures = ['initial_data.json']
+
+    def setUp(self):
+        self.c = Client()
+        self.url_hoje = "/caixa/2011/12/07/"
+        self.c.get(self.url_hoje + "criar", follow=True)
+
+        self.data_abrir = {
+            "mesa": "1",
+            "hora_entrada": "23:00",
+            "num_pessoas": 5,
+            "categoria": "T",
+            "cidade_de_origem": "Rio de Janeiro",
+            "pousada_que_indicou": "Amarylis",
+        }
+        response = self.c.post(self.url_hoje + "venda/adicionar", self.data_abrir, follow=True)
+        self.venda = response.context["dia"].venda_set.all()[0]
+
+        self.data_fechar = {
+                "fechar_venda": "Fechar venda",
+                "hora_saida": "00:30",
+                "conta": "190.00",
+                "gorjeta": "19.00",
+                "pgto_dinheiro": "100",
+                "pgto_cheque": "90",
+        }
+
+        self.response = self.c.post(self.venda.get_absolute_url() + "saida", self.data_fechar, follow=True)
+        self.venda = response.context["dia"].venda_set.all()[0]
+
+    def test_retornou_200(self):
+        self.assertEqual(self.response.status_code, 200)
+
+    def test_fechou_venda(self):
+        self.assertEqual(self.venda.fechada, True)
+
+    def test_dados_conferem(self):
+        self.assertEqual(self.venda.conta, Decimal(self.data_fechar["conta"]))
+        hora_saida = map(int, self.data_fechar["hora_saida"].split(":"))
+        self.assertEqual(self.venda.hora_saida, datetime.time(*hora_saida))
+        self.assertEqual(self.venda.gorjeta, Decimal(self.data_fechar["gorjeta"]))
+        self.assertEqual(self.venda.pgto_dinheiro, Decimal(self.data_fechar["pgto_dinheiro"]))
+        self.assertEqual(self.venda.pgto_cheque, Decimal(self.data_fechar["pgto_cheque"]))
+        self.assertEqual(list(self.venda.pagamentocomcartao_set.all()), [])
+
+class CaixaFecharVendaComCartaoTestCase(TestCase):
+    fixtures = ['initial_data.json']
+
+    def setUp(self):
+        self.c = Client()
+        self.url_hoje = "/caixa/2011/12/07/"
+        self.c.get(self.url_hoje + "criar", follow=True)
+
+        self.data_abrir = {
+            "mesa": "1",
+            "hora_entrada": "23:00",
+            "num_pessoas": 5,
+            "categoria": "T",
+            "cidade_de_origem": "Rio de Janeiro",
+            "pousada_que_indicou": "Amarylis",
+        }
+        response = self.c.post(self.url_hoje + "venda/adicionar", self.data_abrir, follow=True)
+        self.venda = response.context["dia"].venda_set.all()[0]
+
+        self.data_cartao = {
+                "adicionar_pgto_cartao": "Adicionar",
+                "bandeira": 1,
+                "categoria": "D",
+                "valor": "60",
+        }
+        response = self.c.post(self.venda.get_absolute_url() + "saida", self.data_cartao, follow=True)
+        print response.content
+
+        self.data_fechar = {
+                "fechar_venda": "Fechar venda",
+                "hora_saida": "00:30",
+                "conta": "190.00",
+                "gorjeta": "19.00",
+                "pgto_dinheiro": "100",
+                "pgto_cheque": "30",
+        }
+
+        self.response = self.c.post(self.venda.get_absolute_url() + "saida", self.data_fechar, follow=True)
+        self.venda = response.context["dia"].venda_set.all()[0]
+
+    def test_retornou_200(self):
+        self.assertEqual(self.response.status_code, 200)
+
+    def test_fechou_venda(self):
+        self.assertEqual(self.venda.fechada, True)
+
+    def test_dados_conferem(self):
+        self.assertEqual(self.venda.conta, Decimal(self.data_fechar["conta"]))
+        hora_saida = map(int, self.data_fechar["hora_saida"].split(":"))
+        self.assertEqual(self.venda.hora_saida, datetime.time(*hora_saida))
+        self.assertEqual(self.venda.gorjeta, Decimal(self.data_fechar["gorjeta"]))
+        self.assertEqual(self.venda.pgto_dinheiro, Decimal(self.data_fechar["pgto_dinheiro"]))
+        self.assertEqual(self.venda.pgto_cheque, Decimal(self.data_fechar["pgto_cheque"]))
+        self.assertEqual(len(self.venda.pagamentocomcartao_set.all()), 1)
+        self.assertEqual(self.venda.pagamentocomcartao_set.all()[0].valor, Decimal(self.data_cartao["valor"]))
+        self.assertEqual(self.venda.pagamentocomcartao_set.all()[0].categoria, self.data_cartao["categoria"])
+        self.assertEqual(self.venda.pagamentocomcartao_set.all()[0].bandeira.id, self.data_cartao["bandeira"])
 
 
