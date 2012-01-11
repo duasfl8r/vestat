@@ -10,7 +10,7 @@ import os.path
 BASE_DIR = os.path.join(os.getcwd())
 BANCO_DE_DADOS = os.path.join(BASE_DIR, NOME_APLICACAO + '.sqlite')
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 ADMINS = ()
 MANAGERS = ADMINS
@@ -18,6 +18,51 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
         'NAME': BANCO_DE_DADOS,                      # Or path to database file if using sqlite3.
+    }
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d \n\n%(message)s\n\n#################\n'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+
+    'handlers': {
+        'null': {
+            'level':'DEBUG',
+            'class':'django.utils.log.NullHandler',
+        },
+        'console':{
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'file':{
+            'level':'DEBUG',
+            'class':'logging.handlers.RotatingFileHandler',
+            'formatter':'verbose',
+            'filename':NOME_APLICACAO+'.log',
+            'maxBytes': 1048576,
+            'backupCount': 3,
+
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers':['console'],
+            'propagate': True,
+            'level':'INFO',
+        },
+        NOME_APLICACAO: {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+        }
     }
 }
 
@@ -51,6 +96,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'vestat.middleware.AutocreateDatabaseMiddleware',
+    'vestat.middleware.ExceptionLoggerMiddleware',
 )
 ROOT_URLCONF = 'vestat.urls'
 TEMPLATE_DIRS = (
