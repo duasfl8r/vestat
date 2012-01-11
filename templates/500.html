@@ -1,4 +1,5 @@
 {% extends "caixa/base.html" %}
+{% load vestat_extras %}
 
 {% block head %}
     <title>Erro!</title>
@@ -14,6 +15,10 @@
 
 <p>Informe o administrador, e, se possível, anote os
 passos que levaram a esse erro.</p>
+
+{% if settings %}
+<p>Detalhes técnicos do erro encontram-se no arquivo: <code>{{ settings.BASE_DIR|ospathjoin:settings.LOGGING.handlers.file.filename }}</code></p>
+{% endif %}
 
 <p><a href="/">Clique aqui para reiniciar o programa</a></p>
 </div>
