@@ -4,6 +4,7 @@ from django.utils.safestring import mark_safe
 from django.utils.numberformat import format
 from django.conf import settings
 import datetime
+import os
 
 register = template.Library()
 
@@ -35,3 +36,7 @@ def ontem(input):
 @register.filter
 def amanha(input):
     return input + UM_DIA
+
+@register.filter
+def ospathjoin(value, arg):
+    return os.path.join(value, arg)
