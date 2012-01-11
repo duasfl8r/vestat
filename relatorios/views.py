@@ -344,7 +344,6 @@ def view_relatorio(request, titulo, tablemakers):
                              mimetype="text/csv")
 
         response['Content-Disposition'] = 'attachment; filename=dados_por_mesa.csv'
-        print response['Content-Type']
         return response
 
 

@@ -317,7 +317,6 @@ class CaixaFecharVendaComCartaoTestCase(TestCase):
                 "valor": "60",
         }
         response = self.c.post(self.venda.get_absolute_url() + "saida", self.data_cartao, follow=True)
-        print response.content
 
         self.data_fechar = {
                 "fechar_venda": "Fechar venda",
