@@ -4,3 +4,4 @@
 .ropeproject
 etc/*
 script.py
+venv
