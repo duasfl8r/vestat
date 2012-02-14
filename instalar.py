@@ -2,6 +2,7 @@
 import os.path
 import shutil
 import sys
+import argparse
 
 import settings
 from django.core.management import setup_environ
@@ -9,30 +10,41 @@ setup_environ(settings)
 from django.conf import settings
 
 DIRETORIO_DE_INSTALACAO = "C:\\vestat"
-ARQUIVOS = (
-            (["caixa", "config", "media", "relatorios", "templates", "manage.py",
-              "middleware.py", "settings.py", "urls.py", "views.py", "__init__.py"],
-              "vestat"),
-            
-            (["etc\\Python27", "trecos\\iniciar_servidor.bat",
-              "trecos\\vestat.py"], "")
-            )
+
+ARQUIVOS = ({
+        "origem": ["caixa", "config", "media", "relatorios", "templates", "manage.py",
+                   "middleware.py", "settings.py", "urls.py", "views.py", "__init__.py"],
+        "destino": "vestat"
+     },
+     {
+         "origem": [os.path.join("trecos", "iniciar_servidor.bat"), os.path.join("trecos", "vestat.py")],
+         "destino": ""
+     }
+)
+
+print("Instalando {0} em {1}...".format(settings.NOME_APLICACAO, DIRETORIO_DE_INSTALACAO))
+
+parser = argparse.ArgumentParser(description="Instalar o {0}".format(settings.NOME_APLICACAO))
+parser.add_argument("-v, --verbose", help="Exibe informações adicionais", dest="verbose", action="store_true")
+args = parser.parse_args()
 
 if os.path.exists(DIRETORIO_DE_INSTALACAO):
-    ANTIGO = DIRETORIO_DE_INSTALACAO + ".antigo"
-    shutil.rmtree(ANTIGO, ignore_errors=True)
-    shutil.move(DIRETORIO_DE_INSTALACAO, ANTIGO)
+    shutil.rmtree(DIRETORIO_DE_INSTALACAO)
+else:
+    if args.verbose:
+        print("Diretório {0} não existe; criando...".format(DIRETORIO_DE_INSTALACAO))
+    os.mkdir(DIRETORIO_DE_INSTALACAO)
 
-os.mkdir(DIRETORIO_DE_INSTALACAO)
+for copia in ARQUIVOS:
+    origem, destino = copia["origem"], copia["destino"]
 
-for arquivos, destino in ARQUIVOS:
-    for arq in arquivos:
+    for arq in origem:
         DESTINO = os.path.join(DIRETORIO_DE_INSTALACAO, destino, os.path.basename(arq))
-        if "-v" in sys.argv:
-            print "Copiando:", DESTINO
+        if args.verbose:
+            print("Copiando {0} para {1}...".format(arq, destino))
         if os.path.isdir(arq):
             shutil.copytree(arq, DESTINO)
         elif os.path.isfile(arq):
             shutil.copy(arq, DESTINO)
         else:
-            print "Não existe:", arq
+            print("ATENÇÃO: Arquivo/diretório não existe: {0}".format(arq))
