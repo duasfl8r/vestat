@@ -579,12 +579,13 @@ class Venda(models.Model):
         u'Rio das Ostras', u'Niterói', u'São Gonçalo', u'Cabo Frio', u'Búzios',
     )))
 
+    # len(choice) <= 20
     POUSADA_CHOICES = (
         ('São Pedro da Serra', map(lambda x: (x, x), sorted((
                 u'Amarylis', u'Bocaina', u'Bom Bocado', u'Canteiros',
                 u'Canto da Mata', u'Canto dos Ventos', u'Canto Nosso', u'Degustarte',
                 u'Estrela da Manhã', u'Flor da Serra', u'Galo da Serra', u'La Golondrina',
-                u'Lírio do Campo', u'Nagual', u'Pousada dos Anjos', u'Recanto dos Eucaliptos',
+                u'Lírio do Campo', u'Nagual', u'Pousada dos Anjos', u'Rec dos Eucaliptos',
                 u'São Saruê', u'Solar do Passaredo', u'Vila do Céu',
         )))),
         ('Lumiar', map(lambda x: (x, x), sorted((
