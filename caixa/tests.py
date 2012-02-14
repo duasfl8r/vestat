@@ -159,6 +159,31 @@ class DiaTestCase(TestCase):
         dia_feriado = Dia(feriado=True)
         self.assertEqual(dia_feriado.categoria_semanal(), 'feriado')
 
+class VendaTestCase(TestCase):
+    def setUp(self):
+        self.dia = Dia(data=datetime.datetime(2012, 02, 14))
+        self.dia.save()
+
+    def test_choices(self):
+        for cat in [c[0] for c in Venda.CATEGORIA_CHOICES]:
+            for cid in [c[0] for c in Venda.CIDADE_CHOICES]:
+                pousadas_flat = sum([c[1] for c in Venda.POUSADA_CHOICES], [])
+                for pou in [p[0] for p in pousadas_flat]:
+                    venda = Venda(dia=self.dia,
+                                  mesa="1",
+                                  hora_entrada=datetime.time(20, 00),
+                                  hora_saida=datetime.time(22, 00),
+                                  num_pessoas=10,
+                                  conta=Decimal("200"),
+                                  gorjeta=Decimal("20"),
+                                  categoria=cat,
+                                  cidade_de_origem=cid,
+                                  pousada_que_indicou=pou,
+                                  pgto_dinheiro=Decimal("200"),
+                    )
+                    venda.fechada = True
+                    venda.save()
+
 
 
 class CaixaSemDiaDeTrabalhoTestCase(TestCase):
