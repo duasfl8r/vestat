@@ -319,11 +319,18 @@ class Dia(models.Model):
         gorjeta_total = cls.gorjeta_total(objects)
         despesas_de_caixa = DespesaDeCaixa.objects.filter(categoria="G",
                                                           dia__in=objects)
-        pagamento_com_gorjetas = despesas_de_caixa.aggregate(Sum('valor'))['valor__sum']
-        if not pagamento_com_gorjetas:
-            pagamento_com_gorjetas = 0
+        pagamento_com_gorjetas_caixa = despesas_de_caixa.aggregate(Sum('valor'))['valor__sum']
+        if not pagamento_com_gorjetas_caixa:
+            pagamento_com_gorjetas_caixa = 0
+
+        despesas_banco = MovimentacaoBancaria.objects.filter(categoria="G",
+                                                          dia__in=objects)
+        pagamento_com_gorjetas_banco = despesas_banco.aggregate(Sum('valor'))['valor__sum']
+        if not pagamento_com_gorjetas_banco:
+            pagamento_com_gorjetas_banco = 0
         
         saldo_inicial = Decimal("1142") # Carlos quem pediu :/
+        pagamento_com_gorjetas = pagamento_com_gorjetas_caixa + pagamento_com_gorjetas_banco
 
         return saldo_inicial + (Decimal("2.0") / Decimal("3.0") * (gorjeta_total)) + pagamento_com_gorjetas
     
