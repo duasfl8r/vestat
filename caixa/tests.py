@@ -8,7 +8,7 @@ from django.db.models import Sum, Count
 
 from django.test.client import Client
 
-from models import Dia, Venda, secs_to_time
+from models import Dia, Venda, DespesaDeCaixa, MovimentacaoBancaria, secs_to_time
 
 
 def random_date(year=None, month=None, day=None):
@@ -183,6 +183,20 @@ class VendaTestCase(TestCase):
                     )
                     venda.fechada = True
                     venda.save()
+
+class DespesaTestCase(TestCase):
+    def setUp(self):
+        self.dia = Dia(data=datetime.datetime(2012, 02, 14))
+        self.dia.save()
+
+    def test_choices(self):
+        for cat in [c[0] for c in DespesaDeCaixa.CATEGORIA_CHOICES]:
+            print("Categoria: {cat}".format(**vars()))
+            despesa = DespesaDeCaixa(dia=self.dia,
+                              valor=Decimal("100.0"),
+                              categoria=cat,
+                              descricao="teste!")
+            despesa.save()
 
 
 
