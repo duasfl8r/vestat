@@ -12,7 +12,7 @@ BANCO_DE_DADOS = os.path.join(BASE_DIR, NOME_APLICACAO + '.sqlite')
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
-ADMINS = ()
+ADMINS = (("Lucas", "lucas@lucasteixeira.com"))
 MANAGERS = ADMINS
 DATABASES = {
     'default': {
