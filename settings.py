@@ -21,6 +21,9 @@ DATABASES = {
     }
 }
 
+# ID da configuração na tabela do modelo config.models.VestatConfiguration
+ID_CONFIG = 1
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -96,6 +99,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'vestat.middleware.AutocreateDatabaseMiddleware',
+    'vestat.middleware.AutocreateConfigMiddleware',
     'vestat.middleware.ExceptionLoggerMiddleware',
 )
 ROOT_URLCONF = 'vestat.urls'
@@ -104,6 +108,7 @@ TEMPLATE_DIRS = (
 )
 INSTALLED_APPS = (
     'django.contrib.sessions',
+    'vestat.config',
     'vestat.caixa',
     'vestat.relatorios',
     'django_evolution',
