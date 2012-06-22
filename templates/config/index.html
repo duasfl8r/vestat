@@ -1,4 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
+    <h2>Valores</h2>
+
+    {% if form_config.errors %}
+        <div class="error">{{ form_config.errors }}</div>
+    {% endif %}
+
+    <form id="config" name="config_form" action="" method="POST">
+        <span id="saldo_inicial_gorjetas"{% if form_config.saldo_inicial_gorjetas.errors %} class="error"{% endif %}>
+            {{ form_config.saldo_inicial_gorjetas.label_tag }} {{ form_config.saldo_inicial_gorjetas }}
+        </span>
+
+        <p><input type="submit" name="config" value="Salvar" /></p>
+    </form>
+    
     <h2><a href="resetar_bd/">Resetar Banco de Dados</a></h2>
 {% endblock %}
