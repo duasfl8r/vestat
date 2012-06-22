@@ -1,9 +1,12 @@
+# -*- encoding: utf-8 -*-
 from django.conf import settings
 from django.core.management import call_command
 from django.contrib.messages.api import info
 
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+
+from vestat.config.models import VestatConfiguration
 
 import logging
 import traceback
@@ -21,6 +24,15 @@ class AutocreateDatabaseMiddleware():
         except IOError:
             call_command("syncdb", interactive=False)
             info(request, "Banco de dados criado.")
+
+class AutocreateConfigMiddleware():
+    def process_request(self, request):
+        try:
+            config = VestatConfiguration.objects.get(pk=settings.ID_CONFIG)
+        except VestatConfiguration.DoesNotExist:
+            config = VestatConfiguration(id=settings.ID_CONFIG)
+            config.save()
+            info(request, "Configuração criada.")
 
 
 class ExceptionLoggerMiddleware():
