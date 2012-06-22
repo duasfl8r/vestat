@@ -2,6 +2,7 @@
 from django.db import models
 from django.db.models import Sum, Count
 from django.core.exceptions import ValidationError
+from django.db.utils import DatabaseError
 
 from decimal import Decimal
 import datetime
@@ -12,6 +13,8 @@ from django.db.models.query_utils import Q
 from django.conf import settings
 from django.core import serializers
 import operator
+
+from vestat.config.models import VestatConfiguration
 
 MESES = ['janeiro', 'fevereiro', 'março', 'abril',
      'maio', 'junho', 'julho', 'agosto',
@@ -25,7 +28,7 @@ def secs_to_time(valor):
     horas = valor // 60 // 60
     return datetime.time(int(horas), int(minutos), int(segundos))
 
-def secs_to_time_str():
+def secs_to_time_str(valor):
     segundos = valor % 60 % 60
     minutos = valor // 60 % 60
     horas = valor // 60 // 60
@@ -317,22 +320,29 @@ class Dia(models.Model):
         if objects is None: objects = Dia.objects.all()
 
         gorjeta_total = cls.gorjeta_total(objects)
+        config = VestatConfiguration.objects.get(pk=settings.ID_CONFIG)
+        saldo_inicial = config.saldo_inicial_gorjetas # Carlos quem pediu :/
+        pagamento_com_gorjetas = cls.descontos_da_gorjeta(objects)
+
+        return saldo_inicial + (Decimal("2.0") / Decimal("3.0") * (gorjeta_total)) + pagamento_com_gorjetas
+
+    @classmethod
+    def descontos_da_gorjeta(cls, dias=None):
+        if dias is None: dias = Dia.objects.all()
+
         despesas_de_caixa = DespesaDeCaixa.objects.filter(categoria="G",
-                                                          dia__in=objects)
+                                                          dia__in=dias)
         pagamento_com_gorjetas_caixa = despesas_de_caixa.aggregate(Sum('valor'))['valor__sum']
         if not pagamento_com_gorjetas_caixa:
             pagamento_com_gorjetas_caixa = 0
 
         despesas_banco = MovimentacaoBancaria.objects.filter(categoria="G",
-                                                          dia__in=objects)
+                                                          dia__in=dias)
         pagamento_com_gorjetas_banco = despesas_banco.aggregate(Sum('valor'))['valor__sum']
         if not pagamento_com_gorjetas_banco:
             pagamento_com_gorjetas_banco = 0
-        
-        saldo_inicial = Decimal("1142") # Carlos quem pediu :/
-        pagamento_com_gorjetas = pagamento_com_gorjetas_caixa + pagamento_com_gorjetas_banco
 
-        return saldo_inicial + (Decimal("2.0") / Decimal("3.0") * (gorjeta_total)) + pagamento_com_gorjetas
+        return pagamento_com_gorjetas_caixa + pagamento_com_gorjetas_banco
     
     @classmethod
     def ajuste_total(cls, objects=None):
