@@ -210,12 +210,6 @@ class CaixaDiaDeTrabalhoZeradoTestCase(TestCase):
     def test_tem_dia(self):
         self.assertTrue("dia" in self.response.context)
 
-    def test_dia_vazio_caixa_0(self):
-        self.assertEqual(self.response.context["dia"].caixa_de_hoje(), 0)
-
-    def test_gorjeta_inicial_1142(self):
-        self.assertEqual(self.response.context["dia"].gorjeta_descontada_de_hoje(), 1142.0)
-
     def test_nao_eh_feriado(self):
         self.assertEqual(self.response.context["dia"].feriado, False)
 
