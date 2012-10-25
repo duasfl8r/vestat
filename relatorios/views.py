@@ -296,28 +296,34 @@ def pgtos_por_bandeira(dias):
            }
 
 def despesas_por_categoria(dias):
+    """
+    Retorna um relatório de despesas agrupadas por categoria,
+    representado por um dicionário.
+
+    Exibe, pra cada categoria, a quantidade e o valor total de suas
+    despesas de caixa e bancárias.
+
+    """
+
     despesas = list(DespesaDeCaixa.objects.filter(dia__in=dias)) + \
             list(MovimentacaoBancaria.objects.filter(dia__in=dias, valor__lt=0))
 
-    despesas_dict = {}
-
+    # Acumula a qtd e o total em um dicionário
+    agrupado_dict = {}
     for despesa in despesas:
-        row_dict = despesas_dict.setdefault(despesa.categoria, {"despesas": 0, "total": Decimal("0")})
-        row_dict["total"] += despesa.valor
-        row_dict["despesas"] += 1
+        categoria = agrupado_dict.setdefault(despesa.categoria, {"despesas": 0, "total": Decimal("0")})
+        categoria["total"] += despesa.valor
+        categoria["despesas"] += 1
 
-    headers = ("categoria", "despesas", "total")
+    # Produz uma lista de tuplas a partir do dicionário
+    nome = lambda cat: dict(DespesaDeCaixa.CATEGORIA_CHOICES)[cat]
+    agrupado_list = [(nome(cat), row["despesas"], row["total"]) for cat, row in agrupado_dict.items()]
 
-    body = [[key, row["despesas"], row["total"]] for key, row in despesas_dict.items()]
-
-    body.sort(key=lambda r: r[2])
-
-    for row in body:
-        row[0] = dict(DespesaDeCaixa.CATEGORIA_CHOICES)[row[0]]
+    body = sorted(agrupado_list, key=lambda r: r[2]) # Ordem decrescente de valor
 
     return {
              "title": "Despesas por categoria",
-             "headers": headers,
+             "headers": ("categoria", "despesas", "total"),
              "body": body
            }
 
