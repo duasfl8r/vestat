@@ -23,6 +23,9 @@ MESES = ['janeiro', 'fevereiro', 'março', 'abril',
 
 def secs_to_time(valor):
     """Transforma segundos em um objeto datetime.time equivalente."""
+    if not valor:
+        return datetime.time(0)
+
     segundos = valor % 60 % 60
     minutos = valor // 60 % 60
     horas = valor // 60 // 60

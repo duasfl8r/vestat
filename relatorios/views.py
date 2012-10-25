@@ -256,7 +256,10 @@ def vendas_por_dia_da_semana(dias):
         for i, header in enumerate(headers[1:]):
             row[header] = agrupado[grupo][header]
 
-        row["permanencia_media"] = secs_to_time(row["permanencia_media"] / row["vendas"])
+        if row["permanencia_media"]:
+            row["permanencia_media"] = secs_to_time(row["permanencia_media"] / row["vendas"])
+        else:
+            row["permanencia_media"] = 0
         dados.append(row)
 
     body = [[row[col] for col in headers] for row in dados]
