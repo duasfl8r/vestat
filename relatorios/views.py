@@ -304,13 +304,16 @@ def despesas_por_categoria(dias):
     despesas de caixa e bancárias.
 
     """
-    headers = ("categoria", "despesas", "total", "porcentagem_das_despesas",)
+    headers = ("categoria", "despesas", "total", "porcentagem_das_despesas", "porcentagem_das_vendas",)
 
     despesas = list(DespesaDeCaixa.objects.filter(dia__in=dias)) + \
             list(MovimentacaoBancaria.objects.filter(dia__in=dias, valor__lt=0))
-    
+
     qtd_despesas = len(despesas)
     total_despesas = Decimal(sum(d.valor for d in despesas))
+
+    vendas = Venda.objects.filter(dia__in=dias)
+    total_vendas = Decimal(sum(v.conta for v in vendas))
 
     # Acumula a qtd e o total em um dicionário
     agrupado_dict = {}
@@ -329,16 +332,27 @@ def despesas_por_categoria(dias):
     # Calcula porcentagem em relação à despesa total
     for categoria in agrupado_dict.values():
         razao_das_despesas = abs(categoria["total"] / total_despesas)
+        razao_das_vendas = abs(categoria["total"] / total_vendas)
+
         categoria["porcentagem_das_despesas"] = "{:.2%}".format(razao_das_despesas)
+        categoria["porcentagem_das_vendas"] = "{:.2%}".format(razao_das_vendas)
 
     # Produz uma lista de tuplas a partir do dicionário
     nome = lambda cat: dict(DespesaDeCaixa.CATEGORIA_CHOICES)[cat]
-    agrupado_list = [(nome(cat), row["despesas"], row["total"], row["porcentagem_das_despesas"]) for cat, row in agrupado_dict.items()]
+    agrupado_list = [
+        (
+            nome(cat),
+            row["despesas"],
+            row["total"],
+            row["porcentagem_das_despesas"],
+            row["porcentagem_das_vendas"],
+        ) for cat, row in agrupado_dict.items()
+    ]
 
     body = sorted(agrupado_list, key=lambda r: r[2]) # Ordem decrescente de valor
 
     footer = [
-        ("TOTAL", qtd_despesas, total_despesas, "100%")
+        ("TOTAL", qtd_despesas, total_despesas, "100%", "-")
     ]
 
     return {
