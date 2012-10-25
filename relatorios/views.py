@@ -304,30 +304,46 @@ def despesas_por_categoria(dias):
     despesas de caixa e bancárias.
 
     """
+    headers = ("categoria", "despesas", "total", "porcentagem_das_despesas",)
 
     despesas = list(DespesaDeCaixa.objects.filter(dia__in=dias)) + \
             list(MovimentacaoBancaria.objects.filter(dia__in=dias, valor__lt=0))
+    
+    qtd_despesas = len(despesas)
+    total_despesas = Decimal(sum(d.valor for d in despesas))
 
     # Acumula a qtd e o total em um dicionário
     agrupado_dict = {}
     for despesa in despesas:
-        categoria = agrupado_dict.setdefault(despesa.categoria, {"despesas": 0, "total": Decimal("0")})
+        categoria = agrupado_dict.setdefault(
+            despesa.categoria,
+            {
+                "despesas": 0,
+                "total": Decimal("0"),
+                "porcentagem_das_despesas": 0,
+            })
+
         categoria["total"] += despesa.valor
         categoria["despesas"] += 1
 
+    # Calcula porcentagem em relação à despesa total
+    for categoria in agrupado_dict.values():
+        razao_das_despesas = abs(categoria["total"] / total_despesas)
+        categoria["porcentagem_das_despesas"] = "{:.2%}".format(razao_das_despesas)
+
     # Produz uma lista de tuplas a partir do dicionário
     nome = lambda cat: dict(DespesaDeCaixa.CATEGORIA_CHOICES)[cat]
-    agrupado_list = [(nome(cat), row["despesas"], row["total"]) for cat, row in agrupado_dict.items()]
+    agrupado_list = [(nome(cat), row["despesas"], row["total"], row["porcentagem_das_despesas"]) for cat, row in agrupado_dict.items()]
 
     body = sorted(agrupado_list, key=lambda r: r[2]) # Ordem decrescente de valor
 
     footer = [
-        ("TOTAL", sum(row[1] for row in body), sum(row[2] for row in body))
+        ("TOTAL", qtd_despesas, total_despesas, "100%")
     ]
 
     return {
              "title": "Despesas por categoria",
-             "headers": ("categoria", "despesas", "total"),
+             "headers": headers,
              "body": body,
              "footer": footer
            }
@@ -376,7 +392,7 @@ def view_relatorio(request, titulo, tablemakers):
         table["headers"] = map(pretty_name, table["headers"])
 
         tables.append(table)
-    
+
     if "csv" in request.GET:
         response = render_to_response('relatorios/csv.html', {
                               'title': titulo,
