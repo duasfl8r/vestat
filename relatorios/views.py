@@ -296,20 +296,21 @@ def pgtos_por_bandeira(dias):
            }
 
 def despesas_por_categoria(dias):
-    despesas = DespesaDeCaixa.objects.filter(dia__in=dias)
-    agrupado = despesas.values("categoria")
-    dados1 = agrupado.annotate(despesas=Count("id"),
-                              total=Sum("valor"))
+    despesas = list(DespesaDeCaixa.objects.filter(dia__in=dias)) + \
+            list(MovimentacaoBancaria.objects.filter(dia__in=dias, valor__lt=0))
 
-    despesas = MovimentacaoBancaria.objects.filter(dia__in=dias, valor__lt=0)
-    agrupado = despesas.values("categoria")
-    dados2 = agrupado.annotate(despesas=Count("id"),
-                              total=Sum("valor"))
+    despesas_dict = {}
+
+    for despesa in despesas:
+        row_dict = despesas_dict.setdefault(despesa.categoria, {"despesas": 0, "total": Decimal("0")})
+        row_dict["total"] += despesa.valor
+        row_dict["despesas"] += 1
 
     headers = ("categoria", "despesas", "total")
 
-    body = [[row[col] for col in headers] for row in dados1]
-    body += [[row[col] for col in headers] for row in dados2]
+    body = [[key, row["despesas"], row["total"]] for key, row in despesas_dict.items()]
+
+    body.sort(key=lambda r: r[2])
 
     for row in body:
         row[0] = dict(DespesaDeCaixa.CATEGORIA_CHOICES)[row[0]]
