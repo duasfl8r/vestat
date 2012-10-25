@@ -1,9 +1,12 @@
 {% for table in tables %}
-    {{ table.title }}
-    {% for header in table.headers %}{{ header }}{% if not forloop.last %}; {% endif %}{% endfor %}
-    {% for row in table.body %}
-        {% for elem in row %}{{ elem }}{% if not forloop.last %}; {% endif %}{% endfor %}
-    {% endfor %}
-
-
+{{ table.title }}
+{% for header in table.headers %}{{ header }}{% if not forloop.last %}; {% endif %}{% endfor %}
+{% for row in table.body %}
+{% for elem in row %}{{ elem }}{% if not forloop.last %}; {% endif %}{% endfor %}
+{% endfor %}
+{% if table.footer %}
+{% for row in table.footer %}
+{% for elem in row %}{{ elem }}{% if not forloop.last %}; {% endif %}{% endfor %}
+{% endfor %}
+{% endif %}
 {% endfor %}

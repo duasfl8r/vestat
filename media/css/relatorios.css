@@ -19,6 +19,14 @@ thead {
     border: 1px solid black !important;
 }
 
+tfoot {
+    background-color: #ddd;
+}
+
+    tfoot td {
+        font-weight: bold;
+    }
+
 tbody tr:nth-child(even) td, tbody tr.even td {background:#e5ecf9 !important;}
 
 form#filtro_form { text-align: center; }

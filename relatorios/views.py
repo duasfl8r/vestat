@@ -321,10 +321,15 @@ def despesas_por_categoria(dias):
 
     body = sorted(agrupado_list, key=lambda r: r[2]) # Ordem decrescente de valor
 
+    footer = [
+        ("TOTAL", sum(row[1] for row in body), sum(row[2] for row in body))
+    ]
+
     return {
              "title": "Despesas por categoria",
              "headers": ("categoria", "despesas", "total"),
-             "body": body
+             "body": body,
+             "footer": footer
            }
 
 def movbancarias_por_categoria(dias):

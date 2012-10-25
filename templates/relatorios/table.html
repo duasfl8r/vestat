@@ -34,6 +34,20 @@
                     {% endfor %}
                 </tr>
             {% endfor %}
+
+            {% if table.footer %}
+            <tfoot>
+                {% for row in table.footer %}
+                    <tr>
+                        {% for data in row %}
+                        <td>
+                            {{ data }}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tfoot>
+            {% endif %}
             </tbody>
         </table>
     {% endfor %}
