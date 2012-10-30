@@ -98,6 +98,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'vestat.middleware.AutocreateDatabaseMiddleware',
     'vestat.middleware.AutocreateConfigMiddleware',
     'vestat.middleware.ExceptionLoggerMiddleware',
@@ -107,9 +108,13 @@ TEMPLATE_DIRS = (
     os.path.join(BASE_DIR, "templates")
 )
 INSTALLED_APPS = (
-    'django.contrib.sessions',
     'vestat.config',
     'vestat.caixa',
     'vestat.relatorios',
     'django_evolution',
+    'django.contrib.admin',
+    'django.contrib.sessions',
+    'django.contrib.contenttypes',
+    'django.contrib.messages',
+    'django.contrib.auth',
 )
