@@ -111,6 +111,7 @@ INSTALLED_APPS = (
     'vestat.config',
     'vestat.caixa',
     'vestat.relatorios',
+    'vestat.contabil',
     'django_evolution',
     'django.contrib.admin',
     'django.contrib.sessions',
