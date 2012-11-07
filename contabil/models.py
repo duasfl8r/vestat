@@ -17,23 +17,28 @@ class Transacao(models.Model):
         verbose_name_plural = "Transações"
 
     def save(self, *args, **kwargs):
-        if sum(t.valor for t in self.transferencias.all()) != 0:
-            raise ValidationError("A soma das transferências de uma transação devem ter soma 0")
+        if sum(t.valor for t in self.lancamentos.all()) != 0:
+            raise ValidationError("A soma dos lançamentos de uma transação devem ter soma 0")
         super(Transacao, self).save(*args, **kwargs)
 
 
-class Transferencia(models.Model):
-    transacao = models.ForeignKey(Transacao, related_name="transferencias")
+class Lancamento(models.Model):
+    transacao = models.ForeignKey(Transacao, related_name="lancamentos")
     valor = models.DecimalField("Valor", max_digits=10, decimal_places=2)
-    origem = models.TextField(blank=False)
-    destino = models.TextField(blank=False)
+    conta = models.TextField()
+    """
+    O caminho devem estar no formato
+    `conta:subconta:subconta...`, onde cada subconta é separada
+    de sua conta-mãe pelo símbolo definido na variável global
+    `SEPARADOR_DE_CONTAS` (nesse exemplo, dois-pontos).
+
+    """
 
     class Meta:
-        verbose_name = "Transferência"
-        verbose_name_plural = "Transferências"
+        verbose_name = "Lançamento"
 
     def __str__(self):
-        return "{valor} ({origem} -> {destino})".format(**vars(self))
+        return "{conta}: {valor}".format(**vars(self))
 
     def __unicode__(self):
         return str(self)
