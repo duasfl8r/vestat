@@ -10,6 +10,7 @@ from django.test.client import Client
 
 from models import Dia, Venda, DespesaDeCaixa, MovimentacaoBancaria, secs_to_time
 from vestat.config.models import VestatConfiguration
+from vestat.contabil.models import Registro, Transacao, Lancamento
 
 
 def random_date(year=None, month=None, day=None):
@@ -383,88 +384,49 @@ class CaixaFecharVendaComCartaoTestCase(TestCase):
         self.assertEqual(self.venda.pagamentocomcartao_set.all()[0].bandeira.id, self.data_cartao["bandeira"])
 
 
-
-class DiaGorjetaTestCase(TestCase):
+class DiaDezPorcentoTestCase(TestCase):
     def setUp(self):
         VestatConfiguration().save()
 
-    def test_saldo_inicial_zerado(self):
-        dia = Dia(data=datetime.datetime.now())
-        self.assertEqual(dia.gorjeta_descontada_total(), Decimal('0'))
+        self.dia = Dia(data=datetime.datetime(2012, 02, 14))
+        self.dia.save()
 
-    def test_novo_saldo_inicial(self):
-        config = VestatConfiguration.objects.get(pk=settings.ID_CONFIG)
-        config.saldo_inicial_gorjetas = Decimal('1000')
-        config.save()
-        dia = Dia(data=datetime.datetime.now())
-        self.assertEqual(dia.gorjeta_descontada_total(), Decimal('1000'))
+        self.registro = Registro(nome="10% a pagar")
+        self.registro.save()
 
-    def test_inserindo_gorjeta_fechando(self):
-        config = VestatConfiguration.objects.get(pk=settings.ID_CONFIG)
-        config.saldo_inicial_gorjetas = Decimal('1000')
-        config.save()
-
-        dia = Dia(data=datetime.datetime.now())
-        dia.save()
-
-        venda = Venda(dia=dia,
+        self.venda = Venda(dia=self.dia,
                       mesa="1",
                       hora_entrada=datetime.time(20, 00),
                       hora_saida=datetime.time(22, 00),
                       num_pessoas=10,
                       conta=Decimal("200"),
                       gorjeta=Decimal("20"),
-                      categoria='L',
+                      categoria="L",
                       cidade_de_origem="Rio de Janeiro",
                       pousada_que_indicou="Amarylis",
                       pgto_dinheiro=Decimal("200"),
         )
-        venda.fechada = True
-        venda.save()
 
-        self.assertEqual(
-            dia.gorjeta_descontada_total(),
-            Decimal('1000') + \
-            (Decimal('20') * Decimal('0.9') * Decimal('2') / Decimal('3'))
-        )
+    def test_criar_venda_nao_cria_transacao_10p(self):
+        self.assertEqual(len(self.registro.transacoes.all()), 0)
 
-    def test_inserindo_gorjeta_sem_fechar(self):
-        config = VestatConfiguration.objects.get(pk=settings.ID_CONFIG)
-        config.saldo_inicial_gorjetas = Decimal('1000')
-        config.save()
+    def test_fechar_venda_cria_transacao_10p(self):
+        self.venda.fechar()
 
-        dia = Dia(data=datetime.datetime.now())
-        dia.save()
+        self.assertEqual(len(self.registro.transacoes.all()), 1)
 
-        venda = Venda(dia=dia,
-                      mesa="1",
-                      hora_entrada=datetime.time(20, 00),
-                      hora_saida=datetime.time(22, 00),
-                      num_pessoas=10,
-                      conta=Decimal("200"),
-                      gorjeta=Decimal("20"),
-                      categoria='L',
-                      cidade_de_origem="Rio de Janeiro",
-                      pousada_que_indicou="Amarylis",
-                      pgto_dinheiro=Decimal("200"),
-        )
-        venda.fechada = False
-        venda.save()
+        transacao = self.registro.transacoes.all()[0]
 
-        self.assertEqual(dia.gorjeta_descontada_total(), Decimal('1000'))
+    def test_reabrir_venda_remove_transacao_10p(self):
+        self.venda.fechar()
+        self.venda.abrir()
+        self.assertEqual(len(self.registro.transacoes.all()), 0)
 
-    def test_descontando_gorjeta_fechando(self):
-        config = VestatConfiguration.objects.get(pk=settings.ID_CONFIG)
-        config.saldo_inicial_gorjetas = Decimal('1000')
-        config.save()
+    def test_fechar_venda_fechada_nao_cria_transacao_10p(self):
+        self.venda.fechar()
+        self.venda.fechar()
+        self.assertEqual(len(self.registro.transacoes.all()), 1)
 
-        dia = Dia(data=datetime.datetime.now())
-        dia.save()
-
-        despesa = DespesaDeCaixa(dia=dia, categoria='G', valor=Decimal('-100'))
-        despesa.save()
-
-        movbancaria = MovimentacaoBancaria(dia=dia, categoria='G', valor=Decimal('-100'))
-        movbancaria.save()
-
-        self.assertEqual(dia.gorjeta_descontada_total(), Decimal('800'))
+    def test_abrir_venda_aberta_nao_remove_transacao_10p(self):
+        self.venda.abrir()
+        self.assertEqual(len(self.registro.transacoes.all()), 0)
