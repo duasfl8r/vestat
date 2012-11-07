@@ -43,4 +43,8 @@ class Lancamento(models.Model):
     def __unicode__(self):
         return str(self)
 
+    def save(self, *args, **kwargs):
+        if self.conta == "":
+            raise ValidationError("Campo 'conta' não pode estar vazio!")
 
+        super(Lancamento, self).save(*args, **kwargs)
