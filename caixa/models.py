@@ -30,6 +30,10 @@ O que não é considerado ness cálculo é usado pra consertar/repor
 materiais usados e quebrados do restaurante.
 """
 
+
+def get_config():
+    return VestatConfiguration.objects.get(pk=settings.ID_CONFIG)
+
 def secs_to_time(valor):
     """Transforma segundos em um objeto datetime.time equivalente."""
     if not valor:
@@ -330,13 +334,13 @@ class Dia(models.Model):
 
         gorjeta = self.vendas_fechadas().aggregate(Sum('gorjeta'))['gorjeta__sum']
         return gorjeta * Decimal('0.9') if gorjeta else 0
-    
+
     @classmethod
     def gorjeta_descontada_total(cls, objects=None):
         if objects is None: objects = Dia.objects.all()
 
         gorjeta_total = cls.gorjeta_total(objects)
-        config = VestatConfiguration.objects.get(pk=settings.ID_CONFIG)
+        config = get_config()
         saldo_inicial = config.saldo_inicial_gorjetas # Carlos quem pediu :/
         pagamento_com_gorjetas = cls.descontos_da_gorjeta(objects)
 
