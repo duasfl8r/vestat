@@ -76,8 +76,6 @@ class Transacao(models.Model):
         return sum(t.valor for t in self.lancamentos.all()) == 0
 
     def save(self, *args, **kwargs):
-        if sum(t.valor for t in self.lancamentos.all()) != 0:
-            raise ValidationError("A soma dos lançamentos de uma transação devem ter soma 0")
         super(Transacao, self).save(*args, **kwargs)
 
 
