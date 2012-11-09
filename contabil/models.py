@@ -66,6 +66,15 @@ class Transacao(models.Model):
         verbose_name = "Transação"
         verbose_name_plural = "Transações"
 
+    @property
+    def eh_consistente(self):
+        """
+        `True` se os lançamentos da transação somam zero, `False` se não.
+
+        """
+
+        return sum(t.valor for t in self.lancamentos.all()) == 0
+
     def save(self, *args, **kwargs):
         if sum(t.valor for t in self.lancamentos.all()) != 0:
             raise ValidationError("A soma dos lançamentos de uma transação devem ter soma 0")
