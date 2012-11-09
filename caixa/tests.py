@@ -408,6 +408,7 @@ class DiaDezPorcentoTestCase(TestCase):
                       pousada_que_indicou="Amarylis",
                       pgto_dinheiro=Decimal("200"),
         )
+        self.venda.save()
 
     def test_criar_venda_nao_cria_transacao_10p(self):
         self.assertEqual(len(self.registro.transacoes.all()), 0)
