@@ -1,4 +1,20 @@
 # -*- encoding: utf-8 -*-
+"""
+Modelos de um registro de contabilidade.
+
+Contas
+======
+
+A hierarquia de contas é criada conforme vão sendo adicionados
+lançamentos.
+
+Cada conta é criada quando é referenciada pela primeira vez.
+
+O nome da conta deve estar no formato `conta:subconta:subconta...`, onde
+cada subconta é separada de sua conta-mãe pelo símbolo definido na
+variável `contabil.SEPARADOR_DE_CONTAS` (nesse exemplo, dois-pontos).
+
+"""
 
 import datetime
 from decimal import Decimal
@@ -60,13 +76,6 @@ class Lancamento(models.Model):
     transacao = models.ForeignKey(Transacao, related_name="lancamentos")
     valor = models.DecimalField("Valor", max_digits=10, decimal_places=2)
     conta = models.TextField()
-    """
-    O caminho devem estar no formato
-    `conta:subconta:subconta...`, onde cada subconta é separada
-    de sua conta-mãe pelo símbolo definido na variável global
-    `SEPARADOR_DE_CONTAS` (nesse exemplo, dois-pontos).
-
-    """
 
     class Meta:
         verbose_name = "Lançamento"
