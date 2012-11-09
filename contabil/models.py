@@ -1,11 +1,45 @@
 # -*- encoding: utf-8 -*-
+
+import datetime
+from decimal import Decimal
+
 from django.db import models
 from django.core.exceptions import ValidationError
 
-from contabil import SEPARADOR_DE_CONTAS
-
 class Registro(models.Model):
     nome = models.TextField(unique=True)
+
+    def balanco(self, conta, de=None, ateh=None):
+        """
+        Calcula o balanço financeiro de uma conta dentro de um intervalo
+        de datas dadas, inclusive.
+
+        Argumentos:
+
+        - conta: um nome de conta seguindo o formato descrito no módulo.
+        - de: a data inicial; um objeto `datetime.date`
+        - ateh: a data final; um objeto `datetime.date`
+        """
+
+        filtros = {}
+
+        if de:
+            assert isinstance(de, datetime.date)
+            filtros["data__gte"] = de
+
+        if ateh:
+            assert isinstance(ateh, datetime.date)
+            filtros["data__lte"] = ateh
+
+        resultado = Decimal('0')
+        transacoes = self.transacoes.filter(**filtros)
+
+        for transacao in transacoes:
+            for lancamento in transacao.lancamentos.all():
+                if lancamento.conta == conta:
+                    resultado += lancamento.valor
+
+        return resultado
 
 class Transacao(models.Model):
     registro = models.ForeignKey(Registro, related_name="transacoes")
