@@ -4,6 +4,7 @@ from django.db.models import Sum, Count
 from django.core.exceptions import ValidationError
 from django.db.utils import DatabaseError
 
+from fractions import Fraction
 from decimal import Decimal
 import datetime
 
@@ -14,7 +15,10 @@ from django.conf import settings
 from django.core import serializers
 import operator
 
+from caixa import NOME_DO_REGISTRO
 from vestat.config.models import VestatConfiguration
+from vestat.contabil.models import Registro, Transacao, Lancamento
+from vestat.contabil import join
 
 MESES = ['janeiro', 'fevereiro', 'março', 'abril',
      'maio', 'junho', 'julho', 'agosto',
@@ -646,6 +650,8 @@ class Venda(models.Model):
     pgto_cheque = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     fechada = models.BooleanField(editable=False, default=False);
 
+    transacao_10p = models.ForeignKey(Transacao, null=True, editable=False, related_name="+")
+
     objects = models.Manager()
     abertas = VendasAbertasManager()
     fechadas = VendasFechadasManager()
@@ -678,6 +684,84 @@ class Venda(models.Model):
         if (t1 > t2): # se começa num dia e termina no outro
             h2 += 24
         return int(3600 * (h2 - h1))
+
+    def abrir(self):
+        """
+        Torna a venda aberta -- o cliente ainda está consumindo.
+        """
+
+        if not self.fechada:
+            return
+
+        if self.transacao_10p:
+            self.transacao_10p.delete()
+
+        self.fechada = False
+        self.save()
+
+    def fechar(self):
+        """
+        Torna a venda fechada -- o cliente já pagou a conta.
+
+        Cria/sobrescreve a transação de 10% referente à venda.
+
+        """
+
+        if self.fechada:
+            return
+
+        if self.transacao_10p:
+            self.transacao_10p.delete()
+
+        if self.gorjeta:
+            registro_10p = Registro.objects.get(nome=NOME_DO_REGISTRO)
+
+            self.transacao_10p = Transacao(
+                registro=registro_10p,
+                data=self.dia.data,
+                descricao="10% a pagar do dia {0}".format(self.dia.data)
+            )
+
+            self.transacao_10p.save()
+
+            config = get_config()
+
+            a_pagar = Decimal(
+                float(
+                    Fraction.from_decimal(self.gorjeta) \
+                     * Fraction(9, 10) \
+                     * config.fracao_10p_funcionarios
+                 )
+            )
+
+            self.transacao_10p.lancamentos.create(
+                valor=a_pagar * -1,
+                conta=join("entrada", "vendas", "10% funcionarios"),
+            )
+
+            self.transacao_10p.lancamentos.create(
+                valor=a_pagar,
+                conta=join("bens", "caixa"),
+            )
+
+            self.transacao_10p.lancamentos.create(
+                valor=a_pagar,
+                conta=join("gastos", "funcionarios", "10%"),
+            )
+
+            self.transacao_10p.lancamentos.create(
+                valor=a_pagar * -1,
+                conta=join("dividas", "contas a pagar", "10%"),
+            )
+
+
+        self.fechada = True
+        self.save()
+
+    def delete(self, *args, **kwargs):
+        if self.transacao_10p:
+            self.transacao_10p.delete()
+        super(Venda, self).delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
         if self.hora_saida is not None:
