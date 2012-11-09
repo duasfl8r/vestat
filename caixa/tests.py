@@ -425,6 +425,10 @@ class DiaDezPorcentoTestCase(TestCase):
         self.venda.abrir()
         self.assertEqual(len(self.registro.transacoes.all()), 0)
 
+    def test_remover_venda_remove_transacao_10p(self):
+        self.venda.delete()
+        self.assertEqual(len(self.registro.transacoes.all()), 0)
+
     def test_fechar_venda_fechada_nao_cria_transacao_10p(self):
         self.venda.fechar()
         self.venda.fechar()
