@@ -147,7 +147,7 @@ def editar_venda_saida(request, ano, mes, dia, id):
                 pgtos = [venda.pgto_dinheiro, venda.pgto_cheque, venda.pagamentocomcartao_set.aggregate(Sum('valor'))['valor__sum']]
                 pgto_total = sum(filter(None, pgtos))
                 if pgto_total == venda.conta:
-                    venda.fechada = True
+                    venda.fechar()
                     venda.save()
                     return redirect(dia)
                 else:
@@ -202,7 +202,7 @@ def editar_venda(request, ano, mes, dia, id):
                 pgtos = [venda.pgto_dinheiro, venda.pgto_cheque, venda.pagamentocomcartao_set.aggregate(Sum('valor'))['valor__sum']]
                 pgto_total = sum(filter(None, pgtos))
                 if pgto_total == venda.conta:
-                    venda.fechada = True
+                    venda.fechar()
                     venda.save()
                     return redirect(dia)
                 else:
@@ -225,7 +225,7 @@ def editar_venda(request, ano, mes, dia, id):
 
 def abrir_venda(request, ano, mes, dia, id):
     venda = get_object_or_404(Venda, id=id)
-    venda.fechada = False
+    venda.abrir()
     venda.save()
     return redirect(venda.dia)
 
@@ -377,7 +377,7 @@ def ver_dia(request, ano, mes, dia, venda_id=None, despesa_id=None, movbancaria_
                 form_fechar_venda = FecharVendaForm(request.POST, instance=venda)
                 if form_fechar_venda.is_valid():
                     venda = form_fechar_venda.save()
-                    venda.fechada = True
+                    venda.fechar()
                     venda.save()
                     return HttpResponseRedirect(venda.dia.get_absolute_url())
                 else:
