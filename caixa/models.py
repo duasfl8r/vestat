@@ -21,6 +21,15 @@ MESES = ['janeiro', 'fevereiro', 'março', 'abril',
      'setembro', 'outubro', 'novembro',
      'dezembro']
 
+FATOR_CONSIDERADO_10P = Decimal('0.9')
+"""
+Porcentagem dos 10% considerada no cálculo das parcelas pra casa /
+funcionários.
+
+O que não é considerado ness cálculo é usado pra consertar/repor
+materiais usados e quebrados do restaurante.
+"""
+
 def secs_to_time(valor):
     """Transforma segundos em um objeto datetime.time equivalente."""
     if not valor:
@@ -310,7 +319,11 @@ class Dia(models.Model):
         if objects is None: objects = Dia.objects.all()
         vendas = Venda.objects.filter(dia__in=objects, fechada=True)
         gorjeta = vendas.aggregate(Sum('gorjeta'))['gorjeta__sum']
-        return gorjeta * Decimal('0.9') if gorjeta else 0
+
+        if not gorjeta:
+            return 0
+
+        return gorjeta * FATOR_CONSIDERADO_10P
 
     def gorjeta(self):
         """Retorna o total de gorjetas do dia."""
