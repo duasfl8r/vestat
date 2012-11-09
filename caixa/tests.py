@@ -12,6 +12,8 @@ from models import Dia, Venda, DespesaDeCaixa, MovimentacaoBancaria, secs_to_tim
 from vestat.config.models import VestatConfiguration
 from vestat.contabil.models import Registro, Transacao, Lancamento
 
+from caixa import NOME_DO_REGISTRO
+
 
 def random_date(year=None, month=None, day=None):
     """Returns a random `datetime.date` object, with fixed `year`,
@@ -391,7 +393,7 @@ class DiaDezPorcentoTestCase(TestCase):
         self.dia = Dia(data=datetime.datetime(2012, 02, 14))
         self.dia.save()
 
-        self.registro = Registro(nome="10% a pagar")
+        self.registro = Registro(nome=NOME_DO_REGISTRO)
         self.registro.save()
 
         self.venda = Venda(dia=self.dia,
