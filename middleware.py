@@ -1,10 +1,10 @@
 # -*- encoding: utf-8 -*-
-from django.conf import settings
 from django.core.management import call_command
-from django.contrib.messages.api import info
-
+from django.conf import settings
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.contrib.messages.api import info
+from django.contrib.auth import authenticate, login
 
 from vestat.config.models import VestatConfiguration
 
@@ -52,3 +52,28 @@ class ExceptionLoggerMiddleware():
                                   'settings': settings,
                                  },
                                  context_instance=RequestContext(request))
+
+class AutologinMiddleware():
+    """
+    Faz login automático.
+
+    Como o Vestat é uma aplicação Desktop, sem comunicação externa, a
+    autenticação necessária pra usar o Django Admin é inconveniente.
+
+    """
+
+    def process_request(self, request):
+        kwargs =  {
+            "username": settings.AUTOLOGIN_USERNAME,
+            "password": settings.AUTOLOGIN_PASSWORD
+        }
+
+        user = authenticate(**kwargs)
+
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+            else:
+                logger.warn("User {user} is not active".format(**kwargs))
+        else:
+            logger.warn("Cannot login {user} using password {password}".format(**kwargs))

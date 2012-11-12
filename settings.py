@@ -24,6 +24,10 @@ DATABASES = {
 # ID da configuração na tabela do modelo config.models.VestatConfiguration
 ID_CONFIG = 1
 
+# Informações pro AutologinMiddleware
+AUTOLOGIN_USERNAME = "vestat"
+AUTOLOGIN_PASSWORD = "a vespa e o gestalt"
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -102,6 +106,7 @@ MIDDLEWARE_CLASSES = (
     'vestat.middleware.AutocreateDatabaseMiddleware',
     'vestat.middleware.AutocreateConfigMiddleware',
     'vestat.middleware.ExceptionLoggerMiddleware',
+    'vestat.middleware.AutologinMiddleware',
 )
 ROOT_URLCONF = 'vestat.urls'
 TEMPLATE_DIRS = (
