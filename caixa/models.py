@@ -54,6 +54,7 @@ def secs_to_time_str(valor):
     horas = valor // 60 // 60
     return "%02d:%02d:%02d" % (horas, minutos, segundos)
 
+
 class VendasFechadasManager(models.Manager):
     def get_query_set(self):
         return super(VendasFechadasManager, self).get_query_set().filter(fechada=True)
@@ -367,6 +368,27 @@ class Dia(models.Model):
             pagamento_com_gorjetas_banco = 0
 
         return pagamento_com_gorjetas_caixa + pagamento_com_gorjetas_banco
+
+    def dez_porcento_a_pagar(self):
+        """
+        Retorna o total de 10% a pagar -- o total de dívidas de 10% aos
+        funcionários menos o total já pago a eles -- até certa o dia atual.
+
+        """
+
+        config = get_config()
+
+        dias = Dia.objects.filter(data__lte=self.data)
+        pagamento_com_gorjetas = self.descontos_da_gorjeta(dias)
+
+        registro_10p = Registro.objects.get(nome=NOME_DO_REGISTRO)
+
+        total_dividas_10p = registro_10p.balanco(
+            join("dividas", "contas a pagar", "10%"),
+            ateh=self.data,
+        )
+
+        return total_dividas_10p - pagamento_com_gorjetas
     
     @classmethod
     def ajuste_total(cls, objects=None):
