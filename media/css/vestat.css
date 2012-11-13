@@ -21,35 +21,6 @@ h3.caixa {
     margin-top: 5px;
 }
 
-#barra-topo {
-    background-color: #303;
-    height: 25px;
-}
-
-    #barra-topo a {
-        color: #ddd;
-        font-size: large;
-        text-decoration: none;
-    }
-
-    #barra-topo a:hover {
-        text-decoration: underline;
-        background-color: #505;
-    }
-
-    #barra-topo > ul {
-        list-style-type: none;
-        margin: 0 auto;
-        width: 400px;
-        height: 27px;
-    }
-
-        #barra-topo > ul > li {
-            display: inline;
-            margin-right: 10px;
-            line-height: 1.5;    /* forçando o valor pra ficar igual no django-admin */
-        }
-
 #clock {
     position: relative;
     clear: right;
