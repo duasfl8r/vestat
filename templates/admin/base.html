@@ -9,17 +9,22 @@
 <script type="text/javascript">window.__admin_media_prefix__ = "{% filter escapejs %}{% admin_media_prefix %}{% endfilter %}";</script>
 {% block extrahead %}{% endblock %}
 {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
+
+<link rel="stylesheet" type="text/css" href="/m/css/barra_topo.css" media="screen, projection"/>
+
 </head>
 {% load i18n %}
 
 <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
 
+{% include "barra_topo.html" %}
+
 <!-- Container -->
 <div id="container">
-
     {% if not is_popup %}
     <!-- Header -->
     <div id="header">
+        {% block admin-header %}
         <div id="branding">
         {% block branding %}{% endblock %}
         </div>
@@ -50,6 +55,7 @@
         </div>
         {% endif %}
         {% block nav-global %}{% endblock %}
+        {% endblock %}
     </div>
     <!-- END Header -->
     {% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}</div>{% endblock %}
