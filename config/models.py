@@ -22,12 +22,14 @@ class VestatConfiguration(models.Model):
 
     # Gorjeta
 
-    parcelas_10p_casa = models.IntegerField("Parcelas pra casa", default=1)
+    parcelas_10p_casa = models.IntegerField("Parcelas pra casa", default=1,
+            help_text="Número de parcelas dos 10% a ser destinada à casa (numerador da fração multiplicadora). Exemplo: 1")
     """
     Parcelas dos 10% destinadas ao restaurante
     """
 
-    parcelas_10p_funcionarios = models.IntegerField("Parcelas pros funcionários", default=3)
+    parcelas_10p_funcionarios = models.IntegerField("Parcelas pros funcionários", default=3,
+            help_text="Número de parcelas dos 10% a ser destinada aos funcionários (numerador da fração multiplicadora). Exemplo: 3")
     """
     Parcelas dos 10% destinadas aos funcionários
     """

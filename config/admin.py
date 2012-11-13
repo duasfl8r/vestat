@@ -17,6 +17,7 @@ class VestatConfigurationAdmin(admin.ModelAdmin):
         ("10%",
             {
                 "fields": ["parcelas_10p_casa", "parcelas_10p_funcionarios"],
+                "description": "A soma das parcelas pra casa e pros funcionários será o denominador da fração multiplicadora."
             }
         ),
 
