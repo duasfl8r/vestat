@@ -22,12 +22,6 @@ class VestatConfiguration(models.Model):
 
     # Gorjeta
 
-    saldo_inicial_gorjetas = models.DecimalField("Saldo inicial dos 10%",
-            max_digits=10, decimal_places=2, default=0)
-    """
-    Saldo inicial dos 10%
-    """
-
     parcelas_10p_casa = models.IntegerField("Parcelas pra casa", default=1)
     """
     Parcelas dos 10% destinadas ao restaurante

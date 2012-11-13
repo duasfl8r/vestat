@@ -11,12 +11,12 @@ class VestatConfigurationAdmin(admin.ModelAdmin):
     fracao_10p_funcionarios = lambda c: c.fracao_10p_funcionarios
     fracao_10p_funcionarios.short_description = "Fração dos 10% pros funcionários"
 
-    list_display = ["id", "saldo_inicial_gorjetas", fracao_10p_casa, fracao_10p_funcionarios]
+    list_display = ["id", fracao_10p_casa, fracao_10p_funcionarios]
 
     fieldsets = [
         ("10%",
             {
-                "fields": ["saldo_inicial_gorjetas", "parcelas_10p_casa", "parcelas_10p_funcionarios"],
+                "fields": ["parcelas_10p_casa", "parcelas_10p_funcionarios"],
             }
         ),
 
