@@ -341,17 +341,6 @@ class Dia(models.Model):
         return gorjeta * Decimal('0.9') if gorjeta else 0
 
     @classmethod
-    def gorjeta_descontada_total(cls, objects=None):
-        if objects is None: objects = Dia.objects.all()
-
-        gorjeta_total = cls.gorjeta_total(objects)
-        config = get_config()
-        saldo_inicial = config.saldo_inicial_gorjetas # Carlos quem pediu :/
-        pagamento_com_gorjetas = cls.descontos_da_gorjeta(objects)
-
-        return saldo_inicial + (Decimal("2.0") / Decimal("3.0") * (gorjeta_total)) + pagamento_com_gorjetas
-
-    @classmethod
     def descontos_da_gorjeta(cls, dias=None):
         if dias is None: dias = Dia.objects.all()
 
@@ -426,10 +415,6 @@ class Dia(models.Model):
                Dia.faturamento_total_cheque(dias) + \
                Dia.despesas_de_caixa_total(dias) + \
                Dia.ajuste_total(dias)
-    
-    def gorjeta_descontada_de_hoje(self):
-        dias = Dia.dias_entre(None, self.data)
-        return self.gorjeta_descontada_total(dias)
     
     def captacao_por_pessoa(self):
         if self.vendas_fechadas().count():
