@@ -9,25 +9,18 @@
     <!--[if lt IE 8]>
       <link rel="stylesheet" href="/m/css/blueprint/ie.css" type="text/css" media="screen, projection">
     <![endif]-->
-    {% block head %} 
+    {% block head %}
     <link rel="stylesheet" type="text/css" href="/m/css/vestat.css" media="screen, projection"/>
     <link rel="stylesheet" type="text/css" href="/m/css/vestat_print.css" media="print"/>
     {% endblock %}
     <title>{{ title }}</title>
   </head>
-  
+
   <body>
     {% block body %}
+    {% include "barra_topo.html" %}
     <div class="container">
         <div class="span-24 title">
-            <nav>
-                <ul id="menu">
-                    <li><a href="/caixa/">Caixa</a></li>
-                    <li><a href="/relatorios/">Relatórios</a></li>
-                    <li><a href="/config/">Configurações</a></li>
-                </ul>
-            </nav>
-
             {% block title %}
             <h1>{{ title }}</h1>
             {% endblock title %}
