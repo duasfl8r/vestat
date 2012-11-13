@@ -43,7 +43,6 @@ class ExceptionLoggerMiddleware():
                       traceback.format_exc(),
                       "GET:\n" + pprint.pformat(request.GET),
                       "POST:\n" + pprint.pformat(request.POST),
-                      "META:\n" + pprint.pformat(request.META),
                       ]
         error_msg = "\n".join(error_data)
         logger.error(error_msg)
@@ -74,6 +73,6 @@ class AutologinMiddleware():
             if user.is_active:
                 login(request, user)
             else:
-                logger.warn("User {user} is not active".format(**kwargs))
+                logger.warn("User {username} is not active".format(**kwargs))
         else:
-            logger.warn("Cannot login {user} using password {password}".format(**kwargs))
+            logger.warn("Cannot login {username} using password {password}".format(**kwargs))
