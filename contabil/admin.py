@@ -7,6 +7,7 @@ from django.contrib import admin
 from models import Registro, Transacao, Lancamento
 
 from vestat.utils import LocalizedModelForm
+from vestat.caixa import NOME_DO_REGISTRO
 
 class RegistroAdmin(admin.ModelAdmin):
     pass
@@ -31,6 +32,11 @@ class LancamentoInline(admin.TabularInline):
 class TransacaoForm(LocalizedModelForm):
     class Meta:
         model = Transacao
+
+    registro = django.forms.ModelChoiceField(
+        queryset=Registro.objects.all(),
+        initial=Registro.objects.get(nome=NOME_DO_REGISTRO),
+    )
 
 
 class TransacaoAdmin(admin.ModelAdmin):
