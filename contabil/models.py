@@ -68,6 +68,7 @@ class Transacao(models.Model):
     class Meta:
         verbose_name = "Transação"
         verbose_name_plural = "Transações"
+        ordering = ["-data"]
 
     def __unicode__(self):
         return "{data} - {descricao}".format(**vars(self))
@@ -92,6 +93,7 @@ class Lancamento(models.Model):
 
     class Meta:
         verbose_name = "Lançamento"
+        ordering = ["-transacao"]
 
     def __unicode__(self):
         return "{conta}: {valor}".format(**vars(self))
