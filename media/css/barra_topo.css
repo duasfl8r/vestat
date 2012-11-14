@@ -3,9 +3,23 @@
     height: 25px;
 }
 
+    #barra-topo li {
+        font-size: large;
+    }
+
+        #barra-topo li.nome-aplicacao {
+            color: #ddd;
+            font-variant: small-caps;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        #barra-topo li.nome-aplicacao:after {
+            content: " > ";
+        }
+
     #barra-topo a {
         color: #ddd;
-        font-size: large;
         text-decoration: none;
     }
 
@@ -17,7 +31,6 @@
     #barra-topo > ul {
         list-style-type: none;
         margin: 0 auto;
-        width: 400px;
         height: 27px;
     }
 
