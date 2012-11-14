@@ -25,6 +25,9 @@ from django.core.exceptions import ValidationError
 class Registro(models.Model):
     nome = models.TextField(unique=True)
 
+    def __unicode__(self):
+        return self.nome
+
     def balanco(self, conta, de=None, ateh=None):
         """
         Calcula o balanço financeiro de uma conta dentro de um intervalo
@@ -66,6 +69,9 @@ class Transacao(models.Model):
         verbose_name = "Transação"
         verbose_name_plural = "Transações"
 
+    def __unicode__(self):
+        return "{data} - {descricao}".format(**vars(self))
+
     @property
     def eh_consistente(self):
         """
@@ -87,11 +93,8 @@ class Lancamento(models.Model):
     class Meta:
         verbose_name = "Lançamento"
 
-    def __str__(self):
-        return "{conta}: {valor}".format(**vars(self))
-
     def __unicode__(self):
-        return str(self)
+        return "{conta}: {valor}".format(**vars(self))
 
     def save(self, *args, **kwargs):
         if self.conta == "":
