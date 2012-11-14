@@ -107,6 +107,7 @@ MIDDLEWARE_CLASSES = (
     'vestat.middleware.AutocreateConfigMiddleware',
     'vestat.middleware.ExceptionLoggerMiddleware',
     'vestat.middleware.AutologinMiddleware',
+    'vestat.caixa.middleware.AutocreateRegistroMiddleware',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
