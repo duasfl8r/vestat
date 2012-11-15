@@ -70,7 +70,7 @@ class Contas:
         for lancamento in lancamentos:
             self.digerir_lancamento(lancamento)
 
-    def digerir_caminho(self, lancamento):
+    def digerir_lancamento(self, lancamento):
         """
         Alimenta o objeto com o lançamento dada.
 
