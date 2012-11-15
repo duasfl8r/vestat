@@ -95,7 +95,7 @@ class Contas:
         pai["lancamentos"].append(lancamento)
 
     @property
-    def dict(self):
+    def contas_e_lancamentos(self):
         """
         Retorna um `dict` representando a hierarquia de contas com as
         quais o objeto foi alimentado.
@@ -148,3 +148,22 @@ class Contas:
         """
 
         return self._hierarquia
+
+    @property
+    def contas(self):
+        """
+        Retorna um `dict` contendo somente a hierarquia de contas, sem
+        os lançamentos de cada uma.
+
+        """
+
+        def loop(hierarquia):
+            if hierarquia["contas"]:
+                result = {}
+                for nome, filhos in  hierarquia["contas"].items():
+                    result[nome] = loop(filhos)
+                return result
+            else:
+                return {}
+
+        return loop(self._hierarquia)
