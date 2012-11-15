@@ -91,6 +91,7 @@ class LancamentoTestCase(TestCase):
                 data=datetime.date.today(),
                 descricao="Transação de teste"
         )
+        self.transacao.save()
 
     def test_lancamento_sem_conta_dah_erro(self):
         lancamento = Lancamento(transacao=self.transacao, valor=Decimal("10.00"))
