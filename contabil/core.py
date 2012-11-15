@@ -27,6 +27,9 @@ class Contas:
             "contas": {},
         }
 
+    def __eq__(self, other):
+        return self._hierarquia == other._hierarquia
+
 
     def digerir_registro(self, registro):
         """
