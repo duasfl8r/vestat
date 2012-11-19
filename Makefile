@@ -18,7 +18,7 @@ build: $(BUILD_DIR) $(BUILD_FILES)
 		--transform "s@^@$(BUILD_NAME)/@"
 
 test:
-	python2 manage.py test caixa
+	python2 manage.py test caixa contabil
 
 clean:
 	rm _build -rf
