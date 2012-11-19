@@ -205,6 +205,9 @@ class DespesaTestCase(TestCase):
 
 class CaixaSemDiaDeTrabalhoTestCase(TestCase):
     def setUp(self):
+        self.registro = Registro(nome=NOME_DO_REGISTRO)
+        self.registro.save()
+
         self.c = Client()
         self.response = self.c.get("/caixa/", follow=True)
 
@@ -216,6 +219,9 @@ class CaixaSemDiaDeTrabalhoTestCase(TestCase):
 
 class CaixaDiaDeTrabalhoZeradoTestCase(TestCase):
     def setUp(self):
+        self.registro = Registro(nome=NOME_DO_REGISTRO)
+        self.registro.save()
+
         self.c = Client()
         self.url_hoje = "/caixa/2011/12/07/"
         self.response = self.c.get(self.url_hoje + "criar", follow=True)
@@ -239,6 +245,9 @@ class CaixaDiaDeTrabalhoZeradoTestCase(TestCase):
 
 class CaixaAdicionarVendaFormTestCase(TestCase):
     def setUp(self):
+        self.registro = Registro(nome=NOME_DO_REGISTRO)
+        self.registro.save()
+
         self.c = Client()
         self.url_hoje = "/caixa/2011/12/07/"
         self.c.get(self.url_hoje + "criar", follow=True)
@@ -249,6 +258,9 @@ class CaixaAdicionarVendaFormTestCase(TestCase):
 
 class CaixaAdicionarVendaTestCase(TestCase):
     def setUp(self):
+        self.registro = Registro(nome=NOME_DO_REGISTRO)
+        self.registro.save()
+
         self.c = Client()
         self.url_hoje = "/caixa/2011/12/07/"
         self.c.get(self.url_hoje + "criar", follow=True)
@@ -285,6 +297,9 @@ class CaixaFecharVendaSemCartaoTestCase(TestCase):
     fixtures = ['initial_data.json']
 
     def setUp(self):
+        self.registro = Registro(nome=NOME_DO_REGISTRO)
+        self.registro.save()
+
         self.c = Client()
         self.url_hoje = "/caixa/2011/12/07/"
         self.c.get(self.url_hoje + "criar", follow=True)
@@ -331,6 +346,9 @@ class CaixaFecharVendaComCartaoTestCase(TestCase):
     fixtures = ['initial_data.json']
 
     def setUp(self):
+        self.registro = Registro(nome=NOME_DO_REGISTRO)
+        self.registro.save()
+
         self.c = Client()
         self.url_hoje = "/caixa/2011/12/07/"
         self.c.get(self.url_hoje + "criar", follow=True)
