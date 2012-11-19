@@ -195,7 +195,6 @@ class DespesaTestCase(TestCase):
 
     def test_choices(self):
         for cat in [c[0] for c in DespesaDeCaixa.CATEGORIA_CHOICES]:
-            print("Categoria: {cat}".format(**vars()))
             despesa = DespesaDeCaixa(dia=self.dia,
                               valor=Decimal("100.0"),
                               categoria=cat,
