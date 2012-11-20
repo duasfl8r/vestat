@@ -40,7 +40,10 @@ class TransacaoForm(LocalizedModelForm):
 
 
 class TransacaoAdmin(admin.ModelAdmin):
-    list_display = ["data", "descricao"]
+    def contas_envolvidas(self, transacao):
+        return '"' + '", "'.join({ l.conta for l in transacao.lancamentos.all() }) + '"'
+
+    list_display = ["data", "descricao", "contas_envolvidas"]
     search_fields = ["descricao"]
     list_filter = ["data", "lancamentos__conta", "lancamentos__valor"]
     form = TransacaoForm
