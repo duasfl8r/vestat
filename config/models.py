@@ -14,6 +14,7 @@ class VestatConfiguration(models.Model):
 
     Esse modelo deve ser usado como um Singleton -- a única instância
     dele é a definida pela variável `ID_CONFIG` do `settings`.
+
     """
 
     class Meta:
@@ -36,6 +37,13 @@ class VestatConfiguration(models.Model):
 
     @property
     def _total_de_fatores_10p(self):
+        """
+        Retorna o denominador das frações de 10% pra casa e pros funcionários.
+
+        Esse denominador é a soma das parcelas pra casa e pros funcionários.
+
+        """
+
         return self.parcelas_10p_casa + self.parcelas_10p_funcionarios
 
     @property

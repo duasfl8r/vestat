@@ -1,10 +1,20 @@
 # -*- encoding: utf-8 -*-
 
+"""
+Representações dos modelos de configuração do Vestat no Django admin site.
+
+"""
+
 from django.contrib import admin
 
 from vestat.config.models import VestatConfiguration
 
 class VestatConfigurationAdmin(admin.ModelAdmin):
+    """
+    Representação do modelo `VestatConfiguration` no Django admin site.
+
+    """
+
     fracao_10p_casa = lambda c: c.fracao_10p_casa
     fracao_10p_casa.short_description = "Fração dos 10% pra casa"
 
@@ -12,6 +22,13 @@ class VestatConfigurationAdmin(admin.ModelAdmin):
     fracao_10p_funcionarios.short_description = "Fração dos 10% pros funcionários"
 
     list_display = ["id", fracao_10p_casa, fracao_10p_funcionarios]
+    """
+    Campos a serem exibidos na listagem de objetos `VestatConfiguration`.
+
+    Exibe, além do ID do objeto, a fração dos 10% destinada à casa
+    e a fração destinada aos funcionários.
+
+    """
 
     fieldsets = [
         ("10%",
@@ -22,5 +39,9 @@ class VestatConfigurationAdmin(admin.ModelAdmin):
         ),
 
     ]
+    """
+    Campos a serem exibidos no formulário de criação/edição de configuração.
+
+    """
 
 admin.site.register(VestatConfiguration, VestatConfigurationAdmin)
