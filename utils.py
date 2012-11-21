@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 import django.forms
 
 class LocalizedModelForm(django.forms.ModelForm):
