@@ -303,8 +303,19 @@ def despesas_por_categoria(dias):
     Retorna um relatório de despesas agrupadas por categoria,
     representado por um dicionário.
 
-    Exibe, pra cada categoria, a quantidade e o valor total de suas
-    despesas de caixa e bancárias.
+    Exibe, pra cada categoria, no período designado:
+
+    - A quantidade de despesas
+
+    - O valor das despesas
+
+    - O percentual das despesas com relação à despesa total de todas as
+      categorias
+
+    - O percentual das despesas com relação ao total de vendas
+      do mesmo período.
+
+    Exibe um rodapé com o total de despesas de todas as categorias.
 
     """
     headers = ("categoria", "despesas", "total", "porcentagem_das_despesas", "porcentagem_das_vendas",)

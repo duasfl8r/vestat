@@ -9,6 +9,11 @@ from contabil import join, Contas
 from contabil.models import Registro, Transacao, Lancamento
 
 class RegistroTestCase(TestCase):
+    """
+    Testes do `models.Registro`
+
+    """
+
     def setUp(self):
         self.registro = Registro(nome="Registro teste")
         self.registro.save()
@@ -82,6 +87,11 @@ class RegistroTestCase(TestCase):
 
 
 class LancamentoTestCase(TestCase):
+    """
+    Testes do `models.Lancamento`
+
+    """
+
     def setUp(self):
         self.registro = Registro(nome="Registro teste")
         self.registro.save()
@@ -99,6 +109,11 @@ class LancamentoTestCase(TestCase):
 
 
 class ContasTestCase(TestCase):
+    """
+    Testes do `core.Contas`
+
+    """
+
     def setUp(self):
         self.registro = Registro(nome="Registro teste")
         self.registro.save()

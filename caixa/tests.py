@@ -404,7 +404,22 @@ class CaixaFecharVendaComCartaoTestCase(TestCase):
 
 
 class DiaDezPorcentoTestCase(TestCase):
+    """
+    Testes do cálculo de 10% a pagar e de seus processos subjacentes.
+
+    """
+
     def setUp(self):
+        """
+        Cria os objetos necessários pra calcular os 10% a pagar:
+
+        - Objeto `config.models.VestatConfiguration`
+        - Objeto contabil.models.Registro`
+        - Objeto `caixa.models.Dia`
+        - Objeto `caixa.models.Venda`
+
+        """
+
         VestatConfiguration().save()
 
         self.dia = Dia(data=datetime.datetime(2012, 02, 14))

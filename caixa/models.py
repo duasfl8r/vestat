@@ -36,6 +36,11 @@ materiais usados e quebrados do restaurante.
 
 
 def get_config():
+    """
+    Retorna o Singleton `VestatConfiguration` configurado no `settings`.
+
+    """
+
     return VestatConfiguration.objects.get(pk=settings.ID_CONFIG)
 
 def secs_to_time(valor):

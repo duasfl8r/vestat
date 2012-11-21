@@ -22,12 +22,21 @@ class Contas:
     """
 
     def __init__(self):
+        """
+        Inicializa o objeto `Contas` com uma hierarquia vazia.
+
+        """
+
         self._hierarquia = {
             "lancamentos": [],
             "contas": {},
         }
 
     def __eq__(self, other):
+        """
+        Retorna `True` se as hierarquias de `self` e `other` forem iguais; `False` senão.
+        """
+
         return self._hierarquia == other._hierarquia
 
 
