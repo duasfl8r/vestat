@@ -8,3 +8,5 @@ venv
 vestat.log
 deps
 _build
+
+docs/_build
