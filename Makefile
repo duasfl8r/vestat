@@ -2,9 +2,13 @@ VERSION := $(shell python -c 'import settings; print(settings.VERSAO)')
 
 BUILD_DIR := _build
 BUILD_NAME := vestat_v$(VERSION)
-BUILD_FILES := caixa config deps instalar.bat instalar.py manage.py media \
-			  middleware.py relatorios requirements.txt settings.py templates \
-			  trecos urls.py views.py
+
+DJANGO_APP_DIRS := $(shell python -c 'import settings; print("\n".join(app[7:] for app in settings.INSTALLED_APPS if app.startswith("vestat")))')
+DJANGO_FILES := manage.py settings.py middleware.py urls.py views.py media templates
+PYTHON_PACKAGE_FILES := __init__.py requirements.txt
+INSTALL_FILES = deps trecos instalar.bat instalar.py
+
+BUILD_FILES := $(DJANGO_FILES) $(DJANGO_APP_DIRS) $(PYTHON_PACKAGE_FILES) $(INSTALL_FILES)
 
 $(BUILD_DIR):
 	mkdir $(BUILD_DIR)
