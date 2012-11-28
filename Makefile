@@ -15,7 +15,7 @@ build: $(BUILD_DIR) $(BUILD_FILES)
 		--exclude='venv' \
 		--exclude='*.pyc' \
 		--exclude='__pycache__' \
-		--transform "s@^@$(BUILD_NAME)/@"
+		--transform "s@^@$(BUILD_NAME)/vestat/@"
 
 test:
 	python2 manage.py test caixa contabil
