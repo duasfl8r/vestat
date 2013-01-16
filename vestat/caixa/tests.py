@@ -202,11 +202,22 @@ class DespesaTestCase(TestCase):
             despesa.save()
 
 
+class TestCaseVestatBoilerplate(TestCase):
+    """
+    Um TestCase que cria os objetos `contabil.models.Registro` e
+    `config.models.VestatConfiguration` usados na aplicação.
+    """
 
-class CaixaSemDiaDeTrabalhoTestCase(TestCase):
     def setUp(self):
+        self.config = VestatConfiguration()
+        self.config.save()
+
         self.registro = Registro(nome=NOME_DO_REGISTRO)
         self.registro.save()
+
+class CaixaSemDiaDeTrabalhoTestCase(TestCaseVestatBoilerplate):
+    def setUp(self):
+        super(CaixaSemDiaDeTrabalhoTestCase, self).setUp()
 
         self.c = Client()
         self.response = self.c.get("/caixa/", follow=True)
@@ -217,10 +228,9 @@ class CaixaSemDiaDeTrabalhoTestCase(TestCase):
     def test_sem_dia_de_trabalho(self):
         self.assertTrue("dia" not in self.response.context)
 
-class CaixaDiaDeTrabalhoZeradoTestCase(TestCase):
+class CaixaDiaDeTrabalhoZeradoTestCase(TestCaseVestatBoilerplate):
     def setUp(self):
-        self.registro = Registro(nome=NOME_DO_REGISTRO)
-        self.registro.save()
+        super(CaixaDiaDeTrabalhoZeradoTestCase, self).setUp()
 
         self.c = Client()
         self.url_hoje = "/caixa/2011/12/07/"
@@ -243,10 +253,9 @@ class CaixaDiaDeTrabalhoZeradoTestCase(TestCase):
         response = self.c.get(self.url_hoje + "remover", follow=True)
         self.assertTrue("dia" not in response.context)
 
-class CaixaAdicionarVendaFormTestCase(TestCase):
+class CaixaAdicionarVendaFormTestCase(TestCaseVestatBoilerplate):
     def setUp(self):
-        self.registro = Registro(nome=NOME_DO_REGISTRO)
-        self.registro.save()
+        super(CaixaAdicionarVendaFormTestCase, self).setUp()
 
         self.c = Client()
         self.url_hoje = "/caixa/2011/12/07/"
@@ -256,10 +265,9 @@ class CaixaAdicionarVendaFormTestCase(TestCase):
         response = self.c.get(self.url_hoje + "venda/adicionar")
         self.assertEqual(response.status_code, 200)
 
-class CaixaAdicionarVendaTestCase(TestCase):
+class CaixaAdicionarVendaTestCase(TestCaseVestatBoilerplate):
     def setUp(self):
-        self.registro = Registro(nome=NOME_DO_REGISTRO)
-        self.registro.save()
+        super(CaixaAdicionarVendaTestCase, self).setUp()
 
         self.c = Client()
         self.url_hoje = "/caixa/2011/12/07/"
@@ -293,12 +301,11 @@ class CaixaAdicionarVendaTestCase(TestCase):
 
 
 
-class CaixaFecharVendaSemCartaoTestCase(TestCase):
+class CaixaFecharVendaSemCartaoTestCase(TestCaseVestatBoilerplate):
     fixtures = ['initial_data.json']
 
     def setUp(self):
-        self.registro = Registro(nome=NOME_DO_REGISTRO)
-        self.registro.save()
+        super(CaixaFecharVendaSemCartaoTestCase, self).setUp()
 
         self.c = Client()
         self.url_hoje = "/caixa/2011/12/07/"
@@ -342,12 +349,11 @@ class CaixaFecharVendaSemCartaoTestCase(TestCase):
         self.assertEqual(self.venda.pgto_cheque, Decimal(self.data_fechar["pgto_cheque"]))
         self.assertEqual(list(self.venda.pagamentocomcartao_set.all()), [])
 
-class CaixaFecharVendaComCartaoTestCase(TestCase):
+class CaixaFecharVendaComCartaoTestCase(TestCaseVestatBoilerplate):
     fixtures = ['initial_data.json']
 
     def setUp(self):
-        self.registro = Registro(nome=NOME_DO_REGISTRO)
-        self.registro.save()
+        super(CaixaFecharVendaComCartaoTestCase, self).setUp()
 
         self.c = Client()
         self.url_hoje = "/caixa/2011/12/07/"
@@ -403,9 +409,9 @@ class CaixaFecharVendaComCartaoTestCase(TestCase):
         self.assertEqual(self.venda.pagamentocomcartao_set.all()[0].bandeira.id, self.data_cartao["bandeira"])
 
 
-class DiaDezPorcentoTestCase(TestCase):
+class DiaDezPorcentoTestCase(TestCaseVestatBoilerplate):
     """
-    Testes do cálculo de 10% a pagar e de seus processos subjacentes.
+    Testes do cálculo de 10% e de seus processos subjacentes.
 
     """
 
@@ -413,20 +419,15 @@ class DiaDezPorcentoTestCase(TestCase):
         """
         Cria os objetos necessários pra calcular os 10% a pagar:
 
-        - Objeto `config.models.VestatConfiguration`
-        - Objeto contabil.models.Registro`
         - Objeto `caixa.models.Dia`
         - Objeto `caixa.models.Venda`
 
         """
 
-        VestatConfiguration().save()
+        super(DiaDezPorcentoTestCase, self).setUp()
 
         self.dia = Dia(data=datetime.datetime(2012, 02, 14))
         self.dia.save()
-
-        self.registro = Registro(nome=NOME_DO_REGISTRO)
-        self.registro.save()
 
         self.venda = Venda(dia=self.dia,
                       mesa="1",
