@@ -1,9 +1,9 @@
-VERSION := $(shell python -c 'import settings; print(settings.VERSAO)')
+VERSION := $(shell cd vestat && python -c 'import settings; print(settings.VERSAO)')
 
 BUILD_DIR := _build
 BUILD_NAME := vestat_v$(VERSION)
 
-DJANGO_APP_DIRS := $(shell python -c 'import settings; print("\n".join(app[7:] for app in settings.INSTALLED_APPS if app.startswith("vestat")))')
+DJANGO_APP_DIRS := $(shell cd vestat && python -c 'import settings; print("\n".join(app[7:] for app in settings.INSTALLED_APPS if app.startswith("vestat")))')
 DJANGO_FILES := manage.py settings.py middleware.py urls.py views.py media templates
 PYTHON_PACKAGE_FILES := __init__.py requirements.txt
 INSTALL_FILES = deps trecos instalar.bat instalar.py
@@ -22,7 +22,7 @@ build: $(BUILD_DIR) $(BUILD_FILES)
 		--transform "s@^@$(BUILD_NAME)/vestat/@"
 
 test:
-	python2 manage.py test caixa contabil
+	cd vestat && python2 manage.py test caixa contabil relatorios
 
 clean:
 	rm _build -rf
