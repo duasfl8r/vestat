@@ -139,5 +139,3 @@ positivo à conta de fato *diminui a dívida*.
 Como o sistema de contabilidade usado é de *dupla-entrada*, o
 dinheiro somado à conta da dívida deve vir de algum lugar; é usada
 uma "conta de ajustes" pra esse efeito.
-
-tirando o valor da conta ``ajustes:10% a pagar`` e inserindo na conta ``dividas:contas a pagar:10%``
