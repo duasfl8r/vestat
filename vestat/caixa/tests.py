@@ -2,6 +2,7 @@
 import datetime
 import random
 from decimal import Decimal
+from fractions import Fraction
 
 from django.test import TestCase
 from django.db.models import Sum, Count
@@ -13,6 +14,12 @@ from vestat.config.models import VestatConfiguration
 from vestat.contabil.models import Registro, Transacao, Lancamento
 
 from caixa import NOME_DO_REGISTRO
+
+
+DESPESA_CATEGORIA_10P = "G"
+"""
+Código da categoria de despesa associada ao pagamento de 10% os funcionários.
+"""
 
 
 def random_date(year=None, month=None, day=None):
@@ -470,3 +477,76 @@ class DiaDezPorcentoTestCase(TestCaseVestatBoilerplate):
     def test_abrir_venda_aberta_nao_remove_transacao_10p(self):
         self.venda.abrir()
         self.assertEqual(len(self.registro.transacoes.all()), 0)
+
+
+class DiaDezPorcentoAPagarTestCase(TestCaseVestatBoilerplate):
+    """
+    Teste do cálculo do valor de 10% a pagar.
+    """
+
+    def setUp(self):
+        super(DiaDezPorcentoAPagarTestCase, self).setUp()
+
+        self.dia = Dia(data=datetime.datetime(2012, 02, 14))
+        self.dia.save()
+
+    def teste_10p_a_pagar_zerado(self):
+        self.assertEqual(self.dia.dez_porcento_a_pagar(), Decimal("0"))
+
+    def abre_venda_200_reais(self):
+        self.venda = Venda(dia=self.dia,
+                      mesa="1",
+                      hora_entrada=datetime.time(20, 00),
+                      hora_saida=datetime.time(22, 00),
+                      num_pessoas=10,
+                      conta=Decimal("200"),
+                      gorjeta=Decimal("20"),
+                      categoria="L",
+                      cidade_de_origem="Rio de Janeiro",
+                      pousada_que_indicou="Amarylis",
+                      pgto_dinheiro=Decimal("200"),
+        )
+        self.venda.save()
+
+    def teste_abre_venda_e_10p_a_pagar_continua_zerado(self):
+        self.abre_venda_200_reais()
+        self.assertEqual(self.dia.dez_porcento_a_pagar(), Decimal("0"))
+
+
+    def teste_fecha_venda_e_10p_a_pagar_aumenta_certo(self):
+        self.abre_venda_200_reais()
+        self.venda.fechar()
+
+        fracao_aumento_da_divida = Fraction.from_decimal(Decimal("20")) * \
+                Fraction(9, 10) *  \
+                self.config.fracao_10p_funcionarios
+        dezp_a_pagar = self.dia.dez_porcento_a_pagar()
+
+        self.assertEqual(dezp_a_pagar, Decimal(float(fracao_aumento_da_divida)))
+
+    def adiciona_despesa_de_10p(self):
+        self.despesa = DespesaDeCaixa(dia=self.dia,
+                categoria=DESPESA_CATEGORIA_10P,
+                valor=Decimal("-10"))
+        self.despesa.save()
+
+
+    def teste_adiciona_despesa_e_10p_a_pagar_diminui_certo(self):
+        self.adiciona_despesa_de_10p()
+
+        self.assertEqual(self.dia.dez_porcento_a_pagar(), Decimal("-10"))
+
+
+    def teste_adiciona_venda_e_despesa_e_10p_a_pagar_fica_certo(self):
+        self.abre_venda_200_reais()
+        self.venda.fechar()
+
+        fracao_aumento_da_divida = Fraction.from_decimal(Decimal("20")) * \
+                Fraction(9, 10) *  \
+                self.config.fracao_10p_funcionarios
+        dezp_a_pagar = self.dia.dez_porcento_a_pagar()
+
+
+        self.adiciona_despesa_de_10p()
+        dezp_a_pagar -= Decimal("10")
+        self.assertEqual(self.dia.dez_porcento_a_pagar(), dezp_a_pagar)
