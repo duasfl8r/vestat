@@ -1,6 +1,19 @@
 Registro de mudanças - CHANGELOG
 ================================
 
+v1.2.1
+------
+
+- Correção: relatório anual passa a funcionar -- havia um bug no
+  *template* que exibia um erro na hora de gerar o relatório.
+
+- Inversão do sinal dos 10% a pagar -- um mostrador *maior que zero*
+  significa que *há dívida*. O outro jeito parecia causar muita
+  confusão.
+
+- Vários testes relativos aos 10% a pagar -- feitos pra assegurar que
+  os cálculos estão sendo feitos corretamente.
+
 v1.2.0
 ------
 

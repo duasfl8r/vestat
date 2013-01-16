@@ -11,13 +11,13 @@ from django.conf import settings
 
 DIRETORIO_DE_INSTALACAO = "C:\\vestat"
 
-ARQUIVOS = ({
-        "origem": ["caixa", "config", "media", "relatorios", "templates", "manage.py",
-                   "middleware.py", "settings.py", "urls.py", "views.py", "__init__.py"],
-        "destino": "vestat"
+ARQUIVOS = (
+     {
+         "origem": ["vestat"],
+         "destino": ""
      },
      {
-         "origem": [os.path.join("trecos", "iniciar_servidor.bat"), os.path.join("trecos", "vestat.py")],
+         "origem": [os.path.join("trecos", "iniciar_servidor.bat")],
          "destino": ""
      }
 )
