@@ -2,6 +2,7 @@
 import datetime
 import random
 from decimal import Decimal
+from fractions import Fraction
 
 from django.test import TestCase
 from django.db.models import Sum, Count
@@ -13,6 +14,12 @@ from vestat.config.models import VestatConfiguration
 from vestat.contabil.models import Registro, Transacao, Lancamento
 
 from caixa import NOME_DO_REGISTRO
+
+
+DESPESA_CATEGORIA_10P = "G"
+"""
+Código da categoria de despesa associada ao pagamento de 10% os funcionários.
+"""
 
 
 def random_date(year=None, month=None, day=None):
@@ -202,11 +209,22 @@ class DespesaTestCase(TestCase):
             despesa.save()
 
 
+class TestCaseVestatBoilerplate(TestCase):
+    """
+    Um TestCase que cria os objetos `contabil.models.Registro` e
+    `config.models.VestatConfiguration` usados na aplicação.
+    """
 
-class CaixaSemDiaDeTrabalhoTestCase(TestCase):
     def setUp(self):
+        self.config = VestatConfiguration()
+        self.config.save()
+
         self.registro = Registro(nome=NOME_DO_REGISTRO)
         self.registro.save()
+
+class CaixaSemDiaDeTrabalhoTestCase(TestCaseVestatBoilerplate):
+    def setUp(self):
+        super(CaixaSemDiaDeTrabalhoTestCase, self).setUp()
 
         self.c = Client()
         self.response = self.c.get("/caixa/", follow=True)
@@ -217,10 +235,9 @@ class CaixaSemDiaDeTrabalhoTestCase(TestCase):
     def test_sem_dia_de_trabalho(self):
         self.assertTrue("dia" not in self.response.context)
 
-class CaixaDiaDeTrabalhoZeradoTestCase(TestCase):
+class CaixaDiaDeTrabalhoZeradoTestCase(TestCaseVestatBoilerplate):
     def setUp(self):
-        self.registro = Registro(nome=NOME_DO_REGISTRO)
-        self.registro.save()
+        super(CaixaDiaDeTrabalhoZeradoTestCase, self).setUp()
 
         self.c = Client()
         self.url_hoje = "/caixa/2011/12/07/"
@@ -243,10 +260,9 @@ class CaixaDiaDeTrabalhoZeradoTestCase(TestCase):
         response = self.c.get(self.url_hoje + "remover", follow=True)
         self.assertTrue("dia" not in response.context)
 
-class CaixaAdicionarVendaFormTestCase(TestCase):
+class CaixaAdicionarVendaFormTestCase(TestCaseVestatBoilerplate):
     def setUp(self):
-        self.registro = Registro(nome=NOME_DO_REGISTRO)
-        self.registro.save()
+        super(CaixaAdicionarVendaFormTestCase, self).setUp()
 
         self.c = Client()
         self.url_hoje = "/caixa/2011/12/07/"
@@ -256,10 +272,9 @@ class CaixaAdicionarVendaFormTestCase(TestCase):
         response = self.c.get(self.url_hoje + "venda/adicionar")
         self.assertEqual(response.status_code, 200)
 
-class CaixaAdicionarVendaTestCase(TestCase):
+class CaixaAdicionarVendaTestCase(TestCaseVestatBoilerplate):
     def setUp(self):
-        self.registro = Registro(nome=NOME_DO_REGISTRO)
-        self.registro.save()
+        super(CaixaAdicionarVendaTestCase, self).setUp()
 
         self.c = Client()
         self.url_hoje = "/caixa/2011/12/07/"
@@ -293,12 +308,11 @@ class CaixaAdicionarVendaTestCase(TestCase):
 
 
 
-class CaixaFecharVendaSemCartaoTestCase(TestCase):
+class CaixaFecharVendaSemCartaoTestCase(TestCaseVestatBoilerplate):
     fixtures = ['initial_data.json']
 
     def setUp(self):
-        self.registro = Registro(nome=NOME_DO_REGISTRO)
-        self.registro.save()
+        super(CaixaFecharVendaSemCartaoTestCase, self).setUp()
 
         self.c = Client()
         self.url_hoje = "/caixa/2011/12/07/"
@@ -342,12 +356,11 @@ class CaixaFecharVendaSemCartaoTestCase(TestCase):
         self.assertEqual(self.venda.pgto_cheque, Decimal(self.data_fechar["pgto_cheque"]))
         self.assertEqual(list(self.venda.pagamentocomcartao_set.all()), [])
 
-class CaixaFecharVendaComCartaoTestCase(TestCase):
+class CaixaFecharVendaComCartaoTestCase(TestCaseVestatBoilerplate):
     fixtures = ['initial_data.json']
 
     def setUp(self):
-        self.registro = Registro(nome=NOME_DO_REGISTRO)
-        self.registro.save()
+        super(CaixaFecharVendaComCartaoTestCase, self).setUp()
 
         self.c = Client()
         self.url_hoje = "/caixa/2011/12/07/"
@@ -403,9 +416,9 @@ class CaixaFecharVendaComCartaoTestCase(TestCase):
         self.assertEqual(self.venda.pagamentocomcartao_set.all()[0].bandeira.id, self.data_cartao["bandeira"])
 
 
-class DiaDezPorcentoTestCase(TestCase):
+class DiaDezPorcentoTestCase(TestCaseVestatBoilerplate):
     """
-    Testes do cálculo de 10% a pagar e de seus processos subjacentes.
+    Testes do cálculo de 10% e de seus processos subjacentes.
 
     """
 
@@ -413,20 +426,15 @@ class DiaDezPorcentoTestCase(TestCase):
         """
         Cria os objetos necessários pra calcular os 10% a pagar:
 
-        - Objeto `config.models.VestatConfiguration`
-        - Objeto contabil.models.Registro`
         - Objeto `caixa.models.Dia`
         - Objeto `caixa.models.Venda`
 
         """
 
-        VestatConfiguration().save()
+        super(DiaDezPorcentoTestCase, self).setUp()
 
         self.dia = Dia(data=datetime.datetime(2012, 02, 14))
         self.dia.save()
-
-        self.registro = Registro(nome=NOME_DO_REGISTRO)
-        self.registro.save()
 
         self.venda = Venda(dia=self.dia,
                       mesa="1",
@@ -469,3 +477,76 @@ class DiaDezPorcentoTestCase(TestCase):
     def test_abrir_venda_aberta_nao_remove_transacao_10p(self):
         self.venda.abrir()
         self.assertEqual(len(self.registro.transacoes.all()), 0)
+
+
+class DiaDezPorcentoAPagarTestCase(TestCaseVestatBoilerplate):
+    """
+    Teste do cálculo do valor de 10% a pagar.
+    """
+
+    def setUp(self):
+        super(DiaDezPorcentoAPagarTestCase, self).setUp()
+
+        self.dia = Dia(data=datetime.datetime(2012, 02, 14))
+        self.dia.save()
+
+    def teste_10p_a_pagar_zerado(self):
+        self.assertEqual(self.dia.dez_porcento_a_pagar(), Decimal("0"))
+
+    def abre_venda_200_reais(self):
+        self.venda = Venda(dia=self.dia,
+                      mesa="1",
+                      hora_entrada=datetime.time(20, 00),
+                      hora_saida=datetime.time(22, 00),
+                      num_pessoas=10,
+                      conta=Decimal("200"),
+                      gorjeta=Decimal("20"),
+                      categoria="L",
+                      cidade_de_origem="Rio de Janeiro",
+                      pousada_que_indicou="Amarylis",
+                      pgto_dinheiro=Decimal("200"),
+        )
+        self.venda.save()
+
+    def teste_abre_venda_e_10p_a_pagar_continua_zerado(self):
+        self.abre_venda_200_reais()
+        self.assertEqual(self.dia.dez_porcento_a_pagar(), Decimal("0"))
+
+
+    def teste_fecha_venda_e_10p_a_pagar_aumenta_certo(self):
+        self.abre_venda_200_reais()
+        self.venda.fechar()
+
+        fracao_aumento_da_divida = Fraction.from_decimal(Decimal("20")) * \
+                Fraction(9, 10) *  \
+                self.config.fracao_10p_funcionarios
+        dezp_a_pagar = self.dia.dez_porcento_a_pagar()
+
+        self.assertEqual(dezp_a_pagar, Decimal(float(fracao_aumento_da_divida)))
+
+    def adiciona_despesa_de_10p(self):
+        self.despesa = DespesaDeCaixa(dia=self.dia,
+                categoria=DESPESA_CATEGORIA_10P,
+                valor=Decimal("-10"))
+        self.despesa.save()
+
+
+    def teste_adiciona_despesa_e_10p_a_pagar_diminui_certo(self):
+        self.adiciona_despesa_de_10p()
+
+        self.assertEqual(self.dia.dez_porcento_a_pagar(), Decimal("-10"))
+
+
+    def teste_adiciona_venda_e_despesa_e_10p_a_pagar_fica_certo(self):
+        self.abre_venda_200_reais()
+        self.venda.fechar()
+
+        fracao_aumento_da_divida = Fraction.from_decimal(Decimal("20")) * \
+                Fraction(9, 10) *  \
+                self.config.fracao_10p_funcionarios
+        dezp_a_pagar = self.dia.dez_porcento_a_pagar()
+
+
+        self.adiciona_despesa_de_10p()
+        dezp_a_pagar -= Decimal("10")
+        self.assertEqual(self.dia.dez_porcento_a_pagar(), dezp_a_pagar)

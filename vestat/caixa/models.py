@@ -382,7 +382,7 @@ class Dia(models.Model):
             ateh=self.data,
         )
 
-        return total_dividas_10p - pagamento_com_gorjetas
+        return pagamento_com_gorjetas - total_dividas_10p
     
     @classmethod
     def ajuste_total(cls, objects=None):

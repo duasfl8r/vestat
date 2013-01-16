@@ -38,23 +38,23 @@ Cálculo dos 10% a pagar
 O valor dos *10% a pagar* é calculado da seguinte forma:
 
 .. math::
-    DaP = \sum Despesa_{10\% func} - \sum Divida_{10\% func}
+    DaP =  \sum Divida_{10\% func} - \sum Despesa_{10\% func}
 
 Onde:
-
-* :math:`\sum Despesa_{10\% func}` é a soma de todas as despesas de 10%
-  pagos aos funcionários
 
 * :math:`\sum Divida_{10\% func}` é a soma de todas as dívidas de 10% a
   pagar acumuladas com as vendas.
 
+* :math:`\sum Despesa_{10\% func}` é a soma de todas as despesas de 10%
+  pagos aos funcionários
+
 Ou seja:
 
-* um valor negativo significa que se está devendo pros funcionários
+* um valor positivo significa que se está devendo pros funcionários
 
 * 0 significa que não há dívida
 
-* um valor positivo significa que se tem crédito com os funcionários
+* um valor negativo significa que se tem crédito com os funcionários
   para próximas dívidas de 10% a pagar.
 
 Dívidas de 10% a pagar
@@ -139,5 +139,3 @@ positivo à conta de fato *diminui a dívida*.
 Como o sistema de contabilidade usado é de *dupla-entrada*, o
 dinheiro somado à conta da dívida deve vir de algum lugar; é usada
 uma "conta de ajustes" pra esse efeito.
-
-tirando o valor da conta ``ajustes:10% a pagar`` e inserindo na conta ``dividas:contas a pagar:10%``

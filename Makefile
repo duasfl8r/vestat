@@ -1,10 +1,8 @@
+VERSION := $(shell cd vestat && python -c 'import settings; print(settings.VERSAO)')
 
 BUILD_DIR := _build
 
-VERSION := $(shell cd vestat; python -c 'import settings; print(settings.VERSAO)')
-BUILD_NAME := vestat_v$(VERSION)
-
-BUILD_FILES := deps docs trecos CHANGELOG.txt vestat
+BUILD_FILES := CHANGELOG.txt deps requirements.txt vestat
 
 $(BUILD_DIR):
 	mkdir $(BUILD_DIR)
@@ -15,10 +13,11 @@ build: $(BUILD_DIR)
 		--exclude='venv' \
 		--exclude='*.pyc' \
 		--exclude='__pycache__' \
-		--transform "s@^@$(BUILD_NAME)/@"
+		--exclude='vestat.sqlite' \
+		--transform "s@^@$(BUILD_NAME)/vestat/@"
 
 test:
-	python2 manage.py test caixa contabil
+	cd vestat && python2 manage.py test caixa contabil relatorios
 
 clean:
 	rm _build -rf

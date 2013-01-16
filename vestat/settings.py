@@ -1,6 +1,6 @@
 # -*- encoding: utf8 -*-
 NOME_APLICACAO = "vestat"
-VERSAO = "1.2.0rc1"
+VERSAO = "1.2.1"
 
 ### NÃO ALTERE NADA DAQUI PRA FRENTE SE NÃO SOUBER O QUE ESTÁ FAZENDO ###
 

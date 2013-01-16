@@ -27,6 +27,25 @@ def colorir_num(input):
     except (ValueError, TypeError):
         return input
 
+@register.filter
+def colorir_num_inverso(input):
+    """Recebe um número e retorna o número marcado com a classe 'neg' se
+    for positivo, ou 'pos' se for negativo -- ou seja, colore ele ao
+    contrário do usual.
+    
+    Usado no mostrador de 10% a pagar -- que é bom se estiver negativo."""
+    try:
+        if input > 0:
+            s = 'R$ <span class="neg">%s</span>' % (number_format(input))
+        elif input == 0:
+            s = 'R$ %s' % (number_format(input))
+        else:
+            s = 'R$ <span class="pos">%s</span>' % (number_format(input))
+        return mark_safe(s)
+    
+    except (ValueError, TypeError):
+        return input
+
 UM_DIA = datetime.timedelta(1, 0, 0)
 
 @register.filter
