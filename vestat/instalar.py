@@ -11,9 +11,13 @@ from django.conf import settings
 
 DIRETORIO_DE_INSTALACAO = "C:\\vestat"
 
+DJANGO_APP_DIRS = [app[7:] for app in settings.INSTALLED_APPS if app.startswith("vestat")]
+
 ARQUIVOS = ({
-        "origem": ["caixa", "config", "media", "relatorios", "templates", "manage.py",
-                   "middleware.py", "settings.py", "urls.py", "views.py", "__init__.py"],
+        "origem": DJANGO_APP_DIRS + ["media", "templates", "manage.py",
+            "middleware.py", "settings.py", "urls.py", "views.py",
+            "context_processors.py", "utils.py", "__init__.py"],
+
         "destino": "vestat"
      },
      {
