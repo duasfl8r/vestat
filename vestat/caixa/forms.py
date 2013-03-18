@@ -1,7 +1,7 @@
 import django.forms
 from models import *
 
-from vestat.utils import LocalizedModelForm
+from vestat.django_utils import LocalizedModelForm
 
 class DiaForm(LocalizedModelForm):
     class Meta:

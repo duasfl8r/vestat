@@ -11,7 +11,7 @@ from django.contrib import admin
 
 from models import Registro, Transacao, Lancamento
 
-from vestat.utils import LocalizedModelForm
+from vestat.django_utils import LocalizedModelForm
 from vestat.caixa import NOME_DO_REGISTRO
 
 class RegistroAdmin(admin.ModelAdmin):
