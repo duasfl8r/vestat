@@ -1,14 +1,27 @@
 # -*- encoding: utf8 -*-
-NOME_APLICACAO = "vestat"
-VERSAO = "1.2.1"
-
-### NÃO ALTERE NADA DAQUI PRA FRENTE SE NÃO SOUBER O QUE ESTÁ FAZENDO ###
-
 import os
 import os.path
 
+import appdirs
+
+from utils import mkdir_p
+
+NOME_APLICACAO = "vestat"
+AUTOR = "Lucas Teixeira"
+VERSAO = "1.2.1"
+
+dirs = appdirs.AppDirs(NOME_APLICACAO, AUTOR)
+
 BASE_DIR = os.path.join(os.getcwd())
-BANCO_DE_DADOS = os.path.join(BASE_DIR, NOME_APLICACAO + '.sqlite')
+DATA_DIR = dirs.user_data_dir
+LOGS_DIR = dirs.user_log_dir
+
+for d in [DATA_DIR, LOGS_DIR]:
+    if not os.path.exists(d):
+        print("Diretório {d} não existe; criando...".format(**vars()))
+        mkdir_p(d)
+
+BANCO_DE_DADOS = os.path.join(DATA_DIR, NOME_APLICACAO + '.sqlite')
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
@@ -54,7 +67,7 @@ LOGGING = {
             'level':'DEBUG',
             'class':'logging.handlers.RotatingFileHandler',
             'formatter':'verbose',
-            'filename':NOME_APLICACAO+'.log',
+            'filename': os.path.join(LOGS_DIR, NOME_APLICACAO + '.log'),
             'maxBytes': 1048576,
             'backupCount': 3,
 
@@ -66,6 +79,7 @@ LOGGING = {
             'propagate': True,
             'level':'INFO',
         },
+
         NOME_APLICACAO: {
             'handlers': ['file'],
             'level': 'DEBUG',
