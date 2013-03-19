@@ -4,6 +4,9 @@
 Classes e funções utilitárias que dependem do Django.
 """
 
+from django.core.management import call_command
+from django.conf import settings
+from django.contrib.auth.models import User
 import django.forms
 
 class LocalizedModelForm(django.forms.ModelForm):
@@ -21,3 +24,14 @@ class LocalizedModelForm(django.forms.ModelForm):
                 field.widget.is_localized = True
         return new_class
 
+
+def criar_superusuario():
+    """
+    Cria um superusuário de acordo com as configurações de
+    `settings.AUTOLOGIN_USERNAME` e `settings.AUTOLOGIN_PASSWORD`.
+    """
+
+    call_command('createsuperuser', interactive=False, username=settings.AUTOLOGIN_USERNAME, email="dev@lucasteixeira.com")
+    superuser = User.objects.get(username=settings.AUTOLOGIN_USERNAME)
+    superuser.set_password(settings.AUTOLOGIN_PASSWORD)
+    superuser.save()

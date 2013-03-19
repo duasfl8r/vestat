@@ -1,4 +1,8 @@
 # -*- encoding: utf-8 -*-
+import logging
+import traceback
+import pprint
+
 from django.core.management import call_command
 from django.conf import settings
 from django.shortcuts import render_to_response
@@ -7,10 +11,7 @@ from django.contrib.messages.api import info
 from django.contrib.auth import authenticate, login
 
 from vestat.config.models import VestatConfiguration
-
-import logging
-import traceback
-import pprint
+from vestat.django_utils import criar_superusuario
 
 
 logger = logging.getLogger(settings.NOME_APLICACAO)
@@ -24,6 +25,8 @@ class AutocreateDatabaseMiddleware():
         except IOError:
             call_command("syncdb", interactive=False)
             info(request, "Banco de dados criado.")
+            criar_superusuario()
+            info(request, "Superusuário criado.")
 
 class AutocreateConfigMiddleware():
     def process_request(self, request):
