@@ -16,8 +16,8 @@
 <p>Informe o administrador, e, se possível, anote os
 passos que levaram a esse erro.</p>
 
-{% if settings %}
-<p>Detalhes técnicos do erro encontram-se no arquivo: <code>{{ settings.BASE_DIR|ospathjoin:settings.LOGGING.handlers.file.filename }}</code></p>
+{% if project_settings %}
+<p class="large">Detalhes técnicos do erro encontram-se no arquivo: <pre>{{ project_settings.LOGGING.handlers.file.filename }}</pre></p>
 {% endif %}
 
 <p><a href="/">Clique aqui para reiniciar o programa</a></p>

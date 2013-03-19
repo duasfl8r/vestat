@@ -22,3 +22,5 @@ urlpatterns = patterns('',
      (r'^m/(?P<path>.*)$', 'django.views.static.serve',
              {'document_root': BASE_DIR + '/media'}),
 )
+
+handler500 = 'views.server_error'
