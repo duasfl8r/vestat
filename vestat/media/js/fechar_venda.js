@@ -5,7 +5,7 @@ $(document).ready(function() {
     var minutos = agora.getMinutes();
     if (minutos < 10) { minutos = "0" + minutos; }
     if (horas < 10) { horas = "0" + horas; }
-    
+
     value = $("#id_hora_saida").val()
     if (value) {
         $("#id_hora_saida").mask("99:99");
@@ -14,4 +14,6 @@ $(document).ready(function() {
         $("#id_hora_saida").mask("99:99");
         $("#id_hora_saida").val(horas + ":" + minutos);
     }
+
+    $("#id_hora_saida").focus();
 });
