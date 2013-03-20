@@ -194,13 +194,13 @@ class Dia(models.Model):
         return self.faturamento_cartao_credito() + self.faturamento_cartao_debito()
     
     def faturamento_cartao_debito(self):
-        cartao = self.vendas_fechadas().filter(pagamentocomcartao__categoria='D') \
+        cartao = self.vendas_fechadas().filter(pagamentocomcartao__bandeira__categoria='D') \
                                   .aggregate(Sum('pagamentocomcartao__valor')) \
                                     ['pagamentocomcartao__valor__sum'] 
         return cartao if cartao else 0
     
     def faturamento_cartao_credito(self):
-        cartao = self.vendas_fechadas().filter(pagamentocomcartao__categoria='C') \
+        cartao = self.vendas_fechadas().filter(pagamentocomcartao__bandeira__categoria='C') \
                                           .aggregate(Sum('pagamentocomcartao__valor')) \
                                             ['pagamentocomcartao__valor__sum'] 
         return cartao if cartao else 0
@@ -229,7 +229,7 @@ class Dia(models.Model):
     @classmethod
     def faturamento_total_cartao_debito(cls, objects=None):
         if objects is None: objects = Dia.objects.all()
-        pgto = objects.filter(venda__fechada=True, venda__pagamentocomcartao__categoria='D') \
+        pgto = objects.filter(venda__fechada=True, venda__pagamentocomcartao__bandeira__categoria='D') \
                          .aggregate(Sum('venda__pagamentocomcartao__valor')) \
                            ['venda__pagamentocomcartao__valor__sum']
         return pgto if pgto else 0
@@ -237,7 +237,7 @@ class Dia(models.Model):
     @classmethod
     def faturamento_total_cartao_credito(cls, objects=None):
         if objects is None: objects = Dia.objects.all()
-        pgto = objects.filter(venda__fechada=True, venda__pagamentocomcartao__categoria='C') \
+        pgto = objects.filter(venda__fechada=True, venda__pagamentocomcartao__bandeira__categoria='C') \
                          .aggregate(Sum('venda__pagamentocomcartao__valor')) \
                            ['venda__pagamentocomcartao__valor__sum']
         return pgto if pgto else 0

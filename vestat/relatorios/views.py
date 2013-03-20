@@ -275,7 +275,7 @@ def pgtos_por_bandeira(dias):
 
     agrupado = {}
     for pgto in pgtos:
-        key = (pgto.bandeira.nome, pgto.get_categoria_display())
+        key = (pgto.bandeira.nome)
         somar_dict(agrupado, key, { "pagamentos": 1,
                                      "entrada": pgto.valor,
                                    })
@@ -283,7 +283,7 @@ def pgtos_por_bandeira(dias):
     dados = []
     for grupo in agrupado.keys():
         row = {}
-        row["bandeira"] = "%s %s" % (grupo[0], grupo[1])
+        row["bandeira"] = grupo
         row["pagamentos"] = agrupado[grupo]["pagamentos"]
         row["entrada"] = agrupado[grupo]["entrada"]
         dados.append(row)

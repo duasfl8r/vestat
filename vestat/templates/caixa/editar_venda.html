@@ -63,7 +63,6 @@
                     <tr>
                         <td>{{ pgto_cartao.valor|colorir_num }}</td>
                         <td>{{ pgto_cartao.bandeira }}</td>
-                        <td>{{ pgto_cartao.get_categoria_display }}</td>
                         <td><a href="{{ pgto_cartao.get_absolute_url }}remover">Remover</a></td>
                     </tr>
                 {% endfor %}
@@ -72,7 +71,6 @@
                     <tr>
                         <td>{{ form_cartao.valor }}</td>
                         <td>{{ form_cartao.bandeira }}</td>
-                        <td>{{ form_cartao.categoria }}</td>
                         <td><input type="submit" name="adicionar_pgto_cartao" value="Adicionar" /></td>
                     </tr>
                 </tfoot>
