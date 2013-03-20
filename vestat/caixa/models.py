@@ -569,31 +569,34 @@ class Dia(models.Model):
 
 
 class Bandeira(models.Model):
+    CONTAGEM_DE_DIAS_CHOICES = (
+        ('U', 'Dias úteis'),
+        ('C', 'Dias corridos')
+    )
+
+    CATEGORIA_CHOICES = (
+        ('C', 'Crédito'),
+        ('D', 'Débito')
+    )
+
     nome = models.CharField(max_length=20)
-    taxa_credito = models.DecimalField("Taxa de débito", max_digits=6, decimal_places=5)
-    taxa_debito = models.DecimalField("Taxa de débito", max_digits=6, decimal_places=5)
+    taxa = models.DecimalField("Taxa coletada pela bandeira", max_digits=6, decimal_places=5)
+    prazo_de_deposito = models.IntegerField("Dias até o depósito")
+    contagem_de_dias = models.CharField(max_length=1, choices=CONTAGEM_DE_DIAS_CHOICES)
+    categoria = models.CharField(max_length=1, choices=CATEGORIA_CHOICES)
 
     def __unicode__(self):
         return self.nome
 
 
 class PagamentoComCartao(models.Model):
-    CATEGORIA_CHOICES = (
-        ('D', u'Débito'),
-        ('C', u'Crédito')
-    )
-
     valor = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
     venda = models.ForeignKey('Venda', editable=False)
     bandeira = models.ForeignKey(Bandeira)
-    categoria = models.CharField(max_length=1, choices=CATEGORIA_CHOICES)
 
     def taxa(self):
         """Retorna a taxa cobrada pela bandeira do cartão por esse pagamento."""
-        if self.categoria == 'C':
-            return self.valor * self.bandeira.taxa_debito
-        else:
-            return self.valor * self.bandeira.taxa_debito
+        return self.valor * self.bandeira.taxa
 
     def get_absolute_url(self):
         return self.venda.get_absolute_url() + "cartao/{0}/".format(self.id)
@@ -603,14 +606,13 @@ class PagamentoComCartao(models.Model):
 
         # cria despesa de caixa pra taxa do cartão de crédito
         self.venda.dia.movimentacaobancaria_set.create(valor=-self.taxa(),
-            categoria='T', descricao=u"{0} {1}".format(
-                self.bandeira.nome, self.get_categoria_display()),
+            categoria='T', descricao=self.bandeira.nome,
             pgto_cartao=self)
 
         self.venda.dia.save()
 
     def __unicode__(self):
-        return "R$ %.2f, %s, %s" % (self.valor, self.bandeira, self.get_categoria_display())
+        return "R$ %.2f, %s" % (self.valor, self.bandeira)
 
 
 class Venda(models.Model):
