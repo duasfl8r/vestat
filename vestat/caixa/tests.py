@@ -380,7 +380,6 @@ class CaixaFecharVendaComCartaoTestCase(TestCaseVestatBoilerplate):
         self.data_cartao = {
                 "adicionar_pgto_cartao": "Adicionar",
                 "bandeira": 1,
-                "categoria": "D",
                 "valor": "60",
         }
         response = self.c.post(self.venda.get_absolute_url() + "saida", self.data_cartao, follow=True)
@@ -412,7 +411,6 @@ class CaixaFecharVendaComCartaoTestCase(TestCaseVestatBoilerplate):
         self.assertEqual(self.venda.pgto_cheque, Decimal(self.data_fechar["pgto_cheque"]))
         self.assertEqual(len(self.venda.pagamentocomcartao_set.all()), 1)
         self.assertEqual(self.venda.pagamentocomcartao_set.all()[0].valor, Decimal(self.data_cartao["valor"]))
-        self.assertEqual(self.venda.pagamentocomcartao_set.all()[0].categoria, self.data_cartao["categoria"])
         self.assertEqual(self.venda.pagamentocomcartao_set.all()[0].bandeira.id, self.data_cartao["bandeira"])
 
 
