@@ -579,6 +579,7 @@ class Bandeira(models.Model):
         ('D', 'Débito')
     )
 
+    ativa = models.BooleanField("Ativo?", help_text="Cartões ativos podem ser escolhidos pra um pagamento.", default=True)
     nome = models.CharField(max_length=20)
     taxa = models.DecimalField("Taxa coletada pela bandeira", max_digits=6, decimal_places=5)
     prazo_de_deposito = models.IntegerField("Dias até o depósito")
@@ -604,7 +605,6 @@ class PagamentoComCartao(models.Model):
     def save(self, *args, **kwargs):
         super(PagamentoComCartao, self).save(*args, **kwargs)
 
-        # cria despesa de caixa pra taxa do cartão de crédito
         self.venda.dia.movimentacaobancaria_set.create(valor=-self.taxa(),
             categoria='T', descricao=self.bandeira.nome,
             pgto_cartao=self)
