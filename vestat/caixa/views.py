@@ -25,8 +25,13 @@ def index(request):
 
 def criar_dia(request, ano, mes, dia):
     data = datetime.date(int(ano), int(mes), int(dia))
-    dia = Dia(data=data, feriado=False)
-    dia.save()
+
+    try:
+        dia = Dia.objects.get(data=data)
+    except Dia.DoesNotExist:
+        dia = Dia(data=data, feriado=False)
+        dia.save()
+
     return redirect(dia)
 
 def remover_dia(request, ano, mes, dia):
