@@ -43,3 +43,5 @@ class FecharVendaForm(LocalizedModelForm):
 class PagamentoComCartaoForm(LocalizedModelForm):
     class Meta:
         model = PagamentoComCartao
+
+    bandeira = django.forms.models.ModelChoiceField(queryset=Bandeira.objects.filter(ativa=True))
