@@ -15,6 +15,7 @@ def converter_cartoes(filename):
             u"model": u"caixa.bandeira",
 
             u"fields": {
+                u"ativa": True,
                 u"nome": bandeira["fields"]["nome"] + u" Crédito",
                 u"taxa": bandeira["fields"]["taxa_credito"],
                 u"prazo_de_deposito": 31,
@@ -28,6 +29,7 @@ def converter_cartoes(filename):
             u"model": u"caixa.bandeira",
 
             u"fields": {
+                u"ativa": True,
                 u"nome": bandeira["fields"]["nome"] + u" Débito",
                 u"taxa": bandeira["fields"]["taxa_debito"],
                 u"prazo_de_deposito": 2,
