@@ -7,26 +7,25 @@ from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
 
 from vestat.config.management.converter_dump import converter_cartoes
+from vestat.django_utils import criar_superusuario
 
-def versao_1_2_0(cmd, *args):
+def sync_and_evolve():
     # Sincroniza o banco de dados
     call_command('syncdb', interactive=False)
 
     # Evolui o banco de dados com o Django Evolution
     call_command('evolve', interactive=False, execute=True, hint=True, database="default")
 
-    # Cria supe
-    call_command('createsuperuser', interactive=False, username=settings.AUTOLOGIN_USERNAME, email="dev@lucasteixeira.com")
-
-    # Configura a senha
-    superuser = User.objects.get(username=settings.AUTOLOGIN_USERNAME)
-    superuser.set_password(settings.AUTOLOGIN_PASSWORD)
-    superuser.save()
+def versao_1_2_0(cmd, *args):
+    sync_and_evolve()
+    criar_superusuario()
 
 def versao_1_2_1(cmd, *args):
     if len(args) != 1:
         raise CommandError("Uso: atualizar 1.2.1 <dump_file>\n\ndump: arquivo de dump do banco de dados anterior (JSON)")
 
+    sync_and_evolve()
+    criar_superusuario()
 
     print("Convertendo cartões de crédito e pagamentos para novo modelo...")
 
