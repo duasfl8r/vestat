@@ -579,7 +579,7 @@ class Bandeira(models.Model):
         ('D', 'Débito')
     )
 
-    ativa = models.BooleanField("Ativo?", help_text="Cartões ativos podem ser escolhidos pra um pagamento.", default=True)
+    ativa = models.BooleanField("Ativa?", help_text="Bandeiras ativas podem ser escolhidas pra um pagamento.", default=True)
     nome = models.CharField(max_length=20)
     taxa = models.DecimalField("Taxa coletada pela bandeira", max_digits=6, decimal_places=5)
     prazo_de_deposito = models.IntegerField("Dias até o depósito")
