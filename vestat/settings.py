@@ -41,6 +41,8 @@ ID_CONFIG = 1
 AUTOLOGIN_USERNAME = "vestat"
 AUTOLOGIN_PASSWORD = "a vespa e o gestalt"
 
+ALLOWED_HOSTS = ['*']
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
