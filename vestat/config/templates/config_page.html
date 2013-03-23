@@ -5,7 +5,7 @@
 <h1>{{ page.name }}</h1>
 {% for group in page.groups %}
     {% if group.links %}
-        <h2>{{ group.name }}</h2>
+    {% if group.name %}<h2>{{ group.name }}</h2>{% endif %}
         <ul>
         {% for link in group.links %}
         <li>
