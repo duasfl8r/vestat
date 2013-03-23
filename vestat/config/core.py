@@ -1,6 +1,4 @@
 # -*- encoding: utf-8 -*-
-from django.core.urlresolvers import reverse_lazy
-from models import VestatConfiguration
 
 class Link():
     def __init__(self, name, url, description=None):
@@ -35,4 +33,3 @@ config_pages = {
     "vestat": Page("Configurações do vestat")
 }
 
-config_pages["vestat"].add(Link("Configurações gerais", reverse_lazy("admin:config_vestatconfiguration_change", args=[1])))
