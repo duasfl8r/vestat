@@ -9,10 +9,11 @@
         <ul>
         {% for link in group.links %}
         <li>
-            <p><a href="{{ link.url }}">{{ link.name }}</a></p>
+            <p><a href="{{ link.url }}">{{ link.name }}</a>
             {% if link.description %}
-                <p>{{ link.description }}</p>
+            - <span class="description">{{ link.description }}</span>
             {% endif %}
+            </p>
         </li>
         {% endfor %}
         </ul>
