@@ -30,6 +30,6 @@ class Page():
         ]
 
 config_pages = {
-    "vestat": Page("Configurações do vestat")
+    "vestat": Page("Configurações")
 }
 
