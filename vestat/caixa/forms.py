@@ -45,3 +45,7 @@ class PagamentoComCartaoForm(LocalizedModelForm):
         model = PagamentoComCartao
 
     bandeira = django.forms.models.ModelChoiceField(queryset=Bandeira.objects.filter(ativa=True))
+
+class BandeiraForm(LocalizedModelForm):
+    class Meta:
+        model = Bandeira
