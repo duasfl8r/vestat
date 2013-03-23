@@ -22,7 +22,7 @@ class Page():
         group.append(link)
 
     def groups(self):
-        group_tuples = [("Gerais", self._default)] + self._configurations.items()
+        group_tuples = [("", self._default)] + self._configurations.items()
 
         return [
             { "name": n, "links": l }
