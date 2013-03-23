@@ -23,7 +23,7 @@ for d in [DATA_DIR, LOGS_DIR]:
 
 BANCO_DE_DADOS = os.path.join(DATA_DIR, NOME_APLICACAO + '.sqlite')
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 ADMINS = (("Lucas", "lucas@lucasteixeira.com"))
 MANAGERS = ADMINS
@@ -40,6 +40,8 @@ ID_CONFIG = 1
 # Informações pro AutologinMiddleware
 AUTOLOGIN_USERNAME = "vestat"
 AUTOLOGIN_PASSWORD = "a vespa e o gestalt"
+
+ALLOWED_HOSTS = ['*']
 
 LOGGING = {
     'version': 1,
@@ -103,10 +105,27 @@ NUMBER_GROUPING = 3
 TIME_ZONE = 'America/Sao_Paulo'
 LANGUAGE_CODE = 'pt-br'
 SITE_ID = 1
+
+SITE_URL = "http://localhost:8000/"
+
 USE_I18N = True
 USE_L10N = True
-MEDIA_URL = 'http://localhost:8000/m/'
-MEDIA_PREFIX = '/m/'
+
+MEDIA_URL = '/m/'
+
+ADMIN_MEDIA_PREFIX =  '/static/admin/'
+
+STATICFILES_DIRS = (
+)
+
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
 SECRET_KEY = 'e*fg6gmbnx_+4*ftc&biozg+7+zkshn97yyltu9z7)j(gn$=cs'
 TEMPLATE_LOADERS = (
         'django.template.loaders.filesystem.Loader',
@@ -149,4 +168,5 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.messages',
     'django.contrib.auth',
+    'django.contrib.staticfiles',
 )
