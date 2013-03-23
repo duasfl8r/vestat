@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+<h1>{{ page.name }}</h1>
+{% for group in page.groups %}
+    {% if group.links %}
+    {% if group.name %}<h2>{{ group.name }}</h2>{% endif %}
+        <ul>
+        {% for link in group.links %}
+        <li>
+            <p><a href="{{ link.url }}">{{ link.name }}</a>
+            {% if link.description %}
+            - <span class="description">{{ link.description }}</span>
+            {% endif %}
+            </p>
+        </li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+{% endfor %}
+</ul>
+{% endblock %}

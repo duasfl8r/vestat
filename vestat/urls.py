@@ -3,6 +3,7 @@ from django.contrib import admin
 
 import vestat.caixa.urls
 import vestat.relatorios.urls
+import vestat.config.urls
 import views
 from vestat.settings import BASE_DIR
 
@@ -18,6 +19,7 @@ urlpatterns = patterns('',
      (r'^admin/', include(admin.site.urls)),
      (r'^$', views.index),
      (r'^caixa/', include(vestat.caixa.urls)),
+     (r'^config/', include(vestat.config.urls)),
      (r'^relatorios/', include(vestat.relatorios.urls)),
      (r'^m/(?P<path>.*)$', 'django.views.static.serve',
              {'document_root': BASE_DIR + '/media'}),

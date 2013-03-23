@@ -31,7 +31,10 @@ def criar_superusuario():
     `settings.AUTOLOGIN_USERNAME` e `settings.AUTOLOGIN_PASSWORD`.
     """
 
-    call_command('createsuperuser', interactive=False, username=settings.AUTOLOGIN_USERNAME, email="dev@lucasteixeira.com")
-    superuser = User.objects.get(username=settings.AUTOLOGIN_USERNAME)
-    superuser.set_password(settings.AUTOLOGIN_PASSWORD)
-    superuser.save()
+    try:
+        superuser = User.objects.get(username=settings.AUTOLOGIN_USERNAME)
+    except User.DoesNotExist:
+        call_command('createsuperuser', interactive=False, username=settings.AUTOLOGIN_USERNAME, email="dev@lucasteixeira.com")
+        superuser = User.objects.get(username=settings.AUTOLOGIN_USERNAME)
+        superuser.set_password(settings.AUTOLOGIN_PASSWORD)
+        superuser.save()
