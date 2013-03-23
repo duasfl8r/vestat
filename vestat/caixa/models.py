@@ -13,9 +13,11 @@ from django.db.models.query_utils import Q
 
 from django.conf import settings
 from django.core import serializers
+from django.core.urlresolvers import reverse_lazy
 import operator
 
 from caixa import NOME_DO_REGISTRO
+from vestat.config import config_pages, Link
 from vestat.config.models import VestatConfiguration
 from vestat.contabil.models import Registro, Transacao, Lancamento
 from vestat.contabil import join
@@ -895,3 +897,12 @@ class MovimentacaoBancaria(models.Model):
 
     def get_absolute_url(self):
         return self.dia.get_absolute_url() + "movbancaria/{0}/".format(self.id)
+
+config_pages["vestat"].add(
+    Link(
+        "Bandeiras de cartão de crédito/débito",
+        reverse_lazy("admin:caixa_bandeira_changelist"),
+    ),
+
+    group_name="caixa"
+)
