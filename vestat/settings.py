@@ -105,6 +105,9 @@ NUMBER_GROUPING = 3
 TIME_ZONE = 'America/Sao_Paulo'
 LANGUAGE_CODE = 'pt-br'
 SITE_ID = 1
+
+SITE_URL = "http://localhost:8000/"
+
 USE_I18N = True
 USE_L10N = True
 
