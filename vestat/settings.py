@@ -105,8 +105,22 @@ LANGUAGE_CODE = 'pt-br'
 SITE_ID = 1
 USE_I18N = True
 USE_L10N = True
-MEDIA_URL = 'http://localhost:8000/m/'
-MEDIA_PREFIX = '/m/'
+
+MEDIA_URL = '/m/'
+
+ADMIN_MEDIA_PREFIX =  '/static/admin/'
+
+STATICFILES_DIRS = (
+)
+
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
 SECRET_KEY = 'e*fg6gmbnx_+4*ftc&biozg+7+zkshn97yyltu9z7)j(gn$=cs'
 TEMPLATE_LOADERS = (
         'django.template.loaders.filesystem.Loader',
@@ -149,4 +163,5 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.messages',
     'django.contrib.auth',
+    'django.contrib.staticfiles',
 )
