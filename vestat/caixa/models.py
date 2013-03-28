@@ -902,6 +902,7 @@ config_pages["vestat"].add(
     Link(
         "Bandeiras de cartão de crédito/débito",
         reverse_lazy("admin:caixa_bandeira_changelist"),
+        "Adicionar/remover/editar"
     ),
 
     group_name="caixa"
