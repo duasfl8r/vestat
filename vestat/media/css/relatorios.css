@@ -1,13 +1,10 @@
-body {
-    font-size: 11px;
-}
-
 .content {
     width: 95%;
     margin: 0 auto;
 }
 
 table {
+    font-size: 11px;
     border-collapse: collapse;
 }
 
