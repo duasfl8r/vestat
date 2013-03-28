@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 
+{% block title %}
+    <h1>{{ page.name }}</h1>
+{% endblock %}
 
 {% block content %}
-<h1>{{ page.name }}</h1>
 {% for group in page.groups %}
     {% if group.links %}
     {% if group.name %}<h2>{{ group.name }}</h2>{% endif %}
