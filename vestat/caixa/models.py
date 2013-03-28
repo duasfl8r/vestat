@@ -904,6 +904,4 @@ config_pages["vestat"].add(
         reverse_lazy("admin:caixa_bandeira_changelist"),
         "Adicionar/remover/editar"
     ),
-
-    group_name="caixa"
 )
