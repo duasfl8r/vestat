@@ -3,10 +3,13 @@ body {
     font-size: 13px;
 }
 
+h1,h2,h3,h4,h5,h6 {
+    color: #5f0070;
+}
+
 h1 {
     text-align: center;
     margin-top: 10px;
-    color: #5f0070;
 }
 
 h2.caixa {
