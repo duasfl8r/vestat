@@ -597,6 +597,7 @@ class PagamentoComCartao(models.Model):
     venda = models.ForeignKey('Venda', editable=False)
     bandeira = models.ForeignKey(Bandeira)
 
+    @property
     def taxa(self):
         """Retorna a taxa cobrada pela bandeira do cartão por esse pagamento."""
         return self.valor * self.bandeira.taxa
@@ -607,7 +608,7 @@ class PagamentoComCartao(models.Model):
     def save(self, *args, **kwargs):
         super(PagamentoComCartao, self).save(*args, **kwargs)
 
-        self.venda.dia.movimentacaobancaria_set.create(valor=-self.taxa(),
+        self.venda.dia.movimentacaobancaria_set.create(valor=-self.taxa,
             categoria='T', descricao=self.bandeira.nome,
             pgto_cartao=self)
 
