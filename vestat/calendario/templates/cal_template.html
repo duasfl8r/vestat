@@ -1,0 +1,38 @@
+{% extends "base_wide.html" %}
+{% load calendario %}
+
+{% block head %}
+    {{ block.super }}
+
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/calendario.css" />
+{% endblock %}
+
+{% block title %}
+<h1>
+    <a class="botao" href="{% url 'calendario:events_calendar' previous_year previous_month %}" title="{{ previous_month_name|capfirst }} {{ previous_year }}">&lt;</a>
+
+Calendário
+
+<a class="botao" href="{% url 'calendario:events_calendar' next_year next_month %}" title="{{ next_month_name|capfirst }} {{ next_year }}">&gt;</a>
+</h1>
+{% endblock %}
+
+{% block content %}
+<form id="ir-para-mes" method="POST">
+    <span id="input-year"{% if form.year.errors %} class="error"{% endif %}>
+        {{ form.year.label_tag }}
+        {{ form.year }}
+    </span>
+
+    <span id="input-month"{% if form.month.errors %} class="error"{% endif %}>
+        {{ form.month.label_tag }}
+        {{ form.month }}
+    </span>
+
+    <input type="submit" value="Ir">
+</div>
+
+<div id="calendar">
+      {% calendar year month events %}
+</div>
+{% endblock %}
