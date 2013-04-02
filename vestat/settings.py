@@ -83,7 +83,7 @@ LOGGING = {
         },
 
         NOME_APLICACAO: {
-            'handlers': ['file'],
+            'handlers': ['console', 'file'],
             'level': 'DEBUG',
         }
     }
