@@ -176,7 +176,7 @@ form#feriado label {
     margin-left: 0px;
 }
 
-form label:after, #adicionar_despesa label:after, #adicionar_movbancaria label:after
+#adicionar_despesa label:after, #adicionar_movbancaria label:after
     { content: ':'; }
 
 form#feriado label:after { content: '' }
