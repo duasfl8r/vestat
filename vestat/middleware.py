@@ -42,12 +42,12 @@ class ExceptionLoggerMiddleware():
     """Logs exceptions in a file."""
 
     def process_exception(self, request, exception):
-        error_data = ["URL: " + request.path + "\n",
-                      traceback.format_exc(),
-                      "GET:\n" + pprint.pformat(request.GET),
-                      "POST:\n" + pprint.pformat(request.POST),
+        error_data = [u"URL: " + request.path + "\n",
+                      traceback.format_exc().decode("utf-8"),
+                      u"GET:\n" + pprint.pformat(request.GET),
+                      u"POST:\n" + pprint.pformat(request.POST),
                       ]
-        error_msg = "\n".join(error_data)
+        error_msg = u"\n".join(error_data)
         logger.error(error_msg)
 
         return render_to_response('500.html', {
