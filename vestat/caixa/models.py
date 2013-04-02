@@ -596,6 +596,13 @@ class PagamentoComCartao(models.Model):
     venda = models.ForeignKey('Venda', editable=False)
     bandeira = models.ForeignKey(Bandeira)
 
+    data_do_deposito = models.DateField("Data do depósito do pagamento", editable=False, null=True)
+    # Data do depósito do pagamento feito pelo cliente na conta do restaurante.
+    #
+    # Embora ter essa data como um campo viole o princípio DRY (Don't Repeat Yourself),
+    # isso torna muito mais fácil a montagem do calendário com a
+    # previsão dos dias de pagamento.
+
     @property
     def taxa(self):
         """Retorna a taxa cobrada pela bandeira do cartão por esse pagamento."""
@@ -603,6 +610,28 @@ class PagamentoComCartao(models.Model):
 
     def get_absolute_url(self):
         return self.venda.get_absolute_url() + "cartao/{0}/".format(self.id)
+
+    def _data_do_deposito(self):
+        def dia_util(data):
+            return data.weekday() in range(0, 5)
+
+        data_da_venda = self.venda.dia.data
+        um_dia = datetime.timedelta(1)
+        intervalo = datetime.timedelta(0)
+        faltam_dias = self.bandeira.prazo_de_deposito
+        soh_dias_uteis = self.bandeira.contagem_de_dias == "U"
+
+        while faltam_dias:
+            intervalo += um_dia
+            data_teste = data_da_venda + intervalo
+
+            if soh_dias_uteis:
+                if dia_util(data_teste):
+                    faltam_dias -= 1
+            else:
+                faltam_dias -= 1
+
+        return data_da_venda + intervalo
 
     def save(self, *args, **kwargs):
         super(PagamentoComCartao, self).save(*args, **kwargs)
@@ -612,6 +641,9 @@ class PagamentoComCartao(models.Model):
             pgto_cartao=self)
 
         self.venda.dia.save()
+
+        self.data_do_deposito = self._data_do_deposito()
+        super(PagamentoComCartao, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return "R$ %.2f, %s" % (self.valor, self.bandeira)
