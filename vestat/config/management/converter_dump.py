@@ -34,7 +34,7 @@ def converter_cartoes(filename):
                 u"taxa": bandeira["fields"]["taxa_debito"],
                 u"prazo_de_deposito": 2,
                 u"contagem_de_dias": "U",
-                u"categoria": "C",
+                u"categoria": "D",
             },
         }
 
