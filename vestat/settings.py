@@ -159,6 +159,7 @@ TEMPLATE_DIRS = (
 )
 INSTALLED_APPS = (
     'vestat.config',
+    'vestat.calendario',
     'vestat.caixa',
     'vestat.relatorios',
     'vestat.contabil',
