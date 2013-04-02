@@ -203,16 +203,21 @@ form input:focus, select:focus, textarea:focus {
     background-color: #fffdbc;
 }
 
-.container a {
+#vestat.wide .content {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+#vestat a {
     color: #5f0070;;
 }
 
-.container a:focus, a:hover {
+#vestat a:focus, a:hover {
     background-color: rgba(85, 0, 85, 0.4);
     color: #001B94;
 }
 
-.container a:active {
+#vestat a:active {
     background-color: #ffddbb;
 }
 
