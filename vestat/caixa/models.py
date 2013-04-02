@@ -646,7 +646,7 @@ class PagamentoComCartao(models.Model):
         super(PagamentoComCartao, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        return "R$ %.2f, %s" % (self.valor, self.bandeira)
+        return u"R$ %.2f, %s" % (self.valor, self.bandeira)
 
 
 class Venda(models.Model):
