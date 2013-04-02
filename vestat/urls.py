@@ -4,6 +4,8 @@ from django.contrib import admin
 import vestat.caixa.urls
 import vestat.relatorios.urls
 import vestat.config.urls
+import vestat.calendario.urls
+
 import views
 from vestat.settings import BASE_DIR
 
@@ -21,6 +23,7 @@ urlpatterns = patterns('',
      (r'^caixa/', include(vestat.caixa.urls)),
      (r'^config/', include(vestat.config.urls)),
      (r'^relatorios/', include(vestat.relatorios.urls)),
+     (r'^calendario/', include(vestat.calendario.urls, namespace="calendario")),
      (r'^m/(?P<path>.*)$', 'django.views.static.serve',
              {'document_root': BASE_DIR + '/media'}),
 )
