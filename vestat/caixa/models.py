@@ -91,7 +91,6 @@ class Dia(models.Model):
     def __unicode__(self):
         return self.data.strftime("%d/%m/%Y, %A") + (self.feriado and ", Feriado" or "")
 
-
     def categoria_semanal(self):
         if self.feriado:
             return 'feriado'
