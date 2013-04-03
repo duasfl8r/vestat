@@ -10,6 +10,9 @@ class Event():
         self.text = text
         self.description = description if description else ""
 
+    def __unicode__(self):
+        return u"{date} - {text}".format(**vars(self))
+
 def get_events(begin, end):
     event_list = []
 
