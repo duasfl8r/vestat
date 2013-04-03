@@ -5,7 +5,7 @@ Views pra gerar um calendário.
 Fonte: http://williamjohnbert.com/2011/06/django-event-calendar-for-a-django-beginner/
 """
 
-from datetime import datetime, date
+from datetime import date
 from calendar import monthrange
 import logging
 
@@ -48,8 +48,8 @@ class EventsCalendarView(View):
     def render(self, request, year, month, form):
         my_year = int(year)
         my_month = int(month)
-        my_calendar_from_month = datetime(my_year, my_month, 1)
-        my_calendar_to_month = datetime(my_year, my_month, monthrange(my_year, my_month)[1])
+        my_calendar_from_month = date(my_year, my_month, 1)
+        my_calendar_to_month = date(my_year, my_month, monthrange(my_year, my_month)[1])
 
         my_events = get_events(my_calendar_from_month, my_calendar_to_month)
 
