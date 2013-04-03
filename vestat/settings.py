@@ -152,6 +152,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.static",
     "django.contrib.messages.context_processors.messages",
     "vestat.context_processors.project_settings",
+    "vestat.context_processors.data_hora",
 )
 
 ROOT_URLCONF = 'vestat.urls'
