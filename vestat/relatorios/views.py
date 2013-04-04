@@ -109,13 +109,14 @@ def lista_despesas(request):
                 TableField("C/B?"),            ],
             process_data=process_data,
     )
-    
+
     filter_form = DateFilterForm(data=request.GET, datefield_name="data")
 
     if filter_form.is_valid():
         report = Report(data=Dia.objects.all(), filters=[filter_form], tables=[table])
-        title = "Despesas: %s - %s" % (str(filter_form.cleaned_data.get("from_date")),
-                                       str(filter_form.cleaned_data.get("to_date")))
+        from_date = filter_form.cleaned_data.get("from_date").strftime(SHORT_DATE_FORMAT_PYTHON)
+        to_date = filter_form.cleaned_data.get("to_date").strftime(SHORT_DATE_FORMAT_PYTHON)
+        title = "Despesas: {from_date} - {to_date}".format(**vars())
     else:
         report = None
         title = "Período inválido"

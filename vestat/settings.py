@@ -90,11 +90,18 @@ LOGGING = {
 }
 
 DATE_FORMAT = "j \de F \de Y"
-DATE_INPUT_FORMATS = "%d/%m/%Y",
+DATE_INPUT_FORMATS = ("%d/%m/%Y",)
 
 DATETIME_FORMAT = "j \de F \de Y, H:i"
 
 SHORT_DATE_FORMAT = "d/m/Y"
+
+# Formato de data igual ao SHORT_DATE_FORMAT, mas no formato do
+# `strftime`.
+#
+# Usado pra formatar objetos `datetime.date`.
+SHORT_DATE_FORMAT_PYTHON = "%d/%m/%Y"
+
 SHORT_DATETIME_FORMAT = "d/m/Y H:i"
 
 DECIMAL_SEPARATOR = ","
