@@ -18,7 +18,7 @@ build: $(BUILD_DIR) $(BUILD_FILES)
 		--transform "s@^@$(BUILD_NAME)/vestat/@"
 
 test:
-	cd vestat && python manage.py test caixa contabil relatorios
+	cd vestat && python manage.py test caixa contabil relatorios feriados
 
 clean:
 	rm _build -rf
