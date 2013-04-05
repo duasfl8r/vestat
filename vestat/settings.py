@@ -23,7 +23,7 @@ for d in [DATA_DIR, LOGS_DIR]:
 
 BANCO_DE_DADOS = os.path.join(DATA_DIR, NOME_APLICACAO + '.sqlite')
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 ADMINS = (("Lucas", "lucas@lucasteixeira.com"))
 MANAGERS = ADMINS
