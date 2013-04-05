@@ -12,6 +12,7 @@ from django.test.client import Client
 from models import Dia, Venda, DespesaDeCaixa, MovimentacaoBancaria, \
     secs_to_time, PagamentoComCartao, Bandeira
 
+from vestat.django_utils import format_currency
 from vestat.config.models import VestatConfiguration
 from vestat.contabil.models import Registro, Transacao, Lancamento
 
@@ -334,10 +335,10 @@ class CaixaFecharVendaSemCartaoTestCase(TestCaseVestatBoilerplate):
         self.data_fechar = {
                 "fechar_venda": "Fechar venda",
                 "hora_saida": "00:30",
-                "conta": "190.00",
-                "gorjeta": "19.00",
-                "pgto_dinheiro": "100",
-                "pgto_cheque": "90",
+                "conta": format_currency(190.00),
+                "gorjeta": format_currency(19.00),
+                "pgto_dinheiro": format_currency(100),
+                "pgto_cheque": format_currency(90),
         }
 
         self.response = self.c.post(self.venda.get_absolute_url() + "saida", self.data_fechar, follow=True)
@@ -350,12 +351,12 @@ class CaixaFecharVendaSemCartaoTestCase(TestCaseVestatBoilerplate):
         self.assertEqual(self.venda.fechada, True)
 
     def test_dados_conferem(self):
-        self.assertEqual(self.venda.conta, Decimal(self.data_fechar["conta"]))
+        self.assertEqual(format_currency(self.venda.conta), self.data_fechar["conta"])
         hora_saida = map(int, self.data_fechar["hora_saida"].split(":"))
         self.assertEqual(self.venda.hora_saida, time(*hora_saida))
-        self.assertEqual(self.venda.gorjeta, Decimal(self.data_fechar["gorjeta"]))
-        self.assertEqual(self.venda.pgto_dinheiro, Decimal(self.data_fechar["pgto_dinheiro"]))
-        self.assertEqual(self.venda.pgto_cheque, Decimal(self.data_fechar["pgto_cheque"]))
+        self.assertEqual(format_currency(self.venda.gorjeta), self.data_fechar["gorjeta"])
+        self.assertEqual(format_currency(self.venda.pgto_dinheiro), self.data_fechar["pgto_dinheiro"])
+        self.assertEqual(format_currency(self.venda.pgto_cheque), self.data_fechar["pgto_cheque"])
         self.assertEqual(list(self.venda.pagamentocomcartao_set.all()), [])
 
 class CaixaFecharVendaComCartaoTestCase(TestCaseVestatBoilerplate):
@@ -389,10 +390,10 @@ class CaixaFecharVendaComCartaoTestCase(TestCaseVestatBoilerplate):
         self.data_fechar = {
                 "fechar_venda": "Fechar venda",
                 "hora_saida": "00:30",
-                "conta": "190.00",
-                "gorjeta": "19.00",
-                "pgto_dinheiro": "100",
-                "pgto_cheque": "30",
+                "conta": format_currency(190.00),
+                "gorjeta": format_currency(19.00),
+                "pgto_dinheiro": format_currency(100),
+                "pgto_cheque": format_currency(30),
         }
 
         self.response = self.c.post(self.venda.get_absolute_url() + "saida", self.data_fechar, follow=True)
@@ -405,12 +406,12 @@ class CaixaFecharVendaComCartaoTestCase(TestCaseVestatBoilerplate):
         self.assertEqual(self.venda.fechada, True)
 
     def test_dados_conferem(self):
-        self.assertEqual(self.venda.conta, Decimal(self.data_fechar["conta"]))
+        self.assertEqual(format_currency(self.venda.conta), self.data_fechar["conta"])
         hora_saida = map(int, self.data_fechar["hora_saida"].split(":"))
         self.assertEqual(self.venda.hora_saida, time(*hora_saida))
-        self.assertEqual(self.venda.gorjeta, Decimal(self.data_fechar["gorjeta"]))
-        self.assertEqual(self.venda.pgto_dinheiro, Decimal(self.data_fechar["pgto_dinheiro"]))
-        self.assertEqual(self.venda.pgto_cheque, Decimal(self.data_fechar["pgto_cheque"]))
+        self.assertEqual(format_currency(self.venda.gorjeta), self.data_fechar["gorjeta"])
+        self.assertEqual(format_currency(self.venda.pgto_dinheiro), self.data_fechar["pgto_dinheiro"])
+        self.assertEqual(format_currency(self.venda.pgto_cheque), self.data_fechar["pgto_cheque"])
         self.assertEqual(len(self.venda.pagamentocomcartao_set.all()), 1)
         self.assertEqual(self.venda.pagamentocomcartao_set.all()[0].valor, Decimal(self.data_cartao["valor"]))
         self.assertEqual(self.venda.pagamentocomcartao_set.all()[0].bandeira.id, self.data_cartao["bandeira"])
