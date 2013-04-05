@@ -5,17 +5,12 @@ from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
 
 from vestat.django_utils import format_currency, format_date
+from vestat.utils import daterange_inclusive
 from vestat.calendario import Event
 from models import PagamentoComCartao
 from views import ver_dia
 
 logger = logging.getLogger("vestat")
-
-def daterange_inclusive(d1, d2):
-    from datetime import timedelta
-    while d1 <= d2:
-        yield d1
-        d1 += timedelta(1)
 
 def dia_events(begin, end):
     for d in daterange_inclusive(begin, end):
