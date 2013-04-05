@@ -9,6 +9,7 @@ Conteúdo:
 
    changelog
    configuracoes
+   feriados
    restaurante
    desenvolvimento
    glossario
