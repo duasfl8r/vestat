@@ -69,6 +69,7 @@ class VestatConfiguration(models.Model):
 
 config_pages["vestat"].add(
     Link(
+        "configuracoes-gerais",
         "Configurações gerais",
         reverse_lazy("admin:config_vestatconfiguration_change", args=[1]),
         "Divisão de 10%"

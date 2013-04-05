@@ -110,6 +110,7 @@ class Lancamento(models.Model):
 
 config_pages["vestat"].add(
     Link(
+        "transacoes-de-contabilidade",
         "Transações de contabilidade",
         reverse_lazy("admin:contabil_transacao_changelist"),
         "Adicionar/remover/editar"

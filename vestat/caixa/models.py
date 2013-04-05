@@ -932,6 +932,7 @@ class MovimentacaoBancaria(models.Model):
 
 config_pages["vestat"].add(
     Link(
+        "bandeiras",
         "Bandeiras de cartão de crédito/débito",
         reverse_lazy("admin:caixa_bandeira_changelist"),
         "Adicionar/remover/editar"
