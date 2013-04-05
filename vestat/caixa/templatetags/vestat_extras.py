@@ -6,10 +6,9 @@ from django.conf import settings
 import datetime
 import os
 
-register = template.Library()
+from vestat.django_utils import format_currency
 
-def number_format(number):
-    return format(number, settings.DECIMAL_SEPARATOR, 2, grouping=settings.NUMBER_GROUPING, thousand_sep=settings.THOUSAND_SEPARATOR)
+register = template.Library()
 
 @register.filter
 def colorir_num(input):
@@ -17,11 +16,11 @@ def colorir_num(input):
     for positivo, ou 'neg' se for negativo."""
     try:
         if input > 0:
-            s = 'R$ <span class="pos">%s</span>' % (number_format(input))
+            s = 'R$ <span class="pos">%s</span>' % (format_currency(input))
         elif input == 0:
-            s = 'R$ %s' % (number_format(input))
+            s = 'R$ %s' % (format_currency(input))
         else:
-            s = 'R$ <span class="neg">%s</span>' % (number_format(input))
+            s = 'R$ <span class="neg">%s</span>' % (format_currency(input))
         return mark_safe(s)
     
     except (ValueError, TypeError):
@@ -36,11 +35,11 @@ def colorir_num_inverso(input):
     Usado no mostrador de 10% a pagar -- que é bom se estiver negativo."""
     try:
         if input > 0:
-            s = 'R$ <span class="neg">%s</span>' % (number_format(input))
+            s = 'R$ <span class="neg">%s</span>' % (format_currency(input))
         elif input == 0:
-            s = 'R$ %s' % (number_format(input))
+            s = 'R$ %s' % (format_currency(input))
         else:
-            s = 'R$ <span class="pos">%s</span>' % (number_format(input))
+            s = 'R$ <span class="pos">%s</span>' % (format_currency(input))
         return mark_safe(s)
     
     except (ValueError, TypeError):
