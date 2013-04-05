@@ -1,5 +1,5 @@
 # -*- encoding: utf8 -*-
-import datetime
+from datetime import date, time, datetime, timedelta
 import random
 from decimal import Decimal
 from fractions import Fraction
@@ -32,13 +32,13 @@ def random_date(year=None, month=None, day=None):
 
     while True:
         try:
-            return datetime.date(year, month, day)
+            return date(year, month, day)
         except ValueError:
             day -= 1
 
 class PermanenciaTestCase(TestCase):
     def setUp(self):
-        data = datetime.date.today()
+        data = date.today()
         self.dia = Dia(data=data, feriado=False, anotacoes="")
         self.dia.save()
 
@@ -50,10 +50,10 @@ class PermanenciaTestCase(TestCase):
         return venda
 
     def test_secs_to_time(self):
-        time1 = datetime.time(20, 00)
-        time2 = datetime.time(00, 00)
-        time3 = datetime.time(00, 01)
-        time4 = datetime.time(23, 59, 59)
+        time1 = time(20, 00)
+        time2 = time(00, 00)
+        time3 = time(00, 01)
+        time4 = time(23, 59, 59)
 
         self.assertEqual(secs_to_time(72000), time1)
         self.assertEqual(secs_to_time(0), time2)
@@ -61,46 +61,46 @@ class PermanenciaTestCase(TestCase):
         self.assertEqual(secs_to_time(86399), time4)
 
     def test_calcular_permanencia_ate_meia_noite(self):
-        hora_entrada = datetime.time(21, 0)
-        hora_saida = datetime.time(0, 0)
+        hora_entrada = time(21, 0)
+        hora_saida = time(0, 0)
         venda = self.dummy_venda(hora_entrada, hora_saida)
 
         self.assertEqual(venda.calcular_permanencia(hora_entrada, hora_saida),
                          3600 * 3)
 
     def test_permanencia_mesmo_dia(self):
-        hora_entrada = datetime.time(20, 00)
-        hora_saida = datetime.time(23, 00)
+        hora_entrada = time(20, 00)
+        hora_saida = time(23, 00)
         venda = self.dummy_venda(hora_entrada, hora_saida)
 
         self.assertEqual(secs_to_time(venda.permanencia),
-                         datetime.time(03, 00))
+                         time(03, 00))
 
     def test_permanencia_outro_dia(self):
-        hora_entrada = datetime.time(20, 00)
-        hora_saida = datetime.time(01, 00)
+        hora_entrada = time(20, 00)
+        hora_saida = time(01, 00)
         venda = self.dummy_venda(hora_entrada, hora_saida)
 
         self.assertEqual(secs_to_time(venda.permanencia),
-                         datetime.time(05, 00))
+                         time(05, 00))
 
     def test_permanencia_ate_meia_noite(self):
-        hora_entrada = datetime.time(20, 00)
-        hora_saida = datetime.time(00, 00)
+        hora_entrada = time(20, 00)
+        hora_saida = time(00, 00)
         venda = self.dummy_venda(hora_entrada, hora_saida)
 
         self.assertEqual(secs_to_time(venda.permanencia),
-                         datetime.time(4, 00))
+                         time(4, 00))
 
     def test_permanencia_media(self):
-        horass = ((datetime.time(19, 00), datetime.time(23, 00)), # 4
-                 (datetime.time(22, 30), datetime.time(23, 30)), # 1
-                 (datetime.time(19, 00), datetime.time(02, 00))) # 7
+        horass = ((time(19, 00), time(23, 00)), # 4
+                 (time(22, 30), time(23, 30)), # 1
+                 (time(19, 00), time(02, 00))) # 7
 
         for horas in horass:
             self.dummy_venda(*horas)
 
-        self.assertEqual(self.dia.permanencia_media(), datetime.time(04, 00))
+        self.assertEqual(self.dia.permanencia_media(), time(04, 00))
 
 
 class PermanenciaTotalTestCase(TestCase):
@@ -117,32 +117,32 @@ class PermanenciaTotalTestCase(TestCase):
         return venda
 
     def setUp(self):
-        dias = { datetime.date(2011, 1, 1): ((datetime.time(23, 0),
-                                                datetime.time(1, 0)), # 2
+        dias = { date(2011, 1, 1): ((time(23, 0),
+                                                time(1, 0)), # 2
 
-                                               (datetime.time(22, 0),
-                                                datetime.time(3, 0)), # 5
+                                               (time(22, 0),
+                                                time(3, 0)), # 5
 
-                                               (datetime.time(20, 0),
-                                                datetime.time(23, 0))), # 3
+                                               (time(20, 0),
+                                                time(23, 0))), # 3
                                                # total: 10
 
-                  datetime.date(2011, 1, 2): ((datetime.time(23, 0),
-                                                datetime.time(2, 0)), # 3
+                  date(2011, 1, 2): ((time(23, 0),
+                                                time(2, 0)), # 3
 
-                                               (datetime.time(21, 0),
-                                                datetime.time(1, 0)), # 4
+                                               (time(21, 0),
+                                                time(1, 0)), # 4
 
-                                               (datetime.time(20, 0),
-                                                datetime.time(1, 0))), # 5
+                                               (time(20, 0),
+                                                time(1, 0))), # 5
                                                # total: 12
 
 
-                  datetime.date(2011, 1, 3): ((datetime.time(23, 0),
-                                                datetime.time(0, 0)), # 1
+                  date(2011, 1, 3): ((time(23, 0),
+                                                time(0, 0)), # 1
 
-                                               (datetime.time(20, 0),
-                                                datetime.time(21, 0))), # 1
+                                               (time(20, 0),
+                                                time(21, 0))), # 1
                                                # total: 2
                } # total: 24, media: 8
 
@@ -152,7 +152,7 @@ class PermanenciaTotalTestCase(TestCase):
                 self.dummy_venda(dia, horas[0], horas[1])
 
     def test_permanencia_media_total(self):
-        self.assertEqual(Dia.permanencia_media_total(), datetime.time(3))
+        self.assertEqual(Dia.permanencia_media_total(), time(3))
 
 
 class DiaTestCase(TestCase):
@@ -164,7 +164,7 @@ class DiaTestCase(TestCase):
         ]
 
         for data, resultado in dias:
-            dia = Dia(data=datetime.datetime(*data))
+            dia = Dia(data=datetime(*data))
             self.assertEqual(dia.categoria_semanal(), resultado)
 
         dia_feriado = Dia(feriado=True)
@@ -172,7 +172,7 @@ class DiaTestCase(TestCase):
 
 class VendaTestCase(TestCase):
     def setUp(self):
-        self.dia = Dia(data=datetime.datetime(2012, 02, 14))
+        self.dia = Dia(data=datetime(2012, 02, 14))
         self.dia.save()
 
     def test_choices(self):
@@ -182,8 +182,8 @@ class VendaTestCase(TestCase):
                 for pou in [p[0] for p in pousadas_flat]:
                     venda = Venda(dia=self.dia,
                                   mesa="1",
-                                  hora_entrada=datetime.time(20, 00),
-                                  hora_saida=datetime.time(22, 00),
+                                  hora_entrada=time(20, 00),
+                                  hora_saida=time(22, 00),
                                   num_pessoas=10,
                                   conta=Decimal("200"),
                                   gorjeta=Decimal("20"),
@@ -197,7 +197,7 @@ class VendaTestCase(TestCase):
 
 class DespesaTestCase(TestCase):
     def setUp(self):
-        self.dia = Dia(data=datetime.datetime(2012, 02, 14))
+        self.dia = Dia(data=datetime(2012, 02, 14))
         self.dia.save()
 
     def test_choices(self):
@@ -300,7 +300,7 @@ class CaixaAdicionarVendaTestCase(TestCaseVestatBoilerplate):
     def test_dados_conferem(self):
         self.assertEqual(self.venda.mesa, self.data["mesa"])
         hora_entrada = map(int, self.data["hora_entrada"].split(":"))
-        self.assertEqual(self.venda.hora_entrada, datetime.time(*hora_entrada))
+        self.assertEqual(self.venda.hora_entrada, time(*hora_entrada))
         self.assertEqual(self.venda.num_pessoas, self.data["num_pessoas"])
         self.assertEqual(self.venda.categoria, self.data["categoria"])
         self.assertEqual(self.venda.cidade_de_origem, self.data["cidade_de_origem"])
@@ -350,7 +350,7 @@ class CaixaFecharVendaSemCartaoTestCase(TestCaseVestatBoilerplate):
     def test_dados_conferem(self):
         self.assertEqual(self.venda.conta, Decimal(self.data_fechar["conta"]))
         hora_saida = map(int, self.data_fechar["hora_saida"].split(":"))
-        self.assertEqual(self.venda.hora_saida, datetime.time(*hora_saida))
+        self.assertEqual(self.venda.hora_saida, time(*hora_saida))
         self.assertEqual(self.venda.gorjeta, Decimal(self.data_fechar["gorjeta"]))
         self.assertEqual(self.venda.pgto_dinheiro, Decimal(self.data_fechar["pgto_dinheiro"]))
         self.assertEqual(self.venda.pgto_cheque, Decimal(self.data_fechar["pgto_cheque"]))
@@ -405,7 +405,7 @@ class CaixaFecharVendaComCartaoTestCase(TestCaseVestatBoilerplate):
     def test_dados_conferem(self):
         self.assertEqual(self.venda.conta, Decimal(self.data_fechar["conta"]))
         hora_saida = map(int, self.data_fechar["hora_saida"].split(":"))
-        self.assertEqual(self.venda.hora_saida, datetime.time(*hora_saida))
+        self.assertEqual(self.venda.hora_saida, time(*hora_saida))
         self.assertEqual(self.venda.gorjeta, Decimal(self.data_fechar["gorjeta"]))
         self.assertEqual(self.venda.pgto_dinheiro, Decimal(self.data_fechar["pgto_dinheiro"]))
         self.assertEqual(self.venda.pgto_cheque, Decimal(self.data_fechar["pgto_cheque"]))
@@ -431,13 +431,13 @@ class DiaDezPorcentoTestCase(TestCaseVestatBoilerplate):
 
         super(DiaDezPorcentoTestCase, self).setUp()
 
-        self.dia = Dia(data=datetime.datetime(2012, 02, 14))
+        self.dia = Dia(data=datetime(2012, 02, 14))
         self.dia.save()
 
         self.venda = Venda(dia=self.dia,
                       mesa="1",
-                      hora_entrada=datetime.time(20, 00),
-                      hora_saida=datetime.time(22, 00),
+                      hora_entrada=time(20, 00),
+                      hora_saida=time(22, 00),
                       num_pessoas=10,
                       conta=Decimal("200"),
                       gorjeta=Decimal("20"),
@@ -485,7 +485,7 @@ class DiaDezPorcentoAPagarTestCase(TestCaseVestatBoilerplate):
     def setUp(self):
         super(DiaDezPorcentoAPagarTestCase, self).setUp()
 
-        self.dia = Dia(data=datetime.datetime(2012, 02, 14))
+        self.dia = Dia(data=datetime(2012, 02, 14))
         self.dia.save()
 
     def teste_10p_a_pagar_zerado(self):
@@ -494,8 +494,8 @@ class DiaDezPorcentoAPagarTestCase(TestCaseVestatBoilerplate):
     def abre_venda_200_reais(self):
         self.venda = Venda(dia=self.dia,
                       mesa="1",
-                      hora_entrada=datetime.time(20, 00),
-                      hora_saida=datetime.time(22, 00),
+                      hora_entrada=time(20, 00),
+                      hora_saida=time(22, 00),
                       num_pessoas=10,
                       conta=Decimal("200"),
                       gorjeta=Decimal("20"),
