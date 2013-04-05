@@ -9,7 +9,9 @@ from django.db.models import Sum, Count
 from django.conf import settings
 from django.test.client import Client
 
-from models import Dia, Venda, DespesaDeCaixa, MovimentacaoBancaria, secs_to_time
+from models import Dia, Venda, DespesaDeCaixa, MovimentacaoBancaria, \
+    secs_to_time, PagamentoComCartao, Bandeira
+
 from vestat.config.models import VestatConfiguration
 from vestat.contabil.models import Registro, Transacao, Lancamento
 
@@ -23,7 +25,7 @@ Código da categoria de despesa associada ao pagamento de 10% os funcionários.
 
 
 def random_date(year=None, month=None, day=None):
-    """Returns a random `datetime.date` object, with fixed `year`,
+    """Returns a random `date` object, with fixed `year`,
     `month` or `day`."""
 
     year = year or random.randint(2008, 2011)
@@ -548,3 +550,97 @@ class DiaDezPorcentoAPagarTestCase(TestCaseVestatBoilerplate):
         self.adiciona_despesa_de_10p()
         dezp_a_pagar -= Decimal("10")
         self.assertEqual(self.dia.dez_porcento_a_pagar(), dezp_a_pagar)
+
+
+class PagamentoComCartaoTestCase(TestCaseVestatBoilerplate):
+    fixtures = ["feriados_bancarios"]
+
+    def setUp(self):
+        super(PagamentoComCartaoTestCase, self).setUp()
+
+        self.bandeira_debito = Bandeira(
+            nome="Bandeira 1",
+            categoria="D",
+            contagem_de_dias="U",
+            prazo_de_deposito=2,
+            taxa=Decimal("0.02")
+        )
+        self.bandeira_debito.save()
+
+        self.bandeira_credito = Bandeira(
+            nome="Bandeira 2",
+            categoria="C",
+            contagem_de_dias="C",
+            prazo_de_deposito=31,
+            taxa=Decimal("0.033"),
+        )
+        self.bandeira_credito.save()
+
+    def dummy_pgto(self, data, bandeira, valor):
+        dia = Dia(data=data)
+        dia.save()
+
+        venda = Venda(
+            dia=dia,
+            mesa="1",
+            hora_entrada=time(20, 00),
+            hora_saida=time(22, 00),
+            num_pessoas=10,
+            conta=valor,
+            gorjeta=Decimal("20"),
+            categoria="L",
+        )
+        venda.save()
+
+        pgto = PagamentoComCartao(
+            valor=valor,
+            bandeira=bandeira,
+            venda=venda,
+        )
+        pgto.save()
+
+        venda.fechar()
+
+        return pgto
+
+    def teste_dias_uteis_durante_semana(self):
+        bandeira = self.bandeira_debito # 2 dias úteis
+        data_pgto = date(2013, 4, 1) # segunda-feira, sem feriados
+        data_prevista = date(2013, 4, 3)
+
+        pgto = self.dummy_pgto(data_pgto, bandeira, Decimal("200"))
+        self.assertEqual(pgto.data_do_deposito, data_prevista)
+
+    def teste_dias_uteis_com_fds(self):
+        bandeira = self.bandeira_debito # 2 dias úteis
+        data_pgto = date(2013, 4, 5) # sexta-feira, sem feriados
+        data_prevista = date(2013, 4, 9)
+
+        pgto = self.dummy_pgto(data_pgto, bandeira, Decimal("200"))
+        self.assertEqual(pgto.data_do_deposito, data_prevista)
+
+    def teste_dias_uteis_com_fds_e_feriado(self):
+        bandeira = self.bandeira_debito # 2 dias úteis
+        data_pgto = date(2012, 11, 1) # quinta-feira, Finados na sexta
+        data_prevista = date(2012, 11, 6)
+
+        pgto = self.dummy_pgto(data_pgto, bandeira, Decimal("200"))
+        self.assertEqual(pgto.data_do_deposito, data_prevista)
+
+    def teste_dias_corridos(self):
+        bandeira = self.bandeira_credito # 2 dias úteis
+        intervalo = timedelta(31)
+
+        datas_teste = [
+            date(2012, 1, 1),
+            date(2012, 5, 1),
+            date(2012, 3, 15),
+            date(2012, 12, 31),
+        ]
+
+        for data in datas_teste:
+            data_pgto = data
+            data_prevista = data + intervalo
+
+            pgto = self.dummy_pgto(data_pgto, bandeira, Decimal("200"))
+            self.assertEqual(pgto.data_do_deposito, data_prevista)
