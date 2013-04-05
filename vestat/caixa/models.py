@@ -17,6 +17,7 @@ from django.core.urlresolvers import reverse_lazy
 import operator
 
 from caixa import NOME_DO_REGISTRO
+from vestat.feriados import eh_dia_util
 from vestat.config import config_pages, Link
 from vestat.config.models import VestatConfiguration
 from vestat.contabil.models import Registro, Transacao, Lancamento
@@ -612,9 +613,6 @@ class PagamentoComCartao(models.Model):
         return self.venda.get_absolute_url() + "cartao/{0}/".format(self.id)
 
     def _data_do_deposito(self):
-        def dia_util(data):
-            return data.weekday() in range(0, 5)
-
         data_da_venda = self.venda.dia.data
         um_dia = datetime.timedelta(1)
         intervalo = datetime.timedelta(0)
@@ -626,7 +624,7 @@ class PagamentoComCartao(models.Model):
             data_teste = data_da_venda + intervalo
 
             if soh_dias_uteis:
-                if dia_util(data_teste):
+                if eh_dia_util(data_teste):
                     faltam_dias -= 1
             else:
                 faltam_dias -= 1

@@ -11,6 +11,9 @@ def eh_feriado(data):
             return True
     return False
 
+def eh_dia_util(data):
+    return data.weekday() in range(0, 5) and not(eh_feriado(data))
+
 def feriados_entre(d1, d2):
     """
     Retorna uma lista de tuplas com os feriados entre duas datas. As
