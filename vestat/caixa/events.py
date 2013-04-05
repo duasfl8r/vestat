@@ -13,6 +13,10 @@ from views import ver_dia
 logger = logging.getLogger("vestat")
 
 def dia_events(begin, end):
+    """
+    Eventos que linkam para a tela do caixa dos dias entre `begin` e `end`.
+    """
+
     for d in daterange_inclusive(begin, end):
         kwargs = {
             "ano": "{0:04d}".format(d.year),
@@ -26,6 +30,11 @@ def dia_events(begin, end):
         yield Event(d, mark_safe(nome))
 
 def dias_de_deposito_events(begin, end):
+    """
+    Eventos que mostram a quantia que se espera que as bandeiras
+    depositem referente a pagamentos com cartão.
+    """
+
     pagamentos = PagamentoComCartao.objects.filter(data_do_deposito__range=(begin, end))
 
     dias = {}
