@@ -15,6 +15,7 @@ check_encoding() {
 export -f check_encoding
 
 check_encoding_recursive() {
+    echo "Checando declarações de encoding em '$1'..."
     DIR=$1
 	find $DIR -name "*.py" -print0 | xargs -0 -i bash -c 'check_encoding "$@"' _ {} \;
 }
