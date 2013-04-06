@@ -42,7 +42,7 @@ def random_date(year=None, month=None, day=None):
 class PermanenciaTestCase(TestCase):
     def setUp(self):
         data = date.today()
-        self.dia = Dia(data=data, feriado=False, anotacoes="")
+        self.dia = Dia(data=data, anotacoes="")
         self.dia.save()
 
     def dummy_venda(self, hora_entrada, hora_saida):
@@ -108,7 +108,7 @@ class PermanenciaTestCase(TestCase):
 
 class PermanenciaTotalTestCase(TestCase):
     def dummy_dia(self, data):
-        dia = Dia(data=data, feriado=False, anotacoes="")
+        dia = Dia(data=data, anotacoes="")
         dia.save()
         return dia
 
@@ -169,9 +169,6 @@ class DiaTestCase(TestCase):
         for data, resultado in dias:
             dia = Dia(data=datetime(*data))
             self.assertEqual(dia.categoria_semanal(), resultado)
-
-        dia_feriado = Dia(feriado=True)
-        self.assertEqual(dia_feriado.categoria_semanal(), 'feriado')
 
 class VendaTestCase(TestCase):
     def setUp(self):
@@ -251,13 +248,6 @@ class CaixaDiaDeTrabalhoZeradoTestCase(TestCaseVestatBoilerplate):
 
     def test_tem_dia(self):
         self.assertTrue("dia" in self.response.context)
-
-    def test_nao_eh_feriado(self):
-        self.assertEqual(self.response.context["dia"].feriado, False)
-
-    def test_virar_feriado(self):
-        response = self.c.post(self.url_hoje, { "feriado": True })
-        self.assertEqual(response.context["dia"].feriado, True)
 
     def test_remover_dia(self):
         response = self.c.get(self.url_hoje + "remover", follow=True)

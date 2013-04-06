@@ -17,7 +17,7 @@ from django.core.urlresolvers import reverse_lazy
 import operator
 
 from caixa import NOME_DO_REGISTRO
-from vestat.feriados import eh_dia_util
+from vestat.feriados import eh_dia_util, eh_feriado
 from vestat.config import config_pages, Link
 from vestat.config.models import VestatConfiguration
 from vestat.contabil.models import Registro, Transacao, Lancamento
@@ -76,7 +76,6 @@ class Dia(models.Model):
         ordering = ['data']
 
     data = models.DateField(unique=True)
-    feriado = models.BooleanField('feriado?')
     anotacoes = models.TextField(blank=True)
     dia_da_semana = models.IntegerField(editable=False, null=True)
 
@@ -90,10 +89,10 @@ class Dia(models.Model):
                                                          self.data.day)
 
     def __unicode__(self):
-        return self.data.strftime("%d/%m/%Y, %A") + (self.feriado and ", Feriado" or "")
+        return self.data.strftime("%d/%m/%Y, %A") + (eh_feriado(self.data) and ", Feriado" or "")
 
     def categoria_semanal(self):
-        if self.feriado:
+        if eh_feriado(self.data):
             return 'feriado'
         else:
             dias = ['semana', 'semana', 'semana', 'semana', 'sexta', 'sabado', 'domingo']
@@ -486,13 +485,9 @@ class Dia(models.Model):
         return dias
     
     @classmethod
-    def listar_dias(cls, de=None, ateh=None, dias_da_semana=range(0, 8), forcar_feriado=False):
+    def listar_dias(cls, de=None, ateh=None, dias_da_semana=range(0, 8)):
         dias = cls.dias_entre(de, ateh).order_by("-data")
-        if forcar_feriado:
-            dias = dias.filter(dia_da_semana__in=dias_da_semana)
-        else:
-            dias = dias.filter(Q(dia_da_semana__in=dias_da_semana) | Q(feriado=True))
-    
+
         dados = {
                    "faturamento_total": {
                                             "total": cls.faturamento_total(dias),
