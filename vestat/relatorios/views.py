@@ -11,12 +11,15 @@ from vestat.caixa.templatetags.vestat_extras import colorir_num
 from vestat.relatorios.forms import RelatorioAnualForm, RelatorioSimplesForm
 from vestat.relatorios.reports import Table, Report, AnoFilterForm, DateFilterForm, TableField
 from vestat.django_utils import format_currency, format_date
+from vestat.relatorios.reports2 import Table2, Report2, TableField2
 
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.db.models.aggregates import Sum, Avg, Count
 from django.forms.forms import pretty_name
 from django.views.generic import View
+
+logger = logging.getLogger(__name__)
 
 def somar_dict(accum, key, d):
     if key in accum:
@@ -89,6 +92,65 @@ class ReportView(View):
 
         return response
 
+
+
+class AnualReportTable(Table2):
+    """
+    Tabela pro relatório anual.
+    """
+    title = "Tabela"
+
+    fields = (
+        TableField2("Mês"),
+        TableField2("Pessoas", slug="num_pessoas", classes=["number"]),
+        TableField2("Vendas", classes=["number"]),
+        TableField2("Perm Média", slug="permanencia_media", classes=["time"]),
+        TableField2("Faturamento", classes=["currency"]),
+        TableField2("Desp Cx", slug="despesas_de_caixa", classes=["currency"]),
+        TableField2("Desp Banco", slug="debitos_bancarios", classes=["currency"]),
+        TableField2("Resultado", slug="resultado", classes=["currency"]),
+        TableField2("Per Capita", slug="per_capita", classes=["currency"]),
+        TableField2("10%", slug="gorjeta", classes=["currency"]),
+    )
+
+    @property
+    def body(self):
+        result = []
+        for ano in Dia._anos(self.data):
+            for mes in Dia._meses(ano, self.data):
+                dias = Dia._dias(ano, mes, self.data)
+                result.append(["%04d-%02d" % (ano, mes),              # mes
+                             Dia.num_pessoas_total(dias),           # num pessoas
+                             colorir_num(Dia.vendas_total(dias)),                # vendas
+                             Dia.permanencia_media_total(dias),     # permanencia medi
+                             colorir_num(Dia.faturamento_total(dias)),           # faturamento
+                             colorir_num(Dia.despesas_de_caixa_total(dias)),     # desp cx
+                             colorir_num(Dia.debitos_bancarios_total(dias)),     # banco
+                             colorir_num(Dia.resultado_total(dias)),             # resultado
+                             colorir_num(Dia.captacao_por_pessoa_total(dias)),   # per capita
+                             colorir_num(Dia.gorjeta_total(dias)),               # 10%
+                             ])
+
+        return sorted(result, key=lambda r: r[0])
+
+
+class AnualReport(Report2):
+    """
+    Relatório anual.
+    """
+    title="Relatório anual"
+    element_classes = [AnualReportTable]
+
+
+class AnualReportView(ReportView):
+    """
+    Class-based view do relatório anual.
+    """
+    Report = AnualReport
+    FilterForm = AnoFilterForm
+
+    def get_raw_data(self):
+        return Dia.objects.all()
 
 def anual(request):
     def process_data(self, data):
