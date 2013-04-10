@@ -11,7 +11,9 @@ from vestat.caixa.templatetags.vestat_extras import colorir_num
 from vestat.relatorios.forms import RelatorioAnualForm, RelatorioSimplesForm, AnoFilterForm, DateFilterForm
 from vestat.relatorios.reports import Table, Report, TableField
 from vestat.django_utils import format_currency, format_date
-from vestat.relatorios.reports2 import Table2, Report2, TableField2
+
+from vestat.relatorios.reports2 import Report2
+from vestat.relatorios.reports2.elements import Table2, TableField2
 
 from django.shortcuts import render_to_response
 from django.template import RequestContext
