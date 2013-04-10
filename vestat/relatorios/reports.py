@@ -58,14 +58,6 @@ class Table(tablib.Dataset):
         return self._process_data(*args, **kwargs)
 
 
-class FilterForm(forms.Form):
-    def __init__(self, *args, **kwargs):
-        super(FilterForm, self).__init__(*args, **kwargs)
-
-    def filter(self, data):
-        pass
-
-
 class Report():
     """A report that filters data and creates tables based on it.
 
@@ -127,6 +119,17 @@ class Report():
             table.process_data(self.filtered_data)
 
 
+class FilterForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super(FilterForm, self).__init__(*args, **kwargs)
+
+    def filter(self, data):
+        pass
+
+    @property
+    def filter_info(self)
+        pass
+
 
 class DateFilterForm(FilterForm):
     from_date = forms.DateField(label="Início", required=False)
@@ -159,4 +162,13 @@ class AnoFilterForm(FilterForm):
         ano = self.cleaned_data.get("ano")
         return data.filter(**{ self.datefield_name + "__year": ano })
 
+    @property
+    def filter_info(self):
+        if self.is_bound:
+            if self.is_valid():
+                return "{0}".format(self.cleaned_data.get("ano"))
+            else:
+                return "Ano inválido"
+        else:
+            return ""
 
