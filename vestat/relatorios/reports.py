@@ -132,7 +132,7 @@ class DateFilterForm(FilterForm):
     from_date = forms.DateField(label="Início", required=False)
     to_date = forms.DateField(label="Fim", required=False)
 
-    def __init__(self, datefield_name=None, **kwargs):
+    def __init__(self, datefield_name="data", **kwargs):
         super(DateFilterForm, self).__init__(**kwargs)
         self.datefield_name = datefield_name
 
@@ -151,7 +151,7 @@ class DateFilterForm(FilterForm):
 class AnoFilterForm(FilterForm):
     ano = forms.IntegerField(label="Ano", required=True)
 
-    def __init__(self, datefield_name=None, **kwargs):
+    def __init__(self, datefield_name="data", **kwargs):
         super(AnoFilterForm, self).__init__(**kwargs)
         self.datefield_name = datefield_name
 
