@@ -23,10 +23,10 @@ from vestat.config.models import VestatConfiguration
 from vestat.contabil.models import Registro, Transacao, Lancamento
 from vestat.contabil import join
 
-MESES = ['janeiro', 'fevereiro', 'março', 'abril',
-     'maio', 'junho', 'julho', 'agosto',
-     'setembro', 'outubro', 'novembro',
-     'dezembro']
+MESES = [u"janeiro", u"fevereiro", u"março", u"abril",
+     u"maio", u"junho", u"julho", u"agosto",
+     u"setembro", u"outubro", u"novembro",
+     u"dezembro"]
 
 FATOR_CONSIDERADO_10P = Decimal('0.9')
 """
