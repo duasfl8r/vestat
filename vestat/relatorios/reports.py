@@ -127,7 +127,7 @@ class FilterForm(forms.Form):
         pass
 
     @property
-    def filter_info(self)
+    def filter_info(self):
         pass
 
 
