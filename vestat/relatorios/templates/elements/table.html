@@ -1,0 +1,28 @@
+<!-- FIELDS: {{ fields }} -->
+<!-- HEADERS: {{ headers }} -->
+<!-- BODY: {{ body }} -->
+
+<table>
+    <colgroup>
+    {% for field in fields %}
+            <col class="{{ field.classes|join:" " }}" />
+    {% endfor %}
+    </colgroup>
+    <thead>
+        <tr>
+        {% for field in fields %}
+                    <th>{{ field.header }}</th>
+        {% endfor %}
+        </tr>
+    </thead>
+    <thead>
+    <tbody>
+    {% for row in body %}
+            <tr>
+        {% for elem in row %}
+                <td>{{ elem|safe }}</td>
+        {% endfor %}
+            </tr>
+    {% endfor %}
+    </tbody>
+</table>
