@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import datetime
 from decimal import Decimal
+import logging
 
 from vestat.caixa.models import Dia, Venda, DespesaDeCaixa, \
     PagamentoComCartao, AjusteDeCaixa, MovimentacaoBancaria, \
@@ -15,6 +16,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.db.models.aggregates import Sum, Avg, Count
 from django.forms.forms import pretty_name
+from django.views.generic import View
 
 def somar_dict(accum, key, d):
     if key in accum:
@@ -22,6 +24,71 @@ def somar_dict(accum, key, d):
             accum[key][k] += v
     else:
         accum[key] = d
+
+class ReportView(View):
+    """
+    Uma classe abstrata pra uma view de relatório.
+
+    Subclasses devem implementar o método `get_raw_data` e sobrescrever
+    o atributo `Report`. Para ter um formulário de filtragem dos dados,
+    deve sobrescrever o atributo `FilterForm`.
+    """
+
+    Report = None
+    """
+    Classe de relatórios usada pela view. Deve ser subclasse de `reports2.Report2`.
+    """
+
+    FilterForm = None
+    """
+    Classe do formulário de filtragem usado. Deve ser subclasse de `reports.FilterForm`.
+    """
+
+    def get_raw_data(self):
+        """
+        Extrai os dados crus a serem filtrados pelo
+        formulário `FilterForm` e enviados pro relatório `Report`.
+        """
+        pass
+
+    def get(self, request, *args, **kwargs):
+        """
+        Extrai os dados crus, filtra se houver um `FilterForm`, cria o
+        objeto `Report` e o renderiza.
+        """
+        if self.FilterForm:
+            filter_form = self.FilterForm(data=request.GET)
+
+            if filter_form.is_valid():
+                data = filter_form.filter(self.get_raw_data())
+            else:
+                data = []
+
+            subtitle = filter_form.filter_info
+        else:
+            filter_form = None
+            data = self.get_raw_data()
+            subtitle = ""
+
+        report = self.Report(data)
+        format = request.GET.get("format", "html")
+        report_contents = report.render(format)
+
+        template_name = "report2_view.{0}".format(format)
+
+        response = render_to_response(template_name, {
+              'title': report.title,
+              'subtitle': subtitle,
+              'report_contents': report_contents,
+              'filter_form': filter_form, },
+             context_instance=RequestContext(request))
+
+        if format == "csv":
+            response.mimetype = "text/csv"
+            response['Content-Disposition'] = 'attachment; filename=anual.csv'
+
+        return response
+
 
 def anual(request):
     def process_data(self, data):
