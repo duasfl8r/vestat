@@ -1,20 +1,20 @@
 # -*- encoding: utf-8 -*-
-import csv
 import datetime
+from decimal import Decimal
 
-from vestat.caixa.models import *
+from vestat.caixa.models import Dia, Venda, DespesaDeCaixa, \
+    PagamentoComCartao, AjusteDeCaixa, MovimentacaoBancaria, \
+    secs_to_time
+
 from vestat.caixa.templatetags.vestat_extras import colorir_num
-from vestat.settings import *
-from vestat.relatorios.forms import *
+from vestat.relatorios.forms import RelatorioAnualForm, RelatorioSimplesForm
 from vestat.relatorios.reports import Table, Report, AnoFilterForm, DateFilterForm, TableField
 from vestat.django_utils import format_currency, format_date
 
-from django.shortcuts import redirect, render_to_response
+from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.http import Http404, HttpResponse
 from django.db.models.aggregates import Sum, Avg, Count
 from django.forms.forms import pretty_name
-from django.utils.encoding import iri_to_uri
 
 def somar_dict(accum, key, d):
     if key in accum:
