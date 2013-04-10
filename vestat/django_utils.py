@@ -4,7 +4,9 @@
 Classes e funções utilitárias que dependem do Django.
 """
 
+import os
 import locale
+import tempfile
 
 from django.core.management import call_command
 from django.conf import settings
@@ -53,3 +55,15 @@ def format_currency(f):
 
 def format_date(d):
     return "{:%d/%m/%Y}".format(d)
+
+def mkstemp(*args, **kwargs):
+    if "dir" not in kwargs:
+        kwargs["dir"] = os.path.join(settings.MEDIA_ROOT, "tmp")
+
+    return tempfile.mkstemp(*args, **kwargs)
+
+def temp_path2url(path):
+    return u"{media}tmp/{basename}".format(
+        media=settings.MEDIA_URL,
+        basename=os.path.split(path)[-1],
+    )
