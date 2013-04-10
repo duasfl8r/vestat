@@ -8,8 +8,8 @@ from vestat.caixa.models import Dia, Venda, DespesaDeCaixa, \
     secs_to_time
 
 from vestat.caixa.templatetags.vestat_extras import colorir_num
-from vestat.relatorios.forms import RelatorioAnualForm, RelatorioSimplesForm
-from vestat.relatorios.reports import Table, Report, AnoFilterForm, DateFilterForm, TableField
+from vestat.relatorios.forms import RelatorioAnualForm, RelatorioSimplesForm, AnoFilterForm, DateFilterForm
+from vestat.relatorios.reports import Table, Report, TableField
 from vestat.django_utils import format_currency, format_date
 from vestat.relatorios.reports2 import Table2, Report2, TableField2
 
