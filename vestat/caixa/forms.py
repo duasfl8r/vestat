@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import django.forms
-from models import *
+from models import Dia, DespesaDeCaixa, MovimentacaoBancaria, CategoriaDeMovimentacao, AjusteDeCaixa, \
+    Venda, PagamentoComCartao, Bandeira
 
 from vestat.django_utils import LocalizedModelForm
 
@@ -18,9 +19,29 @@ class DespesaDeCaixaForm(LocalizedModelForm):
     class Meta:
         model = DespesaDeCaixa
 
+    choices = sorted(
+        [(c.id, c.nome_completo) for c in CategoriaDeMovimentacao.objects.all()],
+        key=lambda t: t[1]
+    )
+
+    coerce = lambda id: CategoriaDeMovimentacao.objects.get(pk=id)
+
+    categoria = django.forms.TypedChoiceField(label="Categoria", choices=choices,
+        coerce=coerce, empty_value=None, required=False)
+
 class MovimentacaoBancariaForm(LocalizedModelForm):
     class Meta:
         model = MovimentacaoBancaria
+
+    choices = sorted(
+        [(c.id, c.nome_completo) for c in CategoriaDeMovimentacao.objects.all()],
+        key=lambda t: t[1]
+    )
+
+    coerce = lambda id: CategoriaDeMovimentacao.objects.get(pk=id)
+
+    categoria = django.forms.TypedChoiceField(label="Categoria", choices=choices,
+        coerce=coerce, empty_value=None, required=False)
 
 class AjusteDeCaixaForm(LocalizedModelForm):
     class Meta:
