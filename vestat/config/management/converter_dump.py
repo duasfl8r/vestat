@@ -96,6 +96,10 @@ def converter(filename):
             }
         }]
 
+    def handle_dia(dia):
+        del dia["fields"]["feriado"]
+        return [dia]
+
     def handle_bandeira(bandeira):
         global BANDEIRAS__LAST_PK
 
@@ -160,6 +164,7 @@ def converter(filename):
     dump = json.load(codecs.open(filename, encoding="utf-8"))
 
     model_and_function = (
+        ("caixa.dia", handle_dia),
         ("caixa.bandeira", handle_bandeira),
         ("caixa.pagamentocomcartao", handle_pagamentocomcartao),
         ("caixa.despesadecaixa", handle_despesadecaixa),
