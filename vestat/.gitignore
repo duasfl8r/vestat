@@ -1,1 +1,3 @@
 /static
+media/tmp/*
+!media/tmp/README.txt
