@@ -1,27 +1,32 @@
 # -*- coding: utf-8 -*-
-from django.db import models
-from django.db.models import Sum, Count
-from django.core.exceptions import ValidationError
-from django.db.utils import DatabaseError
-
 from fractions import Fraction
 from decimal import Decimal
 import datetime
+import operator
+import logging
 
-from durationfield.db.models.fields.duration import DurationField #@UnresolvedImport
-from django.db.models.query_utils import Q
-
-from django.conf import settings
 from django.core import serializers
 from django.core.urlresolvers import reverse_lazy
-import operator
+from django.core.exceptions import ValidationError
+from django.conf import settings
+from django.db import models
+from django.db.models import Sum, Count
+from django.db.utils import DatabaseError
+from django.db.models.query_utils import Q
+from django.template.defaultfilters import slugify
+from durationfield.db.models.fields.duration import DurationField #@UnresolvedImport
 
-from caixa import NOME_DO_REGISTRO
+from vestat.caixa import NOME_DO_REGISTRO
 from vestat.feriados import eh_dia_util, eh_feriado
 from vestat.config import config_pages, Link
 from vestat.config.models import VestatConfiguration
 from vestat.contabil.models import Registro, Transacao, Lancamento
 from vestat.contabil import join
+
+logger = logging.getLogger(__name__)
+
+SLUG_CATEGORIA_GORJETA = "10"
+SLUG_CATEGORIA_TAXA_CARTAO = "taxas"
 
 MESES = ['janeiro', 'fevereiro', 'março', 'abril',
      'maio', 'junho', 'julho', 'agosto',
@@ -350,14 +355,17 @@ class Dia(models.Model):
     def descontos_da_gorjeta(cls, dias=None):
         if dias is None: dias = Dia.objects.all()
 
-        despesas_de_caixa = DespesaDeCaixa.objects.filter(categoria="G",
-                                                          dia__in=dias)
+        try:
+            categoria_gorjeta = CategoriaDeMovimentacao.objects.get(pk=SLUG_CATEGORIA_GORJETA)
+        except CategoriaDeMovimentacao.DoesNotExist:
+            return Decimal("0")
+
+        despesas_de_caixa = DespesaDeCaixa.objects.filter(categoria=categoria_gorjeta, dia__in=dias)
         pagamento_com_gorjetas_caixa = despesas_de_caixa.aggregate(Sum('valor'))['valor__sum']
         if not pagamento_com_gorjetas_caixa:
             pagamento_com_gorjetas_caixa = 0
 
-        despesas_banco = MovimentacaoBancaria.objects.filter(categoria="G",
-                                                          dia__in=dias)
+        despesas_banco = MovimentacaoBancaria.objects.filter(categoria=categoria_gorjeta, dia__in=dias)
         pagamento_com_gorjetas_banco = despesas_banco.aggregate(Sum('valor'))['valor__sum']
         if not pagamento_com_gorjetas_banco:
             pagamento_com_gorjetas_banco = 0
@@ -629,8 +637,10 @@ class PagamentoComCartao(models.Model):
     def save(self, *args, **kwargs):
         super(PagamentoComCartao, self).save(*args, **kwargs)
 
+        categoria_taxas = CategoriaDeMovimentacao.objects.get(slug=SLUG_CATEGORIA_TAXA_CARTAO)
+
         self.venda.dia.movimentacaobancaria_set.create(valor=-self.taxa,
-            categoria='T', descricao=self.bandeira.nome,
+            categoria=categoria_taxas, descricao=self.bandeira.nome,
             pgto_cartao=self)
 
         self.venda.dia.save()
@@ -836,43 +846,53 @@ class AjusteDeCaixa(models.Model):
         return self.dia.get_absolute_url() + "ajuste/{0}/".format(self.id)
 
 
+class CategoriaDeMovimentacao(models.Model):
+    class Meta:
+        verbose_name = "Categoria de movimentação"
+        verbose_name_plural = "Categorias de movimentação"
+
+    nome = models.CharField(max_length=200)
+    slug = models.SlugField()
+    mae = models.ForeignKey("self", blank=True, null=True, related_name="filhas")
+
+    SEPARADOR = " > "
+
+    def __unicode__(self):
+        return self.nome
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            logger.debug(u"Gerando slug automático pra categoria '{0}'...".format(self.nome))
+            self.slug = slugify(self.nome)
+
+        super(CategoriaDeMovimentacao, self).save(*args, **kwargs)
+
+    @property
+    def ascendentes(self):
+        def ascendentes_(categoria):
+            yield categoria
+            if categoria.mae:
+                ascendentes_(categoria.mae)
+
+        return list(ascendentes_(self.mae)) if self.mae else []
+
+    @property
+    def nome_completo(self):
+        return self.SEPARADOR.join(unicode(a) for a in self.ascendentes + [self])
+
+
 class DespesaDeCaixa(models.Model):
     class Meta:
         verbose_name = "Despesa de caixa"
         verbose_name_plural = "Despesas de caixa"
 
-    CATEGORIA_CHOICES = (
-        ('A', 'Aluguel'),
-        ('C', 'Contador'),
-        ('E', 'Energia'),
-        ('F', 'Fornecedor'),
-        ('L', 'Fornecedores - Alemães'),
-        ('1', 'Fornecedores - Açougue'),
-        ('Y', 'Fornecedores - Mercearia'),
-        ('V', 'Fornecedores - Vinho'),
-        ('I', 'Impostos'),
-        ('Q', 'Manutenção Predial'),
-        ('M', 'Marketing'),
-        ('O', 'Outros'),
-        ('G', 'Pessoal - 10%'),
-        ('X', 'Pessoal - Extra'),
-        ('P', 'Pessoal - Salário'),
-        ('S', 'Prestação de serviço'),
-        ('U', 'Reposição Utensílios'),
-        ('R', 'Retirada'),
-        ('B', 'Tarifas Bancárias'),
-        ('T', 'Taxas'),
-        ('N', 'Telefone')
-    )
-
     dia = models.ForeignKey('Dia', editable=False)
     valor = models.DecimalField(max_digits=10, decimal_places=2)
-    categoria = models.CharField(max_length=1, choices=CATEGORIA_CHOICES)
+    categoria = models.ForeignKey('CategoriaDeMovimentacao', null=True, blank=True)
     descricao = models.CharField('Descrição', max_length=150, blank=True)
 
     def __unicode__(self):
-        return "R$ %.2f - %s - %s" % (self.valor, self.get_categoria_display(),
-            self.descricao)
+        return "R$ %.2f - %s - %s" % (self.valor, self.categoria, self.descricao)
 
     def get_absolute_url(self):
         return self.dia.get_absolute_url() + "despesa/{0}/".format(self.id)
@@ -887,38 +907,14 @@ class MovimentacaoBancaria(models.Model):
         verbose_name = "Movimentação bancária"
         verbose_name_plural = "Movimentações bancárias"
 
-    CATEGORIA_CHOICES = (
-        ('A', 'Aluguel'),
-        ('C', 'Contador'),
-        ('E', 'Energia'),
-        ('F', 'Fornecedor'),
-        ('L', 'Fornecedores - Alemães'),
-        ('1', 'Fornecedores - Açougue'),
-        ('Y', 'Fornecedores - Mercearia'),
-        ('V', 'Fornecedores - Vinho'),
-        ('I', 'Impostos'),
-        ('Q', 'Manutenção Predial'),
-        ('M', 'Marketing'),
-        ('O', 'Outros'),
-        ('G', 'Pessoal - 10%'),
-        ('X', 'Pessoal - Extra'),
-        ('P', 'Pessoal - Salário'),
-        ('S', 'Prestação de serviço'),
-        ('U', 'Reposição Utensílios'),
-        ('R', 'Retirada'),
-        ('B', 'Tarifas Bancárias'),
-        ('T', 'Taxas'),
-        ('N', 'Telefone')
-    )
-
     dia = models.ForeignKey('Dia', editable=False)
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     descricao = models.CharField('Descrição', max_length=150, blank=True)
-    categoria = models.CharField(max_length=1, choices=CATEGORIA_CHOICES)
+    categoria = models.ForeignKey('CategoriaDeMovimentacao', null=True, blank=True)
     pgto_cartao = models.ForeignKey('PagamentoComCartao', null=True, editable=False)
 
     def __unicode__(self):
-        return "R$ %.2f - %s" % (self.valor, self.descricao)
+        return "R$ %.2f - %s - %s" % (self.valor, self.categoria, self.descricao)
 
     def get_absolute_url(self):
         return self.dia.get_absolute_url() + "movbancaria/{0}/".format(self.id)
