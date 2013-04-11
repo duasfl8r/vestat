@@ -6,7 +6,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
 
-from vestat.config.management.converter_dump import converter_cartoes
+from vestat.config.management.converter_dump import converter
 from vestat.django_utils import criar_superusuario
 
 def sync_and_evolve():
@@ -27,9 +27,9 @@ def versao_1_2_1(cmd, *args):
     sync_and_evolve()
     criar_superusuario()
 
-    print("Convertendo cartões de crédito e pagamentos para novo modelo...")
+    print("Convertendo entradas no modelo antigo pro novo modelo...")
 
-    novo_bd_json = converter_cartoes(args[0])
+    novo_bd_json = converter(args[0])
     tmp_dump_filename = "fixture_convertida.json"
 
     print("Armazenando dados convertidos em {tmp_dump_filename}".format(**vars()))
