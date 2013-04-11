@@ -9,7 +9,9 @@ import vestat.calendario.urls
 
 import views
 from vestat.settings import MEDIA_ROOT
+from vestat import temp
 
+temp.clear()
 
 # Uncomment the next two lines to enable the admin:
 #from django.contrib import admin
