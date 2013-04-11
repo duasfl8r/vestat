@@ -3,16 +3,19 @@ import datetime
 from decimal import Decimal
 import logging
 
+import numpy
+from matplotlib import pyplot
+
 from vestat.caixa.models import Dia, Venda, DespesaDeCaixa, \
     PagamentoComCartao, AjusteDeCaixa, MovimentacaoBancaria, \
-    secs_to_time
+    secs_to_time, MESES
 
 from vestat.caixa.templatetags.vestat_extras import colorir_num
 from vestat.relatorios.forms import RelatorioAnualForm, RelatorioSimplesForm, AnoFilterForm, DateFilterForm
 from vestat.relatorios.reports import Table, Report, TableField
-from vestat.django_utils import format_currency, format_date
+from vestat.django_utils import format_currency, format_date, mkstemp, temp_path2url
 
-from vestat.relatorios.reports2 import Report2
+from vestat.relatorios.reports2 import Report2, ReportElement
 from vestat.relatorios.reports2.elements import Table2, TableField2
 
 from django.shortcuts import render_to_response
@@ -95,6 +98,64 @@ class ReportView(View):
         return response
 
 
+class DespesasPorMesChart(ReportElement):
+    title = "Gráfico de despesas"
+
+    def render_html(self):
+        despesas = []
+        for ano in Dia._anos(self.data):
+            for mes in Dia._meses(ano, self.data):
+                dias = Dia._dias(ano, mes, self.data)
+                despesas_total = Dia.despesas_de_caixa_total(dias) + Dia.debitos_bancarios_total(dias)
+                despesas.append(-despesas_total)
+
+        x_locations = numpy.arange(len(despesas))
+
+        width = 0.3
+
+        try:
+            figure = pyplot.figure()
+
+            ax = figure.add_subplot(111)
+
+            rects = ax.bar(x_locations, despesas, width, color='r')
+
+            ax.set_ylabel(u"Reais")
+            ax.set_title(u"Despesas totais por mês")
+            ax.set_xticks(x_locations + width)
+            ax.set_xticklabels(MESES)
+
+            for label in ax.get_xticklabels():
+                label.set_rotation(45)
+
+            def autolabel(ax, rects):
+                # attach some text labels
+                for rect in rects:
+                    height = rect.get_height()
+
+                    text_x = rect.get_x() + rect.get_width() / 2.0
+
+                    if rect.get_y() < 0:
+                        text_y = -1 * (height + 900)
+                    else:
+                        text_y = height + 400
+
+                    ax.text(text_x, text_y, "{0}".format(format_currency(height)),
+                            ha='center', va='bottom', size='8')
+
+
+            autolabel(ax, rects)
+
+            ax.legend((rects,), (u"Despesas",))
+
+            img_file, img_path = mkstemp(suffix=".png")
+            img_url = temp_path2url(img_path)
+            figure.savefig(img_path, format="png")
+            return u'<img src="{img_url}" />'.format(img_url=img_url)
+
+        finally:
+            pyplot.close(figure)
+
 
 class AnualReportTable(Table2):
     """
@@ -141,7 +202,7 @@ class AnualReport(Report2):
     Relatório anual.
     """
     title="Relatório anual"
-    element_classes = [AnualReportTable]
+    element_classes = [DespesasPorMesChart, AnualReportTable]
 
 
 class AnualReportView(ReportView):
