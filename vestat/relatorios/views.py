@@ -13,7 +13,8 @@ from vestat.caixa.models import Dia, Venda, DespesaDeCaixa, \
 from vestat.caixa.templatetags.vestat_extras import colorir_num
 from vestat.relatorios.forms import RelatorioAnualForm, RelatorioSimplesForm, AnoFilterForm, DateFilterForm
 from vestat.relatorios.reports import Table, Report, TableField
-from vestat.django_utils import format_currency, format_date, mkstemp, temp_path2url
+from vestat.django_utils import format_currency, format_date
+from vestat.temp import mkstemp, path2url
 
 from vestat.relatorios.reports2 import Report2, ReportElement
 from vestat.relatorios.reports2.elements import Table2, TableField2
@@ -149,7 +150,7 @@ class DespesasPorMesChart(ReportElement):
             ax.legend((rects,), (u"Despesas",))
 
             img_file, img_path = mkstemp(suffix=".png")
-            img_url = temp_path2url(img_path)
+            img_url = path2url(img_path)
             figure.savefig(img_path, format="png")
             return u'<img src="{img_url}" />'.format(img_url=img_url)
 
