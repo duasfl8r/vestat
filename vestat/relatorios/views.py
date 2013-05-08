@@ -166,6 +166,82 @@ class DespesasPorMesChart(ReportElement):
 
             autolabel(ax, rects)
 
+            img_file, img_path = mkstemp(suffix=".png")
+            img_url = path2url(img_path)
+            figure.savefig(img_path, format="png")
+
+            return u'<img src="{img_url}" />'.format(img_url=img_url)
+
+        finally:
+            pyplot.close(figure)
+
+
+class FaturamentoPorMesChart(ReportElement):
+    title = "Gráfico de faturamentos"
+
+    def render_html(self):
+        faturamentos = []
+        xlabels = []
+
+        for ano in Dia._anos(self.data):
+            for mes in Dia._meses(ano, self.data):
+                dias = Dia._dias(ano, mes, self.data)
+                faturamento_total = Dia.faturamento_total(dias)
+                faturamentos.append(faturamento_total)
+                xlabels.append("{:%m/%Y}".format(datetime.date(ano, mes, 1)))
+
+        # nenhum faturamento, nenhuma imagem
+        if not faturamentos:
+            return u''
+
+        x_locations = numpy.arange(len(faturamentos))
+
+        bar_width = 0.5
+        min_width = 4
+        padding = 0.3
+
+        plot_width = max(bar_width * len(faturamentos), min_width)
+
+        figsize = (plot_width, 6)
+
+        try:
+            figure = pyplot.figure(figsize=figsize)
+            ax = figure.add_subplot(111)
+
+            pyplot.subplots_adjust(bottom=0.2)
+
+            rects = ax.bar(x_locations, faturamentos, bar_width, color='g')
+
+            ax.set_ylabel(u"Reais")
+            ax.set_title(u"Faturamento total por mês")
+            ax.set_xticks(x_locations + padding)
+            ax.set_xticklabels(xlabels)
+            ax.set_xlim([0 - padding, len(faturamentos)])
+
+            for label in ax.get_xticklabels():
+                label.set_rotation(45)
+                label.set_rotation_mode("anchor")
+                label.set_verticalalignment("top")
+                label.set_horizontalalignment("right")
+                label.set_size("8")
+
+            def autolabel(ax, rects):
+                # attach some text labels
+                for rect in rects:
+                    height = rect.get_height()
+
+                    text_x = rect.get_x() + rect.get_width() / 2.0
+
+                    if rect.get_y() < 0:
+                        text_y = -1 * (height + 900)
+                    else:
+                        text_y = height + 400
+
+                    ax.text(text_x, text_y, "{0}".format(format_currency(height)),
+                            ha='center', va='bottom', size='8')
+
+
+            autolabel(ax, rects)
 
             img_file, img_path = mkstemp(suffix=".png")
             img_url = path2url(img_path)
@@ -221,7 +297,7 @@ class AnualReport(Report2):
     Relatório anual.
     """
     title="Relatório anual"
-    element_classes = [DespesasPorMesChart, AnualReportTable]
+    element_classes = [DespesasPorMesChart, FaturamentoPorMesChart, AnualReportTable]
 
 
 class AnualReportView(ReportView):
