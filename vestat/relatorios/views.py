@@ -104,30 +104,49 @@ class DespesasPorMesChart(ReportElement):
 
     def render_html(self):
         despesas = []
+        xlabels = []
+
         for ano in Dia._anos(self.data):
             for mes in Dia._meses(ano, self.data):
                 dias = Dia._dias(ano, mes, self.data)
                 despesas_total = Dia.despesas_de_caixa_total(dias) + Dia.debitos_bancarios_total(dias)
                 despesas.append(-despesas_total)
+                xlabels.append("{:%m/%Y}".format(datetime.date(ano, mes, 1)))
+
+        # nenhuma despesa, nenhuma imagem
+        if not despesas:
+            return u''
 
         x_locations = numpy.arange(len(despesas))
 
-        width = 0.3
+        bar_width = 0.5
+        min_width = 4
+        padding = 0.3
+
+        plot_width = max(bar_width * len(despesas), min_width)
+
+        figsize = (plot_width, 6)
 
         try:
-            figure = pyplot.figure()
-
+            figure = pyplot.figure(figsize=figsize)
             ax = figure.add_subplot(111)
 
-            rects = ax.bar(x_locations, despesas, width, color='r')
+            pyplot.subplots_adjust(bottom=0.2)
+
+            rects = ax.bar(x_locations, despesas, bar_width, color='r')
 
             ax.set_ylabel(u"Reais")
             ax.set_title(u"Despesas totais por mês")
-            ax.set_xticks(x_locations + width)
-            ax.set_xticklabels(MESES)
+            ax.set_xticks(x_locations + padding)
+            ax.set_xticklabels(xlabels)
+            ax.set_xlim([0 - padding, len(despesas)])
 
             for label in ax.get_xticklabels():
                 label.set_rotation(45)
+                label.set_rotation_mode("anchor")
+                label.set_verticalalignment("top")
+                label.set_horizontalalignment("right")
+                label.set_size("8")
 
             def autolabel(ax, rects):
                 # attach some text labels
@@ -147,7 +166,6 @@ class DespesasPorMesChart(ReportElement):
 
             autolabel(ax, rects)
 
-            ax.legend((rects,), (u"Despesas",))
 
             img_file, img_path = mkstemp(suffix=".png")
             img_url = path2url(img_path)
