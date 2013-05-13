@@ -269,6 +269,93 @@ class FaturamentoPorMesChart(ReportElement):
             pyplot.close(figure)
 
 
+class ResultadoPorMesChart(ReportElement):
+    title = "Gráfico de resultados"
+
+    def render_html(self):
+        resultados = []
+        xlabels = []
+        colors = []
+
+        for ano in Dia._anos(self.data):
+            for mes in Dia._meses(ano, self.data):
+                dias = Dia._dias(ano, mes, self.data)
+                resultado_total = Dia.resultado_total(dias)
+                resultados.append(resultado_total)
+                xlabels.append("{:%m/%Y}".format(datetime.date(ano, mes, 1)))
+                colors.append("g" if resultado_total > 0 else "r")
+
+        # nenhum resultado, nenhuma imagem
+        if not resultados:
+            return u''
+
+        x_locations = numpy.arange(len(resultados))
+
+        bar_width = 0.5
+        min_width = 4
+        padding = 0.3
+
+        adjustments = {
+            "bottom": 0.1,
+            "left": 0.17,
+        }
+
+        plot_width = max(bar_width * len(resultados), min_width) + sum(adjustments.values())
+
+        figsize = (plot_width, 6)
+
+        try:
+            figure = pyplot.figure(figsize=figsize)
+            ax = figure.add_subplot(111)
+
+            pyplot.subplots_adjust(**adjustments)
+
+            rects = ax.bar(x_locations, resultados, bar_width, color=colors)
+
+            ax.set_ylabel(u"Reais")
+            ax.set_title(u"Resultado total por mês")
+            ax.set_xticks(x_locations + padding)
+            ax.set_xticklabels(xlabels)
+            ax.set_xlim([0 - padding, len(resultados)])
+
+            x1, x2, y1, y2 = pyplot.axis()
+            ax.set_ylim(y1 * 1.1, y2 * 1.1)
+
+            for label in ax.get_xticklabels():
+                label.set_rotation(45)
+                label.set_rotation_mode("anchor")
+                label.set_verticalalignment("top")
+                label.set_horizontalalignment("right")
+                label.set_size("8")
+
+            def autolabel(ax, rects):
+                # attach some text labels
+                for rect in rects:
+                    height = rect.get_height()
+
+                    text_x = rect.get_x() + rect.get_width() / 2.0
+
+                    if rect.get_y() < 0:
+                        height *= -1
+                        text_y = height - 500
+                    else:
+                        text_y = height + 200
+
+                    ax.text(text_x, text_y, "{0}".format(format_currency(height)),
+                            ha='center', va='bottom', size='8')
+
+
+            autolabel(ax, rects)
+
+            img_file, img_path = mkstemp(suffix=".png")
+            img_url = path2url(img_path)
+            figure.savefig(img_path, format="png")
+            return u'<img src="{img_url}" />'.format(img_url=img_url)
+
+        finally:
+            pyplot.close(figure)
+
+
 class AnualReportTable(Table2):
     """
     Tabela pro relatório anual.
