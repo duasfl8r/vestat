@@ -124,7 +124,12 @@ class DespesasPorMesChart(ReportElement):
         min_width = 4
         padding = 0.3
 
-        plot_width = max(bar_width * len(despesas), min_width)
+        adjustments = {
+            "bottom": 0.1,
+            "left": 0.17,
+        }
+
+        plot_width = max(bar_width * len(despesas), min_width) + sum(adjustments.values())
 
         figsize = (plot_width, 6)
 
@@ -132,7 +137,7 @@ class DespesasPorMesChart(ReportElement):
             figure = pyplot.figure(figsize=figsize)
             ax = figure.add_subplot(111)
 
-            pyplot.subplots_adjust(bottom=0.2)
+            pyplot.subplots_adjust(**adjustments)
 
             rects = ax.bar(x_locations, despesas, bar_width, color='r')
 
@@ -141,6 +146,9 @@ class DespesasPorMesChart(ReportElement):
             ax.set_xticks(x_locations + padding)
             ax.set_xticklabels(xlabels)
             ax.set_xlim([0 - padding, len(despesas)])
+
+            x1, x2, y1, y2 = pyplot.axis()
+            ax.set_ylim(y1, y2 * 1.1)
 
             for label in ax.get_xticklabels():
                 label.set_rotation(45)
@@ -201,7 +209,12 @@ class FaturamentoPorMesChart(ReportElement):
         min_width = 4
         padding = 0.3
 
-        plot_width = max(bar_width * len(faturamentos), min_width)
+        adjustments = {
+            "bottom": 0.1,
+            "left": 0.17,
+        }
+
+        plot_width = max(bar_width * len(faturamentos), min_width) + sum(adjustments.values())
 
         figsize = (plot_width, 6)
 
@@ -209,7 +222,7 @@ class FaturamentoPorMesChart(ReportElement):
             figure = pyplot.figure(figsize=figsize)
             ax = figure.add_subplot(111)
 
-            pyplot.subplots_adjust(bottom=0.2)
+            pyplot.subplots_adjust(**adjustments)
 
             rects = ax.bar(x_locations, faturamentos, bar_width, color='g')
 
@@ -218,6 +231,9 @@ class FaturamentoPorMesChart(ReportElement):
             ax.set_xticks(x_locations + padding)
             ax.set_xticklabels(xlabels)
             ax.set_xlim([0 - padding, len(faturamentos)])
+
+            x1, x2, y1, y2 = pyplot.axis()
+            ax.set_ylim(y1, y2 * 1.1)
 
             for label in ax.get_xticklabels():
                 label.set_rotation(45)
