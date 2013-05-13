@@ -19,6 +19,7 @@ from vestat.temp import mkstemp, path2url
 from vestat.relatorios.reports2 import Report2, ReportElement
 from vestat.relatorios.reports2.elements import Table2, TableField2
 
+from django.conf import settings
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.db.models.aggregates import Sum, Avg, Count
@@ -402,8 +403,8 @@ def lista_despesas(request):
 
     if filter_form.is_valid():
         report = Report(data=Dia.objects.all(), filters=[filter_form], tables=[table])
-        from_date = filter_form.cleaned_data.get("from_date").strftime(SHORT_DATE_FORMAT_PYTHON)
-        to_date = filter_form.cleaned_data.get("to_date").strftime(SHORT_DATE_FORMAT_PYTHON)
+        from_date = filter_form.cleaned_data.get("from_date").strftime(settings.SHORT_DATE_FORMAT_PYTHON)
+        to_date = filter_form.cleaned_data.get("to_date").strftime(settings.SHORT_DATE_FORMAT_PYTHON)
         title = "Despesas: {from_date} - {to_date}".format(**vars())
     else:
         report = None
