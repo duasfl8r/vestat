@@ -20,5 +20,5 @@ urlpatterns = patterns('',
      url(r'^despesas_por_categoria/$', views.view_relatorio, kwargs={ "titulo": "Despesas", "tablemakers": [views.despesas_por_categoria] }),
      url(r'^movbancarias_por_categoria/$', views.view_relatorio, kwargs={ "titulo": u"Movimentações bancárias", "tablemakers": [views.movbancarias_por_categoria] }),
 
-     url(r'^anual2/$', views.AnualReportView.as_view())
+     url(r'^meses/$', views.MesesReportView.as_view()),
 )
