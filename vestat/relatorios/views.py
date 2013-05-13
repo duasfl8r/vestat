@@ -11,7 +11,7 @@ from vestat.caixa.models import Dia, Venda, DespesaDeCaixa, \
     secs_to_time, MESES
 
 from vestat.caixa.templatetags.vestat_extras import colorir_num
-from vestat.relatorios.forms import RelatorioAnualForm, RelatorioSimplesForm, AnoFilterForm, DateFilterForm
+from vestat.relatorios.forms import RelatorioAnualForm, RelatorioSimplesForm, AnoFilterForm, DateFilterForm, IntervaloMesesFilterForm
 from vestat.relatorios.reports import Table, Report, TableField
 from vestat.django_utils import format_currency, format_date
 from vestat.temp import mkstemp, path2url
@@ -356,7 +356,7 @@ class ResultadoPorMesChart(ReportElement):
             pyplot.close(figure)
 
 
-class AnualReportTable(Table2):
+class MesesReportTable(Table2):
     """
     Tabela pro relatório anual.
     """
@@ -401,7 +401,7 @@ class AnualReport(Report2):
     Relatório anual.
     """
     title="Relatório anual"
-    element_classes = [DespesasPorMesChart, FaturamentoPorMesChart, AnualReportTable]
+    element_classes = [DespesasPorMesChart, FaturamentoPorMesChart, MesesReportTable]
 
 
 class AnualReportView(ReportView):
@@ -413,6 +413,26 @@ class AnualReportView(ReportView):
 
     def get_raw_data(self):
         return Dia.objects.all()
+
+
+class MesesReport(Report2):
+    """
+    Relatório de meses.
+    """
+    title="Relatório de meses"
+    element_classes = [DespesasPorMesChart, FaturamentoPorMesChart, ResultadoPorMesChart, MesesReportTable]
+
+
+class MesesReportView(ReportView):
+    """
+    Class-based view do relatório de meses.
+    """
+    Report = MesesReport
+    FilterForm = IntervaloMesesFilterForm
+
+    def get_raw_data(self):
+        return Dia.objects.all()
+
 
 def anual(request):
     def process_data(self, data):
