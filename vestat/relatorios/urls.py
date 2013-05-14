@@ -17,8 +17,8 @@ urlpatterns = patterns('',
                                                                       views.vendas_por_dia_da_semana, views.vendas_por_cidade]
                                                      }),
      url(r'^pgtos_por_bandeira/$', views.view_relatorio, kwargs={ "titulo": "Pagamentos com cartão", "tablemakers": [views.pgtos_por_bandeira] }),
-     url(r'^despesas_por_categoria/$', views.view_relatorio, kwargs={ "titulo": "Despesas", "tablemakers": [views.despesas_por_categoria] }),
-     url(r'^movbancarias_por_categoria/$', views.view_relatorio, kwargs={ "titulo": u"Movimentações bancárias", "tablemakers": [views.movbancarias_por_categoria] }),
+
+     url(r'^despesas_por_categoria/$', views.DespesasPorCategoriaReportView.as_view()),
 
      url(r'^meses/$', views.MesesReportView.as_view()),
 )
