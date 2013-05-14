@@ -28,10 +28,10 @@ logger = logging.getLogger(__name__)
 SLUG_CATEGORIA_GORJETA = "10"
 SLUG_CATEGORIA_TAXA_CARTAO = "taxas"
 
-MESES = ['janeiro', 'fevereiro', 'março', 'abril',
-     'maio', 'junho', 'julho', 'agosto',
-     'setembro', 'outubro', 'novembro',
-     'dezembro']
+MESES = [u"janeiro", u"fevereiro", u"março", u"abril",
+     u"maio", u"junho", u"julho", u"agosto",
+     u"setembro", u"outubro", u"novembro",
+     u"dezembro"]
 
 FATOR_CONSIDERADO_10P = Decimal('0.9')
 """

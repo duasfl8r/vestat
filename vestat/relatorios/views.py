@@ -1,20 +1,32 @@
 # -*- encoding: utf-8 -*-
-import csv
 import datetime
+from decimal import Decimal
+import logging
 
-from vestat.caixa.models import *
+import numpy
+from matplotlib import pyplot
+
+from vestat.caixa.models import Dia, Venda, DespesaDeCaixa, \
+    PagamentoComCartao, AjusteDeCaixa, MovimentacaoBancaria, \
+    secs_to_time, MESES
+
 from vestat.caixa.templatetags.vestat_extras import colorir_num
-from vestat.settings import *
-from vestat.relatorios.forms import *
-from vestat.relatorios.reports import Table, Report, AnoFilterForm, DateFilterForm, TableField
+from vestat.relatorios.forms import RelatorioAnualForm, RelatorioSimplesForm, AnoFilterForm, DateFilterForm, IntervaloMesesFilterForm
+from vestat.relatorios.reports import Table, Report, TableField
 from vestat.django_utils import format_currency, format_date
+from vestat.temp import mkstemp, path2url
 
-from django.shortcuts import redirect, render_to_response
+from vestat.relatorios.reports2 import Report2, ReportElement
+from vestat.relatorios.reports2.elements import Table2, TableField2
+
+from django.conf import settings
+from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.http import Http404, HttpResponse
 from django.db.models.aggregates import Sum, Avg, Count
 from django.forms.forms import pretty_name
-from django.utils.encoding import iri_to_uri
+from django.views.generic import View
+
+logger = logging.getLogger(__name__)
 
 def somar_dict(accum, key, d):
     if key in accum:
@@ -22,6 +34,405 @@ def somar_dict(accum, key, d):
             accum[key][k] += v
     else:
         accum[key] = d
+
+class ReportView(View):
+    """
+    Uma classe abstrata pra uma view de relatório.
+
+    Subclasses devem implementar o método `get_raw_data` e sobrescrever
+    o atributo `Report`. Para ter um formulário de filtragem dos dados,
+    deve sobrescrever o atributo `FilterForm`.
+    """
+
+    Report = None
+    """
+    Classe de relatórios usada pela view. Deve ser subclasse de `reports2.Report2`.
+    """
+
+    FilterForm = None
+    """
+    Classe do formulário de filtragem usado. Deve ser subclasse de `reports.FilterForm`.
+    """
+
+    def get_raw_data(self):
+        """
+        Extrai os dados crus a serem filtrados pelo
+        formulário `FilterForm` e enviados pro relatório `Report`.
+        """
+        pass
+
+    def get(self, request, *args, **kwargs):
+        """
+        Extrai os dados crus, filtra se houver um `FilterForm`, cria o
+        objeto `Report` e o renderiza.
+        """
+        if self.FilterForm:
+            filter_form = self.FilterForm(data=request.GET)
+
+            if filter_form.is_valid():
+                data = filter_form.filter(self.get_raw_data())
+            else:
+                data = []
+
+            subtitle = filter_form.filter_info
+        else:
+            filter_form = None
+            data = self.get_raw_data()
+            subtitle = ""
+
+        report = self.Report(data)
+        format = request.GET.get("format", "html")
+        report_contents = report.render(format)
+
+        template_name = "report2_view.{0}".format(format)
+
+        response = render_to_response(template_name, {
+              'title': report.title,
+              'subtitle': subtitle,
+              'report_contents': report_contents,
+              'filter_form': filter_form, },
+             context_instance=RequestContext(request))
+
+        if format == "csv":
+            response.mimetype = "text/csv"
+            response['Content-Disposition'] = 'attachment; filename=anual.csv'
+
+        return response
+
+
+class DespesasPorMesChart(ReportElement):
+    title = "Gráfico de despesas"
+
+    def render_html(self):
+        despesas = []
+        xlabels = []
+
+        for ano in Dia._anos(self.data):
+            for mes in Dia._meses(ano, self.data):
+                dias = Dia._dias(ano, mes, self.data)
+                despesas_total = Dia.despesas_de_caixa_total(dias) + Dia.debitos_bancarios_total(dias)
+                despesas.append(-despesas_total)
+                xlabels.append("{:%m/%Y}".format(datetime.date(ano, mes, 1)))
+
+        # nenhuma despesa, nenhuma imagem
+        if not despesas:
+            return u''
+
+        x_locations = numpy.arange(len(despesas))
+
+        bar_width = 0.5
+        min_width = 4
+        padding = 0.3
+
+        adjustments = {
+            "bottom": 0.1,
+            "left": 0.17,
+        }
+
+        plot_width = max(bar_width * len(despesas), min_width) + sum(adjustments.values())
+
+        figsize = (plot_width, 6)
+
+        try:
+            figure = pyplot.figure(figsize=figsize)
+            ax = figure.add_subplot(111)
+
+            pyplot.subplots_adjust(**adjustments)
+
+            rects = ax.bar(x_locations, despesas, bar_width, color='r')
+
+            ax.set_ylabel(u"Reais")
+            ax.set_title(u"Despesas totais por mês")
+            ax.set_xticks(x_locations + padding)
+            ax.set_xticklabels(xlabels)
+            ax.set_xlim([0 - padding, len(despesas)])
+
+            x1, x2, y1, y2 = pyplot.axis()
+            ax.set_ylim(y1, y2 * 1.1)
+
+            for label in ax.get_xticklabels():
+                label.set_rotation(45)
+                label.set_rotation_mode("anchor")
+                label.set_verticalalignment("top")
+                label.set_horizontalalignment("right")
+                label.set_size("8")
+
+            def autolabel(ax, rects):
+                # attach some text labels
+                for rect in rects:
+                    height = rect.get_height()
+
+                    text_x = rect.get_x() + rect.get_width() / 2.0
+
+                    if rect.get_y() < 0:
+                        text_y = -1 * (height + 900)
+                    else:
+                        text_y = height + 400
+
+                    ax.text(text_x, text_y, "{0}".format(format_currency(height)),
+                            ha='center', va='bottom', size='8')
+
+
+            autolabel(ax, rects)
+
+            img_file, img_path = mkstemp(suffix=".png")
+            img_url = path2url(img_path)
+            figure.savefig(img_path, format="png")
+
+            return u'<img src="{img_url}" />'.format(img_url=img_url)
+
+        finally:
+            pyplot.close(figure)
+
+
+class FaturamentoPorMesChart(ReportElement):
+    title = "Gráfico de faturamentos"
+
+    def render_html(self):
+        faturamentos = []
+        xlabels = []
+
+        for ano in Dia._anos(self.data):
+            for mes in Dia._meses(ano, self.data):
+                dias = Dia._dias(ano, mes, self.data)
+                faturamento_total = Dia.faturamento_total(dias)
+                faturamentos.append(faturamento_total)
+                xlabels.append("{:%m/%Y}".format(datetime.date(ano, mes, 1)))
+
+        # nenhum faturamento, nenhuma imagem
+        if not faturamentos:
+            return u''
+
+        x_locations = numpy.arange(len(faturamentos))
+
+        bar_width = 0.5
+        min_width = 4
+        padding = 0.3
+
+        adjustments = {
+            "bottom": 0.1,
+            "left": 0.17,
+        }
+
+        plot_width = max(bar_width * len(faturamentos), min_width) + sum(adjustments.values())
+
+        figsize = (plot_width, 6)
+
+        try:
+            figure = pyplot.figure(figsize=figsize)
+            ax = figure.add_subplot(111)
+
+            pyplot.subplots_adjust(**adjustments)
+
+            rects = ax.bar(x_locations, faturamentos, bar_width, color='g')
+
+            ax.set_ylabel(u"Reais")
+            ax.set_title(u"Faturamento total por mês")
+            ax.set_xticks(x_locations + padding)
+            ax.set_xticklabels(xlabels)
+            ax.set_xlim([0 - padding, len(faturamentos)])
+
+            x1, x2, y1, y2 = pyplot.axis()
+            ax.set_ylim(y1, y2 * 1.1)
+
+            for label in ax.get_xticklabels():
+                label.set_rotation(45)
+                label.set_rotation_mode("anchor")
+                label.set_verticalalignment("top")
+                label.set_horizontalalignment("right")
+                label.set_size("8")
+
+            def autolabel(ax, rects):
+                # attach some text labels
+                for rect in rects:
+                    height = rect.get_height()
+
+                    text_x = rect.get_x() + rect.get_width() / 2.0
+
+                    if rect.get_y() < 0:
+                        text_y = -1 * (height + 900)
+                    else:
+                        text_y = height + 400
+
+                    ax.text(text_x, text_y, "{0}".format(format_currency(height)),
+                            ha='center', va='bottom', size='8')
+
+
+            autolabel(ax, rects)
+
+            img_file, img_path = mkstemp(suffix=".png")
+            img_url = path2url(img_path)
+            figure.savefig(img_path, format="png")
+            return u'<img src="{img_url}" />'.format(img_url=img_url)
+
+        finally:
+            pyplot.close(figure)
+
+
+class ResultadoPorMesChart(ReportElement):
+    title = "Gráfico de resultados"
+
+    def render_html(self):
+        resultados = []
+        xlabels = []
+        colors = []
+
+        for ano in Dia._anos(self.data):
+            for mes in Dia._meses(ano, self.data):
+                dias = Dia._dias(ano, mes, self.data)
+                resultado_total = Dia.resultado_total(dias)
+                resultados.append(resultado_total)
+                xlabels.append("{:%m/%Y}".format(datetime.date(ano, mes, 1)))
+                colors.append("g" if resultado_total > 0 else "r")
+
+        # nenhum resultado, nenhuma imagem
+        if not resultados:
+            return u''
+
+        x_locations = numpy.arange(len(resultados))
+
+        bar_width = 0.5
+        min_width = 4
+        padding = 0.3
+
+        adjustments = {
+            "bottom": 0.1,
+            "left": 0.17,
+        }
+
+        plot_width = max(bar_width * len(resultados), min_width) + sum(adjustments.values())
+
+        figsize = (plot_width, 6)
+
+        try:
+            figure = pyplot.figure(figsize=figsize)
+            ax = figure.add_subplot(111)
+
+            pyplot.subplots_adjust(**adjustments)
+
+            rects = ax.bar(x_locations, resultados, bar_width, color=colors)
+
+            ax.set_ylabel(u"Reais")
+            ax.set_title(u"Resultado total por mês")
+            ax.set_xticks(x_locations + padding)
+            ax.set_xticklabels(xlabels)
+            ax.set_xlim([0 - padding, len(resultados)])
+
+            x1, x2, y1, y2 = pyplot.axis()
+            ax.set_ylim(y1 * 1.1, y2 * 1.1)
+
+            for label in ax.get_xticklabels():
+                label.set_rotation(45)
+                label.set_rotation_mode("anchor")
+                label.set_verticalalignment("top")
+                label.set_horizontalalignment("right")
+                label.set_size("8")
+
+            def autolabel(ax, rects):
+                # attach some text labels
+                for rect in rects:
+                    height = rect.get_height()
+
+                    text_x = rect.get_x() + rect.get_width() / 2.0
+
+                    if rect.get_y() < 0:
+                        height *= -1
+                        text_y = height - 500
+                    else:
+                        text_y = height + 200
+
+                    ax.text(text_x, text_y, "{0}".format(format_currency(height)),
+                            ha='center', va='bottom', size='8')
+
+
+            autolabel(ax, rects)
+
+            img_file, img_path = mkstemp(suffix=".png")
+            img_url = path2url(img_path)
+            figure.savefig(img_path, format="png")
+            return u'<img src="{img_url}" />'.format(img_url=img_url)
+
+        finally:
+            pyplot.close(figure)
+
+
+class MesesReportTable(Table2):
+    """
+    Tabela pro relatório anual.
+    """
+    title = "Tabela"
+
+    fields = (
+        TableField2("Mês"),
+        TableField2("Pessoas", slug="num_pessoas", classes=["number"]),
+        TableField2("Vendas", classes=["number"]),
+        TableField2("Perm Média", slug="permanencia_media", classes=["time"]),
+        TableField2("Faturamento", classes=["currency"]),
+        TableField2("Desp Cx", slug="despesas_de_caixa", classes=["currency"]),
+        TableField2("Desp Banco", slug="debitos_bancarios", classes=["currency"]),
+        TableField2("Resultado", slug="resultado", classes=["currency"]),
+        TableField2("Per Capita", slug="per_capita", classes=["currency"]),
+        TableField2("10%", slug="gorjeta", classes=["currency"]),
+    )
+
+    @property
+    def body(self):
+        result = []
+        for ano in Dia._anos(self.data):
+            for mes in Dia._meses(ano, self.data):
+                dias = Dia._dias(ano, mes, self.data)
+                result.append(["%04d-%02d" % (ano, mes),              # mes
+                             Dia.num_pessoas_total(dias),           # num pessoas
+                             colorir_num(Dia.vendas_total(dias)),                # vendas
+                             Dia.permanencia_media_total(dias),     # permanencia medi
+                             colorir_num(Dia.faturamento_total(dias)),           # faturamento
+                             colorir_num(Dia.despesas_de_caixa_total(dias)),     # desp cx
+                             colorir_num(Dia.debitos_bancarios_total(dias)),     # banco
+                             colorir_num(Dia.resultado_total(dias)),             # resultado
+                             colorir_num(Dia.captacao_por_pessoa_total(dias)),   # per capita
+                             colorir_num(Dia.gorjeta_total(dias)),               # 10%
+                             ])
+
+        return sorted(result, key=lambda r: r[0])
+
+
+class AnualReport(Report2):
+    """
+    Relatório anual.
+    """
+    title="Relatório anual"
+    element_classes = [DespesasPorMesChart, FaturamentoPorMesChart, MesesReportTable]
+
+
+class AnualReportView(ReportView):
+    """
+    Class-based view do relatório anual.
+    """
+    Report = AnualReport
+    FilterForm = AnoFilterForm
+
+    def get_raw_data(self):
+        return Dia.objects.all()
+
+
+class MesesReport(Report2):
+    """
+    Relatório de meses.
+    """
+    title="Relatório de meses"
+    element_classes = [DespesasPorMesChart, FaturamentoPorMesChart, ResultadoPorMesChart, MesesReportTable]
+
+
+class MesesReportView(ReportView):
+    """
+    Class-based view do relatório de meses.
+    """
+    Report = MesesReport
+    FilterForm = IntervaloMesesFilterForm
+
+    def get_raw_data(self):
+        return Dia.objects.all()
+
 
 def anual(request):
     def process_data(self, data):
@@ -115,8 +526,8 @@ def lista_despesas(request):
 
     if filter_form.is_valid():
         report = Report(data=Dia.objects.all(), filters=[filter_form], tables=[table])
-        from_date = filter_form.cleaned_data.get("from_date").strftime(SHORT_DATE_FORMAT_PYTHON)
-        to_date = filter_form.cleaned_data.get("to_date").strftime(SHORT_DATE_FORMAT_PYTHON)
+        from_date = filter_form.cleaned_data.get("from_date").strftime(settings.SHORT_DATE_FORMAT_PYTHON)
+        to_date = filter_form.cleaned_data.get("to_date").strftime(settings.SHORT_DATE_FORMAT_PYTHON)
         title = "Despesas: {from_date} - {to_date}".format(**vars())
     else:
         report = None

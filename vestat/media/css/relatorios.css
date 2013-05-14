@@ -1,3 +1,12 @@
+.title h2 {
+    text-align: center;
+    color: #5f0070;
+}
+
+body {
+    font-size: 11px;
+}
+
 .content {
     width: 95%;
     margin: 0 auto;

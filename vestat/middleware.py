@@ -50,11 +50,6 @@ class ExceptionLoggerMiddleware():
         error_msg = u"\n".join(error_data)
         logger.error(error_msg)
 
-        return render_to_response('500.html', {
-                                  'settings': settings,
-                                 },
-                                 context_instance=RequestContext(request))
-
 class AutologinMiddleware():
     """
     Faz login automático.

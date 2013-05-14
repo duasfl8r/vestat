@@ -8,8 +8,10 @@ import vestat.config.urls
 import vestat.calendario.urls
 
 import views
-from vestat.settings import BASE_DIR
+from vestat.settings import MEDIA_ROOT
+from vestat import temp
 
+temp.clear()
 
 # Uncomment the next two lines to enable the admin:
 #from django.contrib import admin
@@ -26,7 +28,7 @@ urlpatterns = patterns('',
      (r'^relatorios/', include(vestat.relatorios.urls)),
      (r'^calendario/', include(vestat.calendario.urls, namespace="calendario")),
      (r'^m/(?P<path>.*)$', 'django.views.static.serve',
-             {'document_root': BASE_DIR + '/media'}),
+             {'document_root': MEDIA_ROOT}),
 )
 
 handler500 = 'views.server_error'
