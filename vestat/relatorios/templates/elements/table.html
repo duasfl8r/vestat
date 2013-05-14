@@ -25,4 +25,15 @@
             </tr>
     {% endfor %}
     </tbody>
+    {% if footer %}
+    <tfoot>
+        {% for row in footer %}
+                <tr>
+            {% for elem in row %}
+                    <td>{{ elem|safe }}</td>
+            {% endfor %}
+                </tr>
+        {% endfor %}
+        </tfoot>
+    {% endif %}
 </table>

@@ -52,6 +52,14 @@ class Table2(ReportElement):
         """
         pass
 
+    @property
+    def footer(self):
+        """
+        Retorna uma lista de listas, cada uma representando uma linha do
+        rodapé da tabela, na ordem a serem exibidas.
+        """
+        return tuple()
+
     def render(self, format):
         """
         Encapsula a renderização de diversos formatos na mesma função.
@@ -69,6 +77,7 @@ class Table2(ReportElement):
             "title": self.title,
             "fields": self.fields,
             "body": self.body,
+            "footer": self.footer,
         })
         return template.render(context)
 
