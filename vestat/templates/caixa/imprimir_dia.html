@@ -171,7 +171,7 @@
                     {% for despesa in dia.despesadecaixa_set.all %}
                     <tr>
                         <td id="valor" class="num">{{ despesa.valor|colorir_num }}</td>
-                        <td id="categoria">{{ despesa.get_categoria_display }}</td>
+                        <td id="categoria">{{ despesa.categoria }}</td>
                         <td id="descricao" class="num">{{ despesa.descricao }}</td>
                     </tr>
                     {% endfor %}

@@ -2,16 +2,109 @@
 import codecs
 import json
 
-last_bandeira_pk = 0
+from vestat.caixa.models import CategoriaDeMovimentacao as Cat
 
-def converter_cartoes(filename):
-    bandeira_antiga_pra_nova = {}
+BANDEIRAS__TABELA = {}
+BANDEIRAS__LAST_PK = 0
+CATEGORIAS__NOVAS = {}
+
+def converter(filename):
+    CATEGORIAS__NOVAS["aluguel"] = Cat(nome=u"Aluguel")
+    CATEGORIAS__NOVAS["contador"] = Cat(nome=u"Contador")
+    CATEGORIAS__NOVAS["energia"] = Cat(nome=u"Energia")
+    CATEGORIAS__NOVAS["fornecedor"] = FORNECEDOR = Cat(nome=u"Fornecedor")
+    CATEGORIAS__NOVAS["impostos"] = Cat(nome=u"Impostos")
+    CATEGORIAS__NOVAS["manutencao"] = Cat(nome=u"Manutenção Predial")
+    CATEGORIAS__NOVAS["marketing"] = Cat(nome=u"Marketing")
+    CATEGORIAS__NOVAS["pessoal"] = PESSOAL = Cat(nome=u"Pessoal")
+    CATEGORIAS__NOVAS["servico"] = Cat(nome=u"Prestação de serviço")
+    CATEGORIAS__NOVAS["retirada"] = Cat(nome=u"Retirada")
+    CATEGORIAS__NOVAS["tarifas_bancarias"] = Cat(nome=u"Tarifas bancárias")
+    CATEGORIAS__NOVAS["taxas"] = Cat(nome=u"Taxas")
+    CATEGORIAS__NOVAS["telefone"] = Cat(nome=u"Telefone")
+
+    for c in CATEGORIAS__NOVAS.values(): c.save()
+
+    CATEGORIAS__NOVAS["fornecedor__alemaes"] = Cat(nome=u"Alemães", mae=FORNECEDOR)
+    CATEGORIAS__NOVAS["fornecedor__acougue"] = Cat(nome=u"Açougue", mae=FORNECEDOR)
+    CATEGORIAS__NOVAS["fornecedor__mercearia"] = Cat(nome=u"Mercearia", mae=FORNECEDOR)
+    CATEGORIAS__NOVAS["fornecedor__bebidas"] = Cat(nome=u"Bebidas", mae=FORNECEDOR)
+    CATEGORIAS__NOVAS["fornecedor__nao_vendavel"] = Cat(nome=u"Não-vendável", mae=FORNECEDOR)
+    CATEGORIAS__NOVAS["pessoal__10p"] = Cat(nome=u"10%", mae=PESSOAL)
+    CATEGORIAS__NOVAS["pessoal__extra"] = Cat(nome=u"Extra", mae=PESSOAL)
+    CATEGORIAS__NOVAS["pessoal__salario"] = Cat(nome=u"Salário", mae=PESSOAL)
+
+    for c in CATEGORIAS__NOVAS.values(): c.save()
+
+    CATEGORIAS__TABELA = {
+        'A': 'aluguel',
+        'C': 'contador',
+        'E': 'energia',
+        'F': 'fornecedor',
+        'L': 'fornecedor__alemaes',
+        '1': 'fornecedor__acougue',
+        'Y': 'fornecedor__mercearia',
+        'V': 'fornecedor__bebidas',
+        'I': 'impostos',
+        'Q': 'manutencao',
+        'M': 'marketing',
+        'O': None,
+        'G': 'pessoal__10p',
+        'X': 'pessoal__extra',
+        'P': 'pessoal__salario',
+        'S': 'servico',
+        'U': 'fornecedor__nao_vendavel',
+        'R': 'retirada',
+        'B': 'tarifas_bancarias',
+        'T': 'taxas',
+        'N': 'telefone',
+    }
+
+    def id_nova_categoria(obj):
+        old_code = obj["fields"]["categoria"]
+        new_key = CATEGORIAS__TABELA[old_code]
+        if new_key is None:
+            return None
+        else:
+            return CATEGORIAS__NOVAS[new_key].id
+
+
+    def handle_despesadecaixa(despesa):
+        return [{
+            u"pk": despesa["pk"],
+            u"model": u"caixa.despesadecaixa",
+
+            u"fields": {
+                u"descricao": despesa["fields"]["descricao"],
+                u"dia": despesa["fields"]["dia"],
+                u"valor": despesa["fields"]["valor"],
+                u"categoria": id_nova_categoria(despesa),
+            }
+        }]
+
+    def handle_movimentacaobancaria(movbancaria):
+        return [{
+            u"pk": movbancaria["pk"],
+            u"model": u"caixa.movimentacaobancaria",
+
+            u"fields": {
+                u"descricao": movbancaria["fields"]["descricao"],
+                u"dia": movbancaria["fields"]["dia"],
+                u"valor": movbancaria["fields"]["valor"],
+                u"pgto_cartao": movbancaria["fields"]["pgto_cartao"],
+                u"categoria": id_nova_categoria(movbancaria),
+            }
+        }]
+
+    def handle_dia(dia):
+        del dia["fields"]["feriado"]
+        return [dia]
 
     def handle_bandeira(bandeira):
-        global last_bandeira_pk
+        global BANDEIRAS__LAST_PK
 
         bandeira_nova_credito = {
-            u"pk": last_bandeira_pk + 1,
+            u"pk": BANDEIRAS__LAST_PK + 1,
             u"model": u"caixa.bandeira",
 
             u"fields": {
@@ -25,9 +118,8 @@ def converter_cartoes(filename):
         }
 
         bandeira_nova_debito = {
-            u"pk": last_bandeira_pk + 2,
+            u"pk": BANDEIRAS__LAST_PK + 2,
             u"model": u"caixa.bandeira",
-
             u"fields": {
                 u"ativa": True,
                 u"nome": bandeira["fields"]["nome"] + u" Débito",
@@ -38,9 +130,9 @@ def converter_cartoes(filename):
             },
         }
 
-        last_bandeira_pk += 2
+        BANDEIRAS__LAST_PK += 2
 
-        bandeira_antiga_pra_nova[bandeira["pk"]] = {
+        BANDEIRAS__TABELA[bandeira["pk"]] = {
             "C": bandeira_nova_credito["pk"],
             "D": bandeira_nova_debito["pk"],
         }
@@ -51,7 +143,7 @@ def converter_cartoes(filename):
         bandeira_antiga = pagamentocomcartao["fields"]["bandeira"]
         categoria = pagamentocomcartao["fields"]["categoria"]
 
-        bandeira_nova = bandeira_antiga_pra_nova[bandeira_antiga][categoria]
+        bandeira_nova = BANDEIRAS__TABELA[bandeira_antiga][categoria]
 
         pagamentocomcartao_novo = {
             u"pk": pagamentocomcartao["pk"],
@@ -72,8 +164,11 @@ def converter_cartoes(filename):
     dump = json.load(codecs.open(filename, encoding="utf-8"))
 
     model_and_function = (
+        ("caixa.dia", handle_dia),
         ("caixa.bandeira", handle_bandeira),
-        ("caixa.pagamentocomcartao", handle_pagamentocomcartao)
+        ("caixa.pagamentocomcartao", handle_pagamentocomcartao),
+        ("caixa.despesadecaixa", handle_despesadecaixa),
+        ("caixa.movimentacaobancaria", handle_movimentacaobancaria),
     )
 
     not_to_be_converted = [e for e in dump if e['model'] not in [m[0] for m in model_and_function]]
@@ -83,6 +178,7 @@ def converter_cartoes(filename):
     result = []
 
     for model, func in model_and_function:
+        print("Convertendo modelo {model}".format(model=model))
         for elem in [e for e in dump if e['model'] == model]:
             result.extend(func(elem))
 

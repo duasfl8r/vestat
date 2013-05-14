@@ -9,20 +9,15 @@ from django.db.models import Sum, Count
 from django.conf import settings
 from django.test.client import Client
 
-from models import Dia, Venda, DespesaDeCaixa, MovimentacaoBancaria, \
-    secs_to_time, PagamentoComCartao, Bandeira
+from models import Dia, Venda, DespesaDeCaixa, \
+    secs_to_time, PagamentoComCartao, Bandeira, CategoriaDeMovimentacao, \
+    SLUG_CATEGORIA_GORJETA
 
 from vestat.django_utils import format_currency
 from vestat.config.models import VestatConfiguration
 from vestat.contabil.models import Registro, Transacao, Lancamento
 
 from caixa import NOME_DO_REGISTRO
-
-
-DESPESA_CATEGORIA_10P = "G"
-"""
-Código da categoria de despesa associada ao pagamento de 10% os funcionários.
-"""
 
 
 def random_date(year=None, month=None, day=None):
@@ -194,19 +189,6 @@ class VendaTestCase(TestCase):
                     )
                     venda.fechada = True
                     venda.save()
-
-class DespesaTestCase(TestCase):
-    def setUp(self):
-        self.dia = Dia(data=datetime(2012, 02, 14))
-        self.dia.save()
-
-    def test_choices(self):
-        for cat in [c[0] for c in DespesaDeCaixa.CATEGORIA_CHOICES]:
-            despesa = DespesaDeCaixa(dia=self.dia,
-                              valor=Decimal("100.0"),
-                              categoria=cat,
-                              descricao="teste!")
-            despesa.save()
 
 
 class TestCaseVestatBoilerplate(TestCase):
@@ -475,6 +457,8 @@ class DiaDezPorcentoAPagarTestCase(TestCaseVestatBoilerplate):
     Teste do cálculo do valor de 10% a pagar.
     """
 
+    fixtures = ["categorias_de_movimentacao_teste"]
+
     def setUp(self):
         super(DiaDezPorcentoAPagarTestCase, self).setUp()
 
@@ -516,8 +500,9 @@ class DiaDezPorcentoAPagarTestCase(TestCaseVestatBoilerplate):
         self.assertEqual(dezp_a_pagar, Decimal(float(fracao_aumento_da_divida)))
 
     def adiciona_despesa_de_10p(self):
+        categoria_10p = CategoriaDeMovimentacao.objects.get(slug=SLUG_CATEGORIA_GORJETA)
         self.despesa = DespesaDeCaixa(dia=self.dia,
-                categoria=DESPESA_CATEGORIA_10P,
+                categoria=categoria_10p,
                 valor=Decimal("-10"))
         self.despesa.save()
 
@@ -544,7 +529,7 @@ class DiaDezPorcentoAPagarTestCase(TestCaseVestatBoilerplate):
 
 
 class PagamentoComCartaoTestCase(TestCaseVestatBoilerplate):
-    fixtures = ["feriados_bancarios"]
+    fixtures = ["feriados_bancarios", "categorias_de_movimentacao_teste"]
 
     def setUp(self):
         super(PagamentoComCartaoTestCase, self).setUp()

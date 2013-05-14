@@ -6,9 +6,8 @@ Representações dos modelos da app.
 """
 
 from django.contrib import admin
-from models import Bandeira
+from models import Bandeira, CategoriaDeMovimentacao
 from forms import BandeiraForm
-
 
 
 class BandeiraAdmin(admin.ModelAdmin):
@@ -24,3 +23,10 @@ class BandeiraAdmin(admin.ModelAdmin):
 
 admin.site.register(Bandeira, BandeiraAdmin)
 
+
+class CategoriaDeMovimentacaoAdmin(admin.ModelAdmin):
+    list_display = ["nome", "nome_completo", "slug"]
+    list_display_links = ["nome"]
+    ordering = ["nome"]
+
+admin.site.register(CategoriaDeMovimentacao, CategoriaDeMovimentacaoAdmin)

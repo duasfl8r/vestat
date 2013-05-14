@@ -94,7 +94,7 @@ def lista_despesas(request):
                                                            dia.data.day, dia.data.month,
                                                            dia.data.year),
                     colorir_num(despesa.valor),
-                    despesa.get_categoria_display(),
+                    unicode(despesa.categoria),
                     tipo]
 
         for dia in data.order_by("data"):
@@ -339,7 +339,7 @@ def despesas_por_categoria(dias):
     agrupado_dict = {}
     for despesa in despesas:
         categoria = agrupado_dict.setdefault(
-            despesa.categoria,
+            despesa.categoria.slug,
             {
                 "despesas": 0,
                 "total": Decimal("0"),
@@ -358,15 +358,15 @@ def despesas_por_categoria(dias):
         categoria["porcentagem_das_vendas"] = "{:.2%}".format(razao_das_vendas)
 
     # Produz uma lista de tuplas a partir do dicionário
-    nome = lambda cat: dict(DespesaDeCaixa.CATEGORIA_CHOICES)[cat]
+    nome = lambda slug: CategoriaDeMovimentacao.objects.get(slug=slug).nome_completo
     agrupado_list = [
         (
-            nome(cat),
+            nome(slug),
             row["despesas"],
             format_currency(row["total"]),
             row["porcentagem_das_despesas"],
             row["porcentagem_das_vendas"],
-        ) for cat, row in agrupado_dict.items()
+        ) for slug, row in agrupado_dict.items()
     ]
 
     body = sorted(agrupado_list, key=lambda r: r[2]) # Ordem decrescente de valor
@@ -385,15 +385,14 @@ def despesas_por_categoria(dias):
 def movbancarias_por_categoria(dias):
     movbancarias = MovimentacaoBancaria.objects.filter(dia__in=dias)
     agrupado = movbancarias.values("categoria")
-    dados = agrupado.annotate(movbancarias=Count("id"),
-                              total=Sum("valor"))
+    dados = agrupado.annotate(movbancarias=Count("id"), total=Sum("valor"))
     headers = ("categoria", "movbancarias", "total")
 
     body = [[row[col] for col in headers] for row in dados]
 
     for row in body:
         row["movbancarias"] = format_currency(row["movbancarias"])
-        row[0] = dict(MovimentacaoBancaria.CATEGORIA_CHOICES)[row[0]]
+        row[0] = CategoriaDeMovimentacao.objects.get(pk=row[0])
 
     return {
              "title": "Movimentações bancárias por categoria",

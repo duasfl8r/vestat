@@ -220,7 +220,7 @@
                     {% for despesa in dia.despesadecaixa_set.all %}
                     <tr>
                         <td id="valor" class="num">{{ despesa.valor|colorir_num }}</td>
-                        <td id="categoria">{{ despesa.get_categoria_display }}</td>
+                        <td id="categoria">{{ despesa.categoria.nome_completo }}</td>
                         <td class="icone"><a class="remover" href="{{ despesa.get_absolute_url }}remover"><img class="icone" width="16" height="16" title="Remover" alt="Remover" src="/m/icones/remover.png" /></a></td>
                     </tr>
                     {% endfor %}
@@ -253,7 +253,7 @@
                     {% for movbancaria in movbancarias %}
                     <tr>
                         <td id="valor" class="num">{{ movbancaria.valor|colorir_num }}</td>
-                        <td id="categoria">{{ movbancaria.get_categoria_display }}</td>
+                        <td id="categoria">{{ movbancaria.categoria.nome_completo }}</td>
                         <td class="icone"><a class="remover" href="{{ movbancaria.get_absolute_url }}remover"><img class="icone" width="16" height="16" title="Remover" alt="Remover" src="/m/icones/remover.png" /></a></td>
                     </tr>
                     {% endfor %}
