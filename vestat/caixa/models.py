@@ -13,9 +13,12 @@ from django.db.models.query_utils import Q
 
 from django.conf import settings
 from django.core import serializers
+from django.core.urlresolvers import reverse_lazy
 import operator
 
 from caixa import NOME_DO_REGISTRO
+from vestat.feriados import eh_dia_util, eh_feriado
+from vestat.config import config_pages, Link
 from vestat.config.models import VestatConfiguration
 from vestat.contabil.models import Registro, Transacao, Lancamento
 from vestat.contabil import join
@@ -73,7 +76,6 @@ class Dia(models.Model):
         ordering = ['data']
 
     data = models.DateField(unique=True)
-    feriado = models.BooleanField('feriado?')
     anotacoes = models.TextField(blank=True)
     dia_da_semana = models.IntegerField(editable=False, null=True)
 
@@ -87,11 +89,10 @@ class Dia(models.Model):
                                                          self.data.day)
 
     def __unicode__(self):
-        return self.data.strftime("%d/%m/%Y, %A") + (self.feriado and ", Feriado" or "")
-
+        return self.data.strftime("%d/%m/%Y, %A") + (eh_feriado(self.data) and ", Feriado" or "")
 
     def categoria_semanal(self):
-        if self.feriado:
+        if eh_feriado(self.data):
             return 'feriado'
         else:
             dias = ['semana', 'semana', 'semana', 'semana', 'sexta', 'sabado', 'domingo']
@@ -194,13 +195,13 @@ class Dia(models.Model):
         return self.faturamento_cartao_credito() + self.faturamento_cartao_debito()
     
     def faturamento_cartao_debito(self):
-        cartao = self.vendas_fechadas().filter(pagamentocomcartao__categoria='D') \
+        cartao = self.vendas_fechadas().filter(pagamentocomcartao__bandeira__categoria='D') \
                                   .aggregate(Sum('pagamentocomcartao__valor')) \
                                     ['pagamentocomcartao__valor__sum'] 
         return cartao if cartao else 0
     
     def faturamento_cartao_credito(self):
-        cartao = self.vendas_fechadas().filter(pagamentocomcartao__categoria='C') \
+        cartao = self.vendas_fechadas().filter(pagamentocomcartao__bandeira__categoria='C') \
                                           .aggregate(Sum('pagamentocomcartao__valor')) \
                                             ['pagamentocomcartao__valor__sum'] 
         return cartao if cartao else 0
@@ -229,7 +230,7 @@ class Dia(models.Model):
     @classmethod
     def faturamento_total_cartao_debito(cls, objects=None):
         if objects is None: objects = Dia.objects.all()
-        pgto = objects.filter(venda__fechada=True, venda__pagamentocomcartao__categoria='D') \
+        pgto = objects.filter(venda__fechada=True, venda__pagamentocomcartao__bandeira__categoria='D') \
                          .aggregate(Sum('venda__pagamentocomcartao__valor')) \
                            ['venda__pagamentocomcartao__valor__sum']
         return pgto if pgto else 0
@@ -237,7 +238,7 @@ class Dia(models.Model):
     @classmethod
     def faturamento_total_cartao_credito(cls, objects=None):
         if objects is None: objects = Dia.objects.all()
-        pgto = objects.filter(venda__fechada=True, venda__pagamentocomcartao__categoria='C') \
+        pgto = objects.filter(venda__fechada=True, venda__pagamentocomcartao__bandeira__categoria='C') \
                          .aggregate(Sum('venda__pagamentocomcartao__valor')) \
                            ['venda__pagamentocomcartao__valor__sum']
         return pgto if pgto else 0
@@ -484,13 +485,9 @@ class Dia(models.Model):
         return dias
     
     @classmethod
-    def listar_dias(cls, de=None, ateh=None, dias_da_semana=range(0, 8), forcar_feriado=False):
+    def listar_dias(cls, de=None, ateh=None, dias_da_semana=range(0, 8)):
         dias = cls.dias_entre(de, ateh).order_by("-data")
-        if forcar_feriado:
-            dias = dias.filter(dia_da_semana__in=dias_da_semana)
-        else:
-            dias = dias.filter(Q(dia_da_semana__in=dias_da_semana) | Q(feriado=True))
-    
+
         dados = {
                    "faturamento_total": {
                                             "total": cls.faturamento_total(dias),
@@ -569,48 +566,80 @@ class Dia(models.Model):
 
 
 class Bandeira(models.Model):
+    CONTAGEM_DE_DIAS_CHOICES = (
+        ('U', 'Dias úteis'),
+        ('C', 'Dias corridos')
+    )
+
+    CATEGORIA_CHOICES = (
+        ('C', 'Crédito'),
+        ('D', 'Débito')
+    )
+
+    ativa = models.BooleanField("Ativa?", help_text="Bandeiras ativas podem ser escolhidas pra um pagamento.", default=True)
     nome = models.CharField(max_length=20)
-    taxa_credito = models.DecimalField("Taxa de débito", max_digits=6, decimal_places=5)
-    taxa_debito = models.DecimalField("Taxa de débito", max_digits=6, decimal_places=5)
+    taxa = models.DecimalField("Taxa coletada pela bandeira", max_digits=6, decimal_places=5)
+    prazo_de_deposito = models.IntegerField("Dias até o depósito")
+    contagem_de_dias = models.CharField(max_length=1, choices=CONTAGEM_DE_DIAS_CHOICES)
+    categoria = models.CharField(max_length=1, choices=CATEGORIA_CHOICES)
 
     def __unicode__(self):
         return self.nome
 
 
 class PagamentoComCartao(models.Model):
-    CATEGORIA_CHOICES = (
-        ('D', u'Débito'),
-        ('C', u'Crédito')
-    )
-
     valor = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
     venda = models.ForeignKey('Venda', editable=False)
     bandeira = models.ForeignKey(Bandeira)
-    categoria = models.CharField(max_length=1, choices=CATEGORIA_CHOICES)
 
+    data_do_deposito = models.DateField("Data do depósito do pagamento", editable=False, null=True)
+    # Data do depósito do pagamento feito pelo cliente na conta do restaurante.
+    #
+    # Embora ter essa data como um campo viole o princípio DRY (Don't Repeat Yourself),
+    # isso torna muito mais fácil a montagem do calendário com a
+    # previsão dos dias de pagamento.
+
+    @property
     def taxa(self):
         """Retorna a taxa cobrada pela bandeira do cartão por esse pagamento."""
-        if self.categoria == 'C':
-            return self.valor * self.bandeira.taxa_debito
-        else:
-            return self.valor * self.bandeira.taxa_debito
+        return self.valor * self.bandeira.taxa
 
     def get_absolute_url(self):
         return self.venda.get_absolute_url() + "cartao/{0}/".format(self.id)
 
+    def _data_do_deposito(self):
+        data_da_venda = self.venda.dia.data
+        um_dia = datetime.timedelta(1)
+        intervalo = datetime.timedelta(0)
+        faltam_dias = self.bandeira.prazo_de_deposito
+        soh_dias_uteis = self.bandeira.contagem_de_dias == "U"
+
+        while faltam_dias:
+            intervalo += um_dia
+            data_teste = data_da_venda + intervalo
+
+            if soh_dias_uteis:
+                if eh_dia_util(data_teste):
+                    faltam_dias -= 1
+            else:
+                faltam_dias -= 1
+
+        return data_da_venda + intervalo
+
     def save(self, *args, **kwargs):
         super(PagamentoComCartao, self).save(*args, **kwargs)
 
-        # cria despesa de caixa pra taxa do cartão de crédito
-        self.venda.dia.movimentacaobancaria_set.create(valor=-self.taxa(),
-            categoria='T', descricao=u"{0} {1}".format(
-                self.bandeira.nome, self.get_categoria_display()),
+        self.venda.dia.movimentacaobancaria_set.create(valor=-self.taxa,
+            categoria='T', descricao=self.bandeira.nome,
             pgto_cartao=self)
 
         self.venda.dia.save()
 
+        self.data_do_deposito = self._data_do_deposito()
+        super(PagamentoComCartao, self).save(*args, **kwargs)
+
     def __unicode__(self):
-        return "R$ %.2f, %s, %s" % (self.valor, self.bandeira, self.get_categoria_display())
+        return u"R$ %.2f, %s" % (self.valor, self.bandeira)
 
 
 class Venda(models.Model):
@@ -893,3 +922,12 @@ class MovimentacaoBancaria(models.Model):
 
     def get_absolute_url(self):
         return self.dia.get_absolute_url() + "movbancaria/{0}/".format(self.id)
+
+config_pages["vestat"].add(
+    Link(
+        "bandeiras",
+        "Bandeiras de cartão de crédito/débito",
+        reverse_lazy("admin:caixa_bandeira_changelist"),
+        "Adicionar/remover/editar"
+    ),
+)

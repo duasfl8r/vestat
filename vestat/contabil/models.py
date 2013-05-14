@@ -22,6 +22,9 @@ from decimal import Decimal
 from django.db import models
 from django.core.exceptions import ValidationError
 
+from vestat.config import config_pages, Link
+from django.core.urlresolvers import reverse_lazy
+
 class Registro(models.Model):
     nome = models.TextField(unique=True)
 
@@ -103,3 +106,13 @@ class Lancamento(models.Model):
             raise ValidationError("Campo 'conta' não pode estar vazio!")
 
         super(Lancamento, self).save(*args, **kwargs)
+
+
+config_pages["vestat"].add(
+    Link(
+        "transacoes-de-contabilidade",
+        "Transações de contabilidade",
+        reverse_lazy("admin:contabil_transacao_changelist"),
+        "Adicionar/remover/editar"
+    ),
+)

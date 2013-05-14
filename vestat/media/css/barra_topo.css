@@ -26,6 +26,7 @@
     #barra-topo a:hover {
         text-decoration: underline;
         background-color: #505;
+        color: #3E8AFF !important;
     }
 
     #barra-topo > ul {

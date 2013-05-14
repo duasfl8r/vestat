@@ -38,7 +38,6 @@
                     <tr>
                         <td>{{ pgto_cartao.valor|colorir_num }}</td>
                         <td>{{ pgto_cartao.bandeira }}</td>
-                        <td>{{ pgto_cartao.get_categoria_display }}</td>
                         <td><a href="{{ pgto_cartao.get_absolute_url }}remover">Remover</a></td>
                     </tr>
                 {% endfor %}
@@ -47,7 +46,6 @@
                     <tr>
                         <td class="dinheiro{% if form_cartao.valor.errors %} error{% endif %}" >{{ form_cartao.valor }}</td>
                         <td{% if form_cartao.bandeira.errors %} class="error"{% endif %}>{{ form_cartao.bandeira }}</td>
-                        <td{% if form_cartao.categoria.errors %} class="error"{% endif %}>{{ form_cartao.categoria }}</td>
                         <td><input type="submit" name="adicionar_pgto_cartao" value="Adicionar" /></td>
                     </tr>
                 </tfoot>

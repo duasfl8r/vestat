@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block body %}
+{% include "barra_topo.html" %}
+<div id="vestat" class="wide">
+    <div class="title">
+        {% block title %}
+        <h1>{{ title }}</h1>
+        {% endblock title %}
+    </div>
+
+    <div class="content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="box{% if message.tags %} {{ message.tags }}{% endif %}">
+                    {{ message|safe }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}
+        {% endblock content %}
+    </div>
+</div>
+{% endblock body %}

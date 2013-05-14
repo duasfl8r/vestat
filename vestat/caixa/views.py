@@ -29,7 +29,7 @@ def criar_dia(request, ano, mes, dia):
     try:
         dia = Dia.objects.get(data=data)
     except Dia.DoesNotExist:
-        dia = Dia(data=data, feriado=False)
+        dia = Dia(data=data)
         dia.save()
 
     return redirect(dia)
@@ -40,14 +40,9 @@ def remover_dia(request, ano, mes, dia):
     dia.delete()
     return redirect(dia)
 
-def checar_feriado(request, dia):
-    dia.feriado = ('feriado' in request.POST)
-    dia.save()
-
 def anotacoes(request, ano, mes, dia):
     data = datetime.date(*map(int, [ano, mes, dia]))
     dia = get_object_or_404(Dia, data=data)
-    checar_feriado(request, dia)
     form_anotacoes = AnotacoesForm(instance=dia)
 
     if request.method == 'POST':
@@ -73,7 +68,6 @@ def anotacoes(request, ano, mes, dia):
 def adicionar_venda(request, ano, mes, dia):
     data = datetime.date(*map(int, [ano, mes, dia]))
     dia = get_object_or_404(Dia, data=data)
-    checar_feriado(request, dia)
     form_venda = AbrirVendaForm()
 
     if request.method == 'POST':
@@ -100,7 +94,6 @@ def adicionar_venda(request, ano, mes, dia):
 def editar_venda_entrada(request, ano, mes, dia, id):
     data = datetime.date(*map(int, [ano, mes, dia]))
     dia = get_object_or_404(Dia, data=data)
-    checar_feriado(request, dia)
     venda = get_object_or_404(Venda, id=id)
     form_venda = AbrirVendaForm(instance=venda)
 
@@ -126,7 +119,6 @@ def editar_venda_entrada(request, ano, mes, dia, id):
 def editar_venda_saida(request, ano, mes, dia, id):
     data = datetime.date(*map(int, [ano, mes, dia]))
     dia = get_object_or_404(Dia, data=data)
-    checar_feriado(request, dia)
     venda = get_object_or_404(Venda, id=id)
     form_fechar_venda = FecharVendaForm(instance=venda)
     pgtos_cartao = venda.pagamentocomcartao_set.all()
@@ -183,7 +175,6 @@ def editar_venda_saida(request, ano, mes, dia, id):
 def editar_venda(request, ano, mes, dia, id):
     data = datetime.date(*map(int, [ano, mes, dia]))
     dia = get_object_or_404(Dia, data=data)
-    checar_feriado(request, dia)
     venda = get_object_or_404(Venda, id=id)
     form_venda = VendaForm(instance=venda)
     pgtos_cartao = venda.pagamentocomcartao_set.all()
@@ -237,7 +228,6 @@ def abrir_venda(request, ano, mes, dia, id):
 def adicionar_despesa(request, ano, mes, dia):
     data = datetime.date(*map(int, [ano, mes, dia]))
     dia = get_object_or_404(Dia, data=data)
-    checar_feriado(request, dia)
     form_despesa = DespesaDeCaixaForm()
 
     if request.method == 'POST':
@@ -265,7 +255,6 @@ def adicionar_despesa(request, ano, mes, dia):
 def adicionar_movbancaria(request, ano, mes, dia):
     data = datetime.date(*map(int, [ano, mes, dia]))
     dia = get_object_or_404(Dia, data=data)
-    checar_feriado(request, dia)
     form_movbancaria = MovimentacaoBancariaForm()
 
     if request.method == 'POST':
@@ -293,7 +282,6 @@ def adicionar_movbancaria(request, ano, mes, dia):
 def adicionar_ajuste(request, ano, mes, dia):
     data = datetime.date(*map(int, [ano, mes, dia]))
     dia = get_object_or_404(Dia, data=data)
-    checar_feriado(request, dia)
     form_ajuste = AjusteDeCaixaForm()
     form_ajuste['valor'].css_classes('dinheiro')
 
@@ -362,7 +350,6 @@ def ver_dia(request, ano, mes, dia, venda_id=None, despesa_id=None, movbancaria_
     form_movbancaria = MovimentacaoBancariaForm()
     esconder_add_movbancaria_form = True
 
-    checar_feriado(request, dia)
 
     #### NOVO FORMULARIO, EDITAR AQUI ####
     # EDITANDO / FECHANDO VENDA

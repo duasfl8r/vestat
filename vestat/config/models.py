@@ -7,6 +7,9 @@ Modelos de configuração do Vestat.
 from fractions import Fraction
 
 from django.db import models
+from django.core.urlresolvers import reverse_lazy
+
+from core import config_pages, Link
 
 class VestatConfiguration(models.Model):
     """
@@ -63,3 +66,12 @@ class VestatConfiguration(models.Model):
 
         """
         return Fraction(self.parcelas_10p_funcionarios, self._total_de_fatores_10p)
+
+config_pages["vestat"].add(
+    Link(
+        "configuracoes-gerais",
+        "Configurações gerais",
+        reverse_lazy("admin:config_vestatconfiguration_change", args=[1]),
+        "Divisão de 10%"
+    )
+)

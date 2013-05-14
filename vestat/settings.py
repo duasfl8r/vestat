@@ -83,18 +83,25 @@ LOGGING = {
         },
 
         NOME_APLICACAO: {
-            'handlers': ['file'],
+            'handlers': ['console', 'file'],
             'level': 'DEBUG',
         }
     }
 }
 
 DATE_FORMAT = "j \de F \de Y"
-DATE_INPUT_FORMATS = "%d/%m/%Y",
+DATE_INPUT_FORMATS = ("%d/%m/%Y",)
 
 DATETIME_FORMAT = "j \de F \de Y, H:i"
 
 SHORT_DATE_FORMAT = "d/m/Y"
+
+# Formato de data igual ao SHORT_DATE_FORMAT, mas no formato do
+# `strftime`.
+#
+# Usado pra formatar objetos `datetime.date`.
+SHORT_DATE_FORMAT_PYTHON = "%d/%m/%Y"
+
 SHORT_DATETIME_FORMAT = "d/m/Y H:i"
 
 DECIMAL_SEPARATOR = ","
@@ -104,6 +111,7 @@ NUMBER_GROUPING = 3
 
 TIME_ZONE = 'America/Sao_Paulo'
 LANGUAGE_CODE = 'pt-br'
+PYTHON_LOCALE = "pt_BR"
 SITE_ID = 1
 
 SITE_URL = "http://localhost:8000/"
@@ -151,6 +159,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.static",
     "django.contrib.messages.context_processors.messages",
     "vestat.context_processors.project_settings",
+    "vestat.context_processors.data_hora",
 )
 
 ROOT_URLCONF = 'vestat.urls'
@@ -159,6 +168,8 @@ TEMPLATE_DIRS = (
 )
 INSTALLED_APPS = (
     'vestat.config',
+    'vestat.calendario',
+    'vestat.feriados',
     'vestat.caixa',
     'vestat.relatorios',
     'vestat.contabil',

@@ -7,6 +7,7 @@ from vestat.caixa.templatetags.vestat_extras import colorir_num
 from vestat.settings import *
 from vestat.relatorios.forms import *
 from vestat.relatorios.reports import Table, Report, AnoFilterForm, DateFilterForm, TableField
+from vestat.django_utils import format_currency, format_date
 
 from django.shortcuts import redirect, render_to_response
 from django.template import RequestContext
@@ -109,13 +110,14 @@ def lista_despesas(request):
                 TableField("C/B?"),            ],
             process_data=process_data,
     )
-    
+
     filter_form = DateFilterForm(data=request.GET, datefield_name="data")
 
     if filter_form.is_valid():
         report = Report(data=Dia.objects.all(), filters=[filter_form], tables=[table])
-        title = "Despesas: %s - %s" % (str(filter_form.cleaned_data.get("from_date")),
-                                       str(filter_form.cleaned_data.get("to_date")))
+        from_date = filter_form.cleaned_data.get("from_date").strftime(SHORT_DATE_FORMAT_PYTHON)
+        to_date = filter_form.cleaned_data.get("to_date").strftime(SHORT_DATE_FORMAT_PYTHON)
+        title = "Despesas: {from_date} - {to_date}".format(**vars())
     else:
         report = None
         title = "Período inválido"
@@ -180,6 +182,7 @@ def vendas_por_mesa(dias):
 
     for row in dados:
         row["permanencia_media"] = secs_to_time(row["permanencia_media"])
+        row["entrada"] = format_currency(row["entrada"])
         row["mesa"] = row["mesa"].replace("/", ",")
 
     body = [[row[col] for col in headers] for row in dados]
@@ -201,6 +204,7 @@ def vendas_por_categoria(dias):
     headers = ("categoria", "vendas", "entrada", "pessoas", "permanencia_media")
 
     for row in dados:
+        row["entrada"] = format_currency(row["entrada"])
         row["permanencia_media"] = secs_to_time(row["permanencia_media"])
 
     body = [[row[col] for col in headers] for row in dados]
@@ -224,6 +228,7 @@ def vendas_por_cidade(dias):
     headers = ("cidade_de_origem", "vendas", "entrada", "pessoas", "permanencia_media")
 
     for row in dados:
+        row["entrada"] = format_currency(row["entrada"])
         row["permanencia_media"] = secs_to_time(row["permanencia_media"])
         if not row["cidade_de_origem"]:
             row["cidade_de_origem"] = "---"
@@ -256,6 +261,7 @@ def vendas_por_dia_da_semana(dias):
         for i, header in enumerate(headers[1:]):
             row[header] = agrupado[grupo][header]
 
+        row["entrada"] = format_currency(row["entrada"])
         if row["permanencia_media"]:
             row["permanencia_media"] = secs_to_time(row["permanencia_media"] / row["vendas"])
         else:
@@ -275,7 +281,7 @@ def pgtos_por_bandeira(dias):
 
     agrupado = {}
     for pgto in pgtos:
-        key = (pgto.bandeira.nome, pgto.get_categoria_display())
+        key = (pgto.bandeira.nome)
         somar_dict(agrupado, key, { "pagamentos": 1,
                                      "entrada": pgto.valor,
                                    })
@@ -283,9 +289,9 @@ def pgtos_por_bandeira(dias):
     dados = []
     for grupo in agrupado.keys():
         row = {}
-        row["bandeira"] = "%s %s" % (grupo[0], grupo[1])
+        row["bandeira"] = grupo
         row["pagamentos"] = agrupado[grupo]["pagamentos"]
-        row["entrada"] = agrupado[grupo]["entrada"]
+        row["entrada"] = format_currency(agrupado[grupo]["entrada"])
         dados.append(row)
 
     headers = ("bandeira", "pagamentos", "entrada")
@@ -357,7 +363,7 @@ def despesas_por_categoria(dias):
         (
             nome(cat),
             row["despesas"],
-            row["total"],
+            format_currency(row["total"]),
             row["porcentagem_das_despesas"],
             row["porcentagem_das_vendas"],
         ) for cat, row in agrupado_dict.items()
@@ -386,6 +392,7 @@ def movbancarias_por_categoria(dias):
     body = [[row[col] for col in headers] for row in dados]
 
     for row in body:
+        row["movbancarias"] = format_currency(row["movbancarias"])
         row[0] = dict(MovimentacaoBancaria.CATEGORIA_CHOICES)[row[0]]
 
     return {
@@ -409,9 +416,9 @@ def view_relatorio(request, titulo, tablemakers):
 
     titulo = titulo or ""
     if de:
-        titulo += ", de: " + str(de)
+        titulo += ", de: " + format_date(de)
     if ateh:
-        titulo += ", ateh: " + str(ateh)
+        titulo += ", ateh: " + format_date(ateh)
 
     tables = []
     for tablemaker in tablemakers:

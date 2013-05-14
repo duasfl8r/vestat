@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 import django.forms
 from models import *
 
@@ -43,3 +44,9 @@ class FecharVendaForm(LocalizedModelForm):
 class PagamentoComCartaoForm(LocalizedModelForm):
     class Meta:
         model = PagamentoComCartao
+
+    bandeira = django.forms.models.ModelChoiceField(queryset=Bandeira.objects.filter(ativa=True))
+
+class BandeiraForm(LocalizedModelForm):
+    class Meta:
+        model = Bandeira
