@@ -141,6 +141,12 @@ class DespesasPorMesChart(ReportElement):
 
             rects = ax.bar(x_locations, despesas, bar_width, color='r')
 
+            # Linha de tendência
+            slope, intercept = numpy.polyfit(x_locations, map(float, despesas), 1)
+            trendline_y = intercept + (slope * x_locations)
+            line = ax.plot(x_locations, trendline_y, color="blue")
+
+
             ax.set_ylabel(u"Reais")
             ax.set_title(u"Despesas totais por mês")
             ax.set_xticks(x_locations + padding)
@@ -225,6 +231,11 @@ class FaturamentoPorMesChart(ReportElement):
             pyplot.subplots_adjust(**adjustments)
 
             rects = ax.bar(x_locations, faturamentos, bar_width, color='g')
+
+            # Linha de tendência
+            slope, intercept = numpy.polyfit(x_locations, map(float, faturamentos), 1)
+            trendline_y = intercept + (slope * x_locations)
+            line = ax.plot(x_locations, trendline_y, color="blue")
 
             ax.set_ylabel(u"Reais")
             ax.set_title(u"Faturamento total por mês")
@@ -311,6 +322,11 @@ class ResultadoPorMesChart(ReportElement):
             pyplot.subplots_adjust(**adjustments)
 
             rects = ax.bar(x_locations, resultados, bar_width, color=colors)
+
+            # Linha de tendência
+            slope, intercept = numpy.polyfit(x_locations, map(float, resultados), 1)
+            trendline_y = intercept + (slope * x_locations)
+            line = ax.plot(x_locations, trendline_y, color="blue")
 
             ax.set_ylabel(u"Reais")
             ax.set_title(u"Resultado total por mês")
