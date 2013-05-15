@@ -10,19 +10,20 @@
     <form action="simples/" name="relatorio_simples">
         <p>Consolida os dias de trabalho entre duas datas (ambas opcionais). Fornece valores totais.</p>
         <p>
-            {{ relatorio_simples_form.de.label_tag }} {{ relatorio_simples_form.de }}
-            {{ relatorio_simples_form.ateh.label_tag }} {{ relatorio_simples_form.ateh }}
+            {{ relatorio_simples_form.de.label_tag }} {{ relatorio_simples_form.de }} {{ relatorio_simples_form.ateh.label_tag }} {{ relatorio_simples_form.ateh }}
             <input type="submit" value="Gerar">
         </p>
     </form>
 
     <hr />
 
-    <h2>Relatório Anual</h2>
-    <form action="anual/" name="relatorio_anual">
-        <p>Consolida os dias de trabalho de um ano, dividindo-os em meses e fornecendo valores totais e acumulados.</p>
+    <h2>Relatório de Meses</h2>
+    <form action="meses/" name="relatorio_meses">
+        <p>Consolida dados por mês, com gráficos de faturamento, despesas e resultado.</p>
+
         <p>
-            {{ ano_filter_form.ano.label_tag }} {{ ano_filter_form.ano }}
+            {{ relatorio_meses_form.from_date.label_tag }} {{ relatorio_meses_form.from_date }}
+            {{ relatorio_meses_form.to_date.label_tag }} {{ relatorio_meses_form.to_date }}
             <input type="submit" value="Gerar">
         </p>
     </form>

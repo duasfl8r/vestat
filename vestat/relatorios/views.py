@@ -141,6 +141,12 @@ class DespesasPorMesChart(ReportElement):
 
             rects = ax.bar(x_locations, despesas, bar_width, color='r')
 
+            # Linha de tendência
+            slope, intercept = numpy.polyfit(x_locations, map(float, despesas), 1)
+            trendline_y = intercept + (slope * x_locations)
+            line = ax.plot(x_locations, trendline_y, color="blue")
+
+
             ax.set_ylabel(u"Reais")
             ax.set_title(u"Despesas totais por mês")
             ax.set_xticks(x_locations + padding)
@@ -225,6 +231,11 @@ class FaturamentoPorMesChart(ReportElement):
             pyplot.subplots_adjust(**adjustments)
 
             rects = ax.bar(x_locations, faturamentos, bar_width, color='g')
+
+            # Linha de tendência
+            slope, intercept = numpy.polyfit(x_locations, map(float, faturamentos), 1)
+            trendline_y = intercept + (slope * x_locations)
+            line = ax.plot(x_locations, trendline_y, color="blue")
 
             ax.set_ylabel(u"Reais")
             ax.set_title(u"Faturamento total por mês")
@@ -311,6 +322,11 @@ class ResultadoPorMesChart(ReportElement):
             pyplot.subplots_adjust(**adjustments)
 
             rects = ax.bar(x_locations, resultados, bar_width, color=colors)
+
+            # Linha de tendência
+            slope, intercept = numpy.polyfit(x_locations, map(float, resultados), 1)
+            trendline_y = intercept + (slope * x_locations)
+            line = ax.plot(x_locations, trendline_y, color="blue")
 
             ax.set_ylabel(u"Reais")
             ax.set_title(u"Resultado total por mês")
@@ -434,70 +450,6 @@ class MesesReportView(ReportView):
         return Dia.objects.all()
 
 
-def anual(request):
-    def process_data(self, data):
-        for ano in Dia._anos(data):
-            for mes in Dia._meses(ano, data):
-                dias = Dia._dias(ano, mes, data)
-                self.append(["%04d-%02d" % (ano, mes),              # mes
-                             Dia.num_pessoas_total(dias),           # num pessoas
-                             colorir_num(Dia.vendas_total(dias)),                # vendas
-                             Dia.permanencia_media_total(dias),     # permanencia medi
-                             colorir_num(Dia.faturamento_total(dias)),           # faturamento
-                             colorir_num(Dia.despesas_de_caixa_total(dias)),     # desp cx
-                             colorir_num(Dia.debitos_bancarios_total(dias)),     # banco
-                             colorir_num(Dia.resultado_total(dias)),             # resultado
-                             colorir_num(Dia.captacao_por_pessoa_total(dias)),   # per capita
-                             colorir_num(Dia.gorjeta_total(dias)),               # 10%
-                             ])
-
-            self = self.sort(0)
-
-    table = Table(fields=[
-                TableField("Mês"),
-                TableField("Pessoas", slug="num_pessoas", classes=["number"]),
-                TableField("Vendas", classes=["number"]),
-                TableField("Perm Média", slug="permanencia_media", classes=["time"]),
-                TableField("Faturamento", classes=["currency"]),
-                TableField("Desp Cx", slug="despesas_de_caixa", classes=["currency"]),
-                TableField("Desp Banco", slug="debitos_bancarios", classes=["currency"]),
-                TableField("Resultado", slug="resultado", classes=["currency"]),
-                TableField("Per Capita", slug="per_capita", classes=["currency"]),
-                TableField("10%", slug="gorjeta", classes=["currency"]),
-            ],
-            process_data=process_data,
-    )
-
-    filter_form = AnoFilterForm(data=request.GET, datefield_name="data")
-
-    if filter_form.is_valid():
-        report = Report(data=Dia.objects.all(), filters=[filter_form], tables=[table])
-        title = "Relatório anual: " + str(filter_form.cleaned_data.get("ano"))
-    else:
-        report = None
-        title = "Ano inválido"
-
-
-    if "csv" in request.GET:
-        response = render_to_response('relatorios/report_csv.html', {
-                              'report': report,
-                              'title': title,
-                             },
-                             context_instance=RequestContext(request),
-                             mimetype="text/csv")
-
-        response['Content-Disposition'] = 'attachment; filename=anual.csv'
-        return response
-
-
-    return render_to_response('relatorios/report.html', {
-                              'report': report,
-                              'title': title,
-                              'filter_form': filter_form,
-                              'voltar_link': '/relatorios/',
-                              'voltar_label': 'Relatórios',
-                             },
-                             context_instance=RequestContext(request))
 def lista_despesas(request):
     def process_data(self, data):
         def make_row(dia, despesa, tipo):
@@ -940,10 +892,12 @@ def ajustes(request):
 def index(request):
     hoje = datetime.date.today()
     inicio_do_mes = datetime.date(hoje.year, hoje.month, 1)
-    
+
+
+    relatorio_meses_form = IntervaloMesesFilterForm()
+
     relatorio_simples_form = RelatorioSimplesForm({'de': inicio_do_mes.strftime("%d/%m/%Y"),
                                                    'ateh': hoje.strftime("%d/%m/%Y"), })
-    relatorio_anual_form = RelatorioAnualForm({ 'ano': hoje.year, })
     ano_filter_form = AnoFilterForm(initial={"ano": hoje.strftime("%Y")}, datefield_name="data")
     date_filter_form = DateFilterForm(initial={
                                         "from_date": inicio_do_mes.strftime("%d/%m/%Y"),
@@ -953,7 +907,7 @@ def index(request):
     return render_to_response('relatorios/index.html', {
                                 'title': "Relatórios",
                                 'relatorio_simples_form': relatorio_simples_form,
-                                'relatorio_anual_form': relatorio_anual_form,
+                                'relatorio_meses_form': relatorio_meses_form,
                                 'ano_filter_form': ano_filter_form,
                                 'date_filter_form': date_filter_form,
                                   'voltar_link': '/',
