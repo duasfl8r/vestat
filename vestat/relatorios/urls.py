@@ -4,7 +4,7 @@ import views
 
 urlpatterns = patterns('',
      (r'^$', views.index),
-     (r'^anual/$', views.anual),
+
      (r'^simples/$', views.simples),
      (r'^ajustes/$', views.ajustes),
      (r'^despesas/$', views.lista_despesas),
