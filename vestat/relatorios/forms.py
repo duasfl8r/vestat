@@ -83,16 +83,16 @@ class AnoFilterForm(FilterForm):
 class IntervaloMesesFilterForm(FilterForm):
     _anos_com_dias = [d.year for d in Dia.objects.dates("data", "year")]
 
-    inicial = forms.DateField(widget=MonthYearWidget(years=_anos_com_dias))
-    final = forms.DateField(widget=MonthYearWidget(years=_anos_com_dias))
+    from_date = forms.DateField(label="Início", widget=MonthYearWidget(years=_anos_com_dias))
+    to_date = forms.DateField(label="Fim", widget=MonthYearWidget(years=_anos_com_dias))
 
     def __init__(self, datefield_name="data", **kwargs):
         super(IntervaloMesesFilterForm, self).__init__(**kwargs)
         self.datefield_name = datefield_name
 
     def filter(self, data):
-        inicial = self.cleaned_data.get("inicial")
-        final = self.cleaned_data.get("final")
+        inicial = self.cleaned_data.get("from_date")
+        final = self.cleaned_data.get("to_date")
 
         ultimo_dia_do_mes_final = calendar.monthrange(final.year, final.month)[1]
 
@@ -109,8 +109,8 @@ class IntervaloMesesFilterForm(FilterForm):
     def filter_info(self):
         if self.is_bound:
             if self.is_valid():
-                inicial = self.cleaned_data.get("inicial")
-                final = self.cleaned_data.get("final")
+                inicial = self.cleaned_data.get("from_date")
+                final = self.cleaned_data.get("to_date")
                 return "{:%m/%Y} - {:%m/%Y}".format(inicial, final)
             else:
                 return "Intervalo inválido"
