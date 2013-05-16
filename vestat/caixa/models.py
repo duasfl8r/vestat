@@ -26,7 +26,15 @@ from vestat.contabil import join
 logger = logging.getLogger(__name__)
 
 SLUG_CATEGORIA_GORJETA = "10"
+"""
+Slug do objeto CategoriaDeMovimentacao correspondente ao pagamento de
+10% pros funcionários.
+"""
 SLUG_CATEGORIA_TAXA_CARTAO = "taxas"
+"""
+Slug do objeto CategoriaDeMovimentacao correspondente ao pagamento de
+taxas das bandeiras de cartão.
+"""
 
 MESES = [u"janeiro", u"fevereiro", u"março", u"abril",
      u"maio", u"junho", u"julho", u"agosto",
@@ -847,20 +855,44 @@ class AjusteDeCaixa(models.Model):
 
 
 class CategoriaDeMovimentacao(models.Model):
+    """
+    Categoria aninhável, usada nas classes `DespesaDeCaixa` e
+    `MovimentacaoBancaria`.
+
+    Uma categoria `A` é *filha* de uma categoria `B` se ``B.mae == A``.
+    """
+
     class Meta:
         verbose_name = "Categoria de movimentação"
         verbose_name_plural = "Categorias de movimentação"
 
     nome = models.CharField(max_length=200)
+    """
+    Nome da categoria (e.g. "Tarifas bancárias")
+    """
     slug = models.SlugField()
+    """
+    Nome da categoria, usando somente letras, números e hífens (e.g. "tarifas-bancarias").
+    """
     mae = models.ForeignKey("self", blank=True, null=True, related_name="filhas")
+    """
+    Nome da categoria-mãe; se não for especificado, a categoria é de nível primário.
+    """
 
     SEPARADOR = " > "
+    """
+    String usada pra separar categorias no nome completo de uma categoria
+    (e.g. "Fornecedor > Bebidas").
+    """
 
     def __unicode__(self):
         return self.nome
 
     def save(self, *args, **kwargs):
+        """
+        Gera slug automático caso não seja especificado, e salva o objeto no banco de dados.
+        """
+
         if not self.slug:
             logger.debug(u"Gerando slug automático pra categoria '{0}'...".format(self.nome))
             self.slug = slugify(self.nome)
@@ -869,6 +901,19 @@ class CategoriaDeMovimentacao(models.Model):
 
     @property
     def ascendentes(self):
+        """
+        Retorna lista das categorias ascendentes de uma categoria.
+
+        Por exemplo:
+
+        >>> categoria
+        <CategoriaDeMovimentacao: Vinhos>
+        >>> categoria.nome_completo
+        'Fornecedor > Bebidas > Vinhos'
+        >>> categoria.ascendentes
+        [<CategoriaDeMovimentacao: Fornecedor>, <CategoriaDeMovimentacao: Bebidas>]
+
+        """
         def ascendentes_(categoria):
             yield categoria
             if categoria.mae:
@@ -878,6 +923,24 @@ class CategoriaDeMovimentacao(models.Model):
 
     @property
     def nome_completo(self):
+        """
+        Retorna o nome da categoria e de todas as categorias
+        ascendentes, na ordem da mais alta pra própria categoria,
+        separados por `CategoriaDeMovimentacao.SEPARADOR`.
+
+        Por exemplo:
+
+        >>> categoria
+        <CategoriaDeMovimentacao: Vinhos>
+        >>> categoria.mae
+        <CategoriaDeMovimentacao: Bebidas>
+        >>> categoria.mae.mae
+        <CategoriaDeMovimentacao: Fornecedores>
+        >>> categoria.mae.mae.mae is None
+        True
+        >>> categoria.nome_completo
+        'Fornecedor > Bebidas > Vinhos'
+        """
         return self.SEPARADOR.join(unicode(a) for a in self.ascendentes + [self])
 
 
