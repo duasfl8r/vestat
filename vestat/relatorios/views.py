@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import datetime
 from decimal import Decimal
+from collections import defaultdict
 import logging
 
 import numpy
@@ -8,7 +9,7 @@ from matplotlib import pyplot
 
 from vestat.caixa.models import Dia, Venda, DespesaDeCaixa, \
     PagamentoComCartao, AjusteDeCaixa, MovimentacaoBancaria, \
-    secs_to_time, MESES
+    secs_to_time, CategoriaDeMovimentacao
 
 from vestat.caixa.templatetags.vestat_extras import colorir_num
 from vestat.relatorios.forms import RelatorioAnualForm, RelatorioSimplesForm, AnoFilterForm, DateFilterForm, IntervaloMesesFilterForm
@@ -667,102 +668,228 @@ def pgtos_por_bandeira(dias):
              "body": body
            }
 
-def despesas_por_categoria(dias):
+
+class DespesasPorCategoriaCharts(ReportElement):
+    title = "Gráficos de torta"
+
+    def render_html(self):
+        def arvore_categorias(categorias):
+            despesas = list(DespesaDeCaixa.objects.filter(dia__in=self.data, categoria__in=categorias)) + \
+                    list(MovimentacaoBancaria.objects.filter(dia__in=self.data, valor__lt=0, categoria__in=categorias))
+            total_despesas_das_categorias = Decimal(sum(d.valor for d in despesas))
+
+            output_total = []
+
+            for categoria in categorias:
+                despesas_da_categoria = [d for d in despesas if d.categoria == categoria]
+                total_despesas_da_categoria = Decimal(sum(d.valor for d in despesas_da_categoria))
+
+                output_categoria = {
+                    "nome": categoria.nome,
+                    "porcentagem": total_despesas_da_categoria / total_despesas_das_categorias,
+                }
+
+                output_total.append(output_categoria)
+
+                if categoria.filhas.count():
+                    output_categoria["filhos"] = arvore_categorias(list(categoria.filhas.all()))
+
+            output_total.sort(key=lambda c: c["porcentagem"], reverse=True)
+
+            return output_total
+
+        categorias = CategoriaDeMovimentacao.objects.all()
+        categorias_raiz = [c for c in categorias if not c.mae]
+
+        arvore = arvore_categorias(categorias_raiz)
+
+
+        def montar_listas(nome, arvore, listas):
+            LIMITE = Decimal("0.05")
+
+            lista = { "mae": nome, "irmas": [] }
+            listas.append(lista)
+
+            for categoria in arvore:
+                if categoria["porcentagem"] > LIMITE:
+                    lista["irmas"].append({ "nome": categoria["nome"], "porcentagem": categoria["porcentagem"] })
+                else:
+                    if lista["irmas"][-1]["nome"] == "Outros":
+                        outros = lista["irmas"][-1]
+                    else:
+                        outros = { "nome": "Outros", "porcentagem": Decimal("0") }
+                        lista["irmas"].append(outros)
+
+                    outros["porcentagem"] += categoria["porcentagem"]
+
+                if "filhos" in categoria:
+                    montar_listas(categoria["nome"], categoria["filhos"], listas)
+
+        listas = []
+        montar_listas("Raiz", arvore, listas)
+
+        output = u""
+
+        for lista in listas:
+            try:
+                figure = pyplot.figure(figsize=(6, 6))
+                ax = figure.add_subplot(111)
+                labels = [c["nome"] for c in lista["irmas"]]
+                fracs = [c["porcentagem"] for c in lista["irmas"]]
+                ax.pie(fracs, labels=labels, autopct='%1.1f%%', startangle=90)
+                ax.set_title(lista["mae"])
+
+                img_file, img_path = mkstemp(suffix=".png")
+                img_url = path2url(img_path)
+                figure.savefig(img_path, format="png")
+                output += u"<img src=\"{img_url}\" />\n".format(img_url=img_url)
+            finally:
+                pyplot.close(figure)
+
+        return output
+
+
+
+class DespesasPorCategoriaReportTable(Table2):
     """
-    Retorna um relatório de despesas agrupadas por categoria,
-    representado por um dicionário.
-
-    Exibe, pra cada categoria, no período designado:
-
-    - A quantidade de despesas
-
-    - O valor das despesas
-
-    - O percentual das despesas com relação à despesa total de todas as
-      categorias
-
-    - O percentual das despesas com relação ao total de vendas
-      do mesmo período.
-
-    Exibe um rodapé com o total de despesas de todas as categorias.
-
+    Tabela pro relatório de despesas agrupadas por categoria.
     """
-    headers = ("categoria", "despesas", "total", "porcentagem_das_despesas", "porcentagem_das_vendas",)
+    title = "Tabela"
 
-    despesas = list(DespesaDeCaixa.objects.filter(dia__in=dias)) + \
-            list(MovimentacaoBancaria.objects.filter(dia__in=dias, valor__lt=0))
+    fields = (
+        TableField2("Categoria"),
+        TableField2("Total", classes=["currency"]),
+        TableField2("Porcentagem das despesas", classes=["percentage"]),
+        TableField2("Porcentagem das vendas", classes=["percentage"]),
+    )
 
-    qtd_despesas = len(despesas)
-    total_despesas = Decimal(sum(d.valor for d in despesas))
+    @property
+    def body(self):
+        despesas = list(DespesaDeCaixa.objects.filter(dia__in=self.data)) + \
+                list(MovimentacaoBancaria.objects.filter(dia__in=self.data, valor__lt=0))
 
-    vendas = Venda.objects.filter(dia__in=dias)
-    total_vendas = Decimal(sum(v.conta for v in vendas))
+        self._total_despesas = Decimal(sum(d.valor for d in despesas))
 
-    # Acumula a qtd e o total em um dicionário
-    agrupado_dict = {}
-    for despesa in despesas:
-        categoria = agrupado_dict.setdefault(
-            despesa.categoria.slug,
-            {
-                "despesas": 0,
-                "total": Decimal("0"),
-                "porcentagem_das_despesas": 0,
-            })
+        vendas = Venda.objects.filter(dia__in=self.data)
+        total_vendas = Decimal(sum(v.conta for v in vendas))
 
-        categoria["total"] += despesa.valor
-        categoria["despesas"] += 1
+        categoria_dict_dict = {}
 
-    # Calcula porcentagem em relação à despesa total
-    for categoria in agrupado_dict.values():
-        razao_das_despesas = abs(categoria["total"] / total_despesas)
-        razao_das_vendas = abs(categoria["total"] / total_vendas)
+        # Acumula despesas com `categoria == None`
+        outros = {
+            "total": Decimal("0"),
+        }
 
-        categoria["porcentagem_das_despesas"] = "{:.2%}".format(razao_das_despesas)
-        categoria["porcentagem_das_vendas"] = "{:.2%}".format(razao_das_vendas)
+        for despesa in despesas:
+            if despesa.categoria:
+                caminho_categorias = [despesa.categoria] + despesa.categoria.ascendentes
 
-    # Produz uma lista de tuplas a partir do dicionário
-    nome = lambda slug: CategoriaDeMovimentacao.objects.get(slug=slug).nome_completo
-    agrupado_list = [
-        (
-            nome(slug),
-            row["despesas"],
-            format_currency(row["total"]),
-            row["porcentagem_das_despesas"],
-            row["porcentagem_das_vendas"],
-        ) for slug, row in agrupado_dict.items()
-    ]
+                for categoria in caminho_categorias:
+                    categoria_dict = categoria_dict_dict.setdefault(categoria.slug, {
+                            "total": Decimal("0"),
+                            "outros": {
+                                "total": Decimal("0"),
+                            },
+                    })
 
-    body = sorted(agrupado_list, key=lambda r: r[2]) # Ordem decrescente de valor
+                    categoria_dict["total"] += despesa.valor
 
-    footer = [
-        ("TOTAL", qtd_despesas, total_despesas, "100%", "-")
-    ]
+                categoria_dict = categoria_dict_dict[categoria.slug]
 
-    return {
-             "title": "Despesas por categoria",
-             "headers": headers,
-             "body": body,
-             "footer": footer
-           }
+                # Se a categoria tem filhos, a despesa deve ser categorizada como
+                # "Outros".
+                #
+                # Ex: se há "Fornecedor > Vinhos" e a despesa está como
+                # "Fornecedor", deve ser listada como "Fornecedor > Outros"
 
-def movbancarias_por_categoria(dias):
-    movbancarias = MovimentacaoBancaria.objects.filter(dia__in=dias)
-    agrupado = movbancarias.values("categoria")
-    dados = agrupado.annotate(movbancarias=Count("id"), total=Sum("valor"))
-    headers = ("categoria", "movbancarias", "total")
+                if despesa.categoria.filhas.count():
+                    categoria_dict["outros"]["total"] += despesa.valor
+            else:
+                logger.debug(u"Despesa sem categoria: {0}".format(despesa))
+                outros["total"] += despesa.valor
 
-    body = [[row[col] for col in headers] for row in dados]
 
-    for row in body:
-        row["movbancarias"] = format_currency(row["movbancarias"])
-        row[0] = CategoriaDeMovimentacao.objects.get(pk=row[0])
+        logger.debug(u"Total de despesas sem categoria: {0}".format(len([d for d in despesas if not d.categoria])))
 
-    return {
-             "title": "Movimentações bancárias por categoria",
-             "headers": headers,
-             "body": body
-           }
 
+        # Calcula porcentagem em relação à despesa total
+        for categoria_dict in categoria_dict_dict.values():
+            razao_das_despesas = abs(categoria_dict["total"] / self._total_despesas)
+            razao_das_vendas = abs(categoria_dict["total"] / total_vendas)
+
+            categoria_dict["porcentagem_das_despesas"] = "{:.2%}".format(razao_das_despesas)
+            categoria_dict["porcentagem_das_vendas"] = "{:.2%}".format(razao_das_vendas)
+
+            if categoria_dict["outros"]["total"]:
+                razao_das_despesas = abs(categoria_dict["outros"]["total"] / self._total_despesas)
+                razao_das_vendas = abs(categoria_dict["outros"]["total"] / total_vendas)
+
+                categoria_dict["outros"]["porcentagem_das_despesas"] = "{:.2%}".format(razao_das_despesas)
+                categoria_dict["outros"]["porcentagem_das_vendas"] = "{:.2%}".format(razao_das_vendas)
+
+
+        razao_das_despesas_outros = abs(outros["total"] / self._total_despesas)
+        razao_das_vendas_outros = abs(outros["total"] / total_vendas)
+
+        outros["porcentagem_das_despesas"] = "{:.2%}".format(razao_das_despesas_outros)
+        outros["porcentagem_das_vendas"] = "{:.2%}".format(razao_das_vendas_outros)
+
+
+        categoria_tuple_list = []
+        for slug, categoria_dict in categoria_dict_dict.items():
+            categoria = CategoriaDeMovimentacao.objects.get(slug=slug)
+
+            if categoria.filhas.count():
+                nome = u"{0} - Total".format(categoria.nome_completo)
+            else:
+                nome = categoria.nome_completo
+
+            categoria_tuple_list.append((
+                nome,
+                format_currency(categoria_dict["total"]),
+                categoria_dict["porcentagem_das_despesas"],
+                categoria_dict["porcentagem_das_vendas"],
+            ))
+
+            if categoria_dict["outros"]["total"]:
+                categoria_tuple_list.append((
+                    categoria.SEPARADOR.join([categoria.nome_completo, "Outros"]),
+                    format_currency(categoria_dict["outros"]["total"]),
+                    categoria_dict["outros"]["porcentagem_das_despesas"],
+                    categoria_dict["outros"]["porcentagem_das_vendas"],
+                ))
+
+        if outros["total"]:
+            categoria_tuple_list.append((
+                u"Outros",
+                format_currency(outros["total"]),
+                outros["porcentagem_das_despesas"],
+                outros["porcentagem_das_vendas"],
+            ))
+
+        return sorted(categoria_tuple_list, key=lambda r: r[0]) # Ordena por nome completo da categoria
+
+    @property
+    def footer(self):
+        return [("TOTAL", self._total_despesas, "100%", "-")]
+
+
+class DespesasPorCategoriaReport(Report2):
+    """
+    Relatório de meses.
+    """
+    title="Relatório de despesas por categoria"
+    element_classes = [DespesasPorCategoriaCharts, DespesasPorCategoriaReportTable]
+
+class DespesasPorCategoriaReportView(ReportView):
+    """
+    Class-based view do relatório de despesas por categoria.
+    """
+    Report = DespesasPorCategoriaReport
+    FilterForm = DateFilterForm
+
+    def get_raw_data(self):
+        return Dia.objects.all()
 
 def view_relatorio(request, titulo, tablemakers):
     filtro_form = RelatorioSimplesForm(request.GET)
