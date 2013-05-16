@@ -7,6 +7,7 @@ Conteúdo:
 .. toctree::
    :maxdepth: 2
 
+   licenca
    changelog
    configuracoes
    feriados
