@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import datetime
 from decimal import Decimal
+from collections import defaultdict
 import logging
 
 import numpy
@@ -668,6 +669,86 @@ def pgtos_por_bandeira(dias):
            }
 
 
+class DespesasPorCategoriaCharts(ReportElement):
+    title = "Gráficos de torta"
+
+    def render_html(self):
+        def arvore_categorias(categorias):
+            despesas = list(DespesaDeCaixa.objects.filter(dia__in=self.data, categoria__in=categorias)) + \
+                    list(MovimentacaoBancaria.objects.filter(dia__in=self.data, valor__lt=0, categoria__in=categorias))
+            total_despesas_das_categorias = Decimal(sum(d.valor for d in despesas))
+
+            output_total = []
+
+            for categoria in categorias:
+                despesas_da_categoria = [d for d in despesas if d.categoria == categoria]
+                total_despesas_da_categoria = Decimal(sum(d.valor for d in despesas_da_categoria))
+
+                output_categoria = {
+                    "nome": categoria.nome,
+                    "porcentagem": total_despesas_da_categoria / total_despesas_das_categorias,
+                }
+
+                output_total.append(output_categoria)
+
+                if categoria.filhas.count():
+                    output_categoria["filhos"] = arvore_categorias(list(categoria.filhas.all()))
+
+            output_total.sort(key=lambda c: c["porcentagem"], reverse=True)
+
+            return output_total
+
+        categorias = CategoriaDeMovimentacao.objects.all()
+        categorias_raiz = [c for c in categorias if not c.mae]
+
+        arvore = arvore_categorias(categorias_raiz)
+
+
+        def montar_listas(nome, arvore, listas):
+            LIMITE = Decimal("0.05")
+
+            lista = { "mae": nome, "irmas": [] }
+            listas.append(lista)
+
+            for categoria in arvore:
+                if categoria["porcentagem"] > LIMITE:
+                    lista["irmas"].append({ "nome": categoria["nome"], "porcentagem": categoria["porcentagem"] })
+                else:
+                    if lista["irmas"][-1]["nome"] == "Outros":
+                        outros = lista["irmas"][-1]
+                    else:
+                        outros = { "nome": "Outros", "porcentagem": Decimal("0") }
+                        lista["irmas"].append(outros)
+
+                    outros["porcentagem"] += categoria["porcentagem"]
+
+                if "filhos" in categoria:
+                    montar_listas(categoria["nome"], categoria["filhos"], listas)
+
+        listas = []
+        montar_listas("Raiz", arvore, listas)
+
+        output = u""
+
+        for lista in listas:
+            try:
+                figure = pyplot.figure(figsize=(6, 6))
+                ax = figure.add_subplot(111)
+                labels = [c["nome"] for c in lista["irmas"]]
+                fracs = [c["porcentagem"] for c in lista["irmas"]]
+                ax.pie(fracs, labels=labels, autopct='%1.1f%%', startangle=90)
+                ax.set_title(lista["mae"])
+
+                img_file, img_path = mkstemp(suffix=".png")
+                img_url = path2url(img_path)
+                figure.savefig(img_path, format="png")
+                output += u"<img src=\"{img_url}\" />\n".format(img_url=img_url)
+            finally:
+                pyplot.close(figure)
+
+        return output
+
+
 
 class DespesasPorCategoriaReportTable(Table2):
     """
@@ -798,7 +879,7 @@ class DespesasPorCategoriaReport(Report2):
     Relatório de meses.
     """
     title="Relatório de despesas por categoria"
-    element_classes = [DespesasPorCategoriaReportTable]
+    element_classes = [DespesasPorCategoriaCharts, DespesasPorCategoriaReportTable]
 
 class DespesasPorCategoriaReportView(ReportView):
     """
