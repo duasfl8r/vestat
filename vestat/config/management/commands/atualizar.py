@@ -44,6 +44,9 @@ def versao_1_2_1(cmd, *args):
     print("Removendo arquivo temporário...")
     os.remove(tmp_dump_filename)
 
+    print("Carregando fixture de feriados bancários...")
+    call_command("loaddata", "feriados_bancarios")
+
 
 class Command(BaseCommand):
     args = '<versao>'
