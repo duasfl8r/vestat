@@ -12,7 +12,7 @@ from vestat.caixa.models import Dia, Venda, DespesaDeCaixa, \
     secs_to_time, CategoriaDeMovimentacao
 
 from vestat.caixa.templatetags.vestat_extras import colorir_num
-from vestat.relatorios.forms import RelatorioAnualForm, RelatorioSimplesForm, AnoFilterForm, DateFilterForm, IntervaloMesesFilterForm
+from vestat.relatorios.forms import RelatorioSimplesForm, AnoFilterForm, DateFilterForm, IntervaloMesesFilterForm
 from vestat.relatorios.reports import Table, Report, TableField
 from vestat.django_utils import format_currency, format_date
 from vestat.temp import mkstemp, path2url
@@ -509,24 +509,6 @@ class MesesReportTable(Table2):
 
         return sorted(result, key=lambda r: r[0])
 
-
-class AnualReport(Report2):
-    """
-    Relatório anual.
-    """
-    title="Relatório anual"
-    element_classes = [DespesasPorMesChart, FaturamentoPorMesChart, MesesReportTable]
-
-
-class AnualReportView(ReportView):
-    """
-    Class-based view do relatório anual.
-    """
-    Report = AnualReport
-    FilterForm = AnoFilterForm
-
-    def get_raw_data(self):
-        return Dia.objects.all()
 
 
 class MesesReport(Report2):
