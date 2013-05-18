@@ -26,7 +26,7 @@ def sync_and_evolve():
     call_command('evolve', interactive=False, execute=True, hint=True, database="default")
 
 
-def versao_1_2_1(cmd, *args):
+def versao_1_2_2(cmd, *args):
     """
     Atualizações pra versão 1.2.2.
 
@@ -45,7 +45,7 @@ def versao_1_2_1(cmd, *args):
           1.2.1
     """
     if len(args) != 1:
-        raise CommandError("Uso: atualizar 1.2.1 <dump_file>\n\ndump: arquivo de dump do banco de dados anterior (JSON)")
+        raise CommandError("Uso: atualizar 1.2.2 <dump_file>\n\ndump: arquivo de dump do banco de dados anterior (JSON)")
 
     sync_and_evolve()
     criar_superusuario()
