@@ -23,9 +23,6 @@ class RelatorioSimplesForm(forms.Form):
         return cleaned_data
 
 
-class RelatorioAnualForm(forms.Form):
-    ano = forms.IntegerField()
-
 class FilterForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(FilterForm, self).__init__(*args, **kwargs)
