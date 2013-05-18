@@ -52,4 +52,7 @@ def format_currency(f):
 
 
 def format_date(d):
+    """
+    Formata um objeto `datetime.date` no formato DD/MM/AAAA.
+    """
     return "{:%d/%m/%Y}".format(d)

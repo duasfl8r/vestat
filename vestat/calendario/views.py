@@ -1,8 +1,8 @@
 # -*- encoding: utf-8 -*-
 """
-Views pra gerar um calendário.
+Views pra gerar um calendário e navegar através dos meses/anos.
 
-Fonte: http://williamjohnbert.com/2011/06/django-event-calendar-for-a-django-beginner/
+Adaptado de: http://williamjohnbert.com/2011/06/django-event-calendar-for-a-django-beginner/
 """
 
 from datetime import date
@@ -20,18 +20,33 @@ from forms import CalendarForm
 logger = logging.getLogger("vestat")
 
 
-def named_month(month_number):
-    """
-    Return the name of the month, given the number.
-    """
-
-    return date(1900, month_number, 1).strftime("%B").decode("latin-1")
-
-
 class EventsCalendarView(View):
+    """
+    View que exibe os dias e eventos de um mês do calendário.
+    """
+
+    def named_month(month_number):
+        """
+        Return the name of the month, given the number.
+        """
+
+        return date(1900, month_number, 1).strftime("%B").decode("latin-1")
+
     template_name = "cal_template.html"
 
     def post(self, request, year, month):
+        """
+        Extrai o formulário `forms.CalendarForm` do POST. Se o
+        formulário for válido, redireciona pra URL correspondente ao seu
+        mês/ano. Caso não seja, repassa o formulário inválido e o
+        mês/ano atuais pra `EventsCalendarView.render`.
+
+        Argumentos:
+            - request
+            - year: string; o ano passado pela URL
+            - month: string; o mês passado pela URL
+        """
+
         form = CalendarForm(request.POST)
         if form.is_valid():
             year = "{0:04d}".format(int(form.cleaned_data['year']))
@@ -42,10 +57,25 @@ class EventsCalendarView(View):
             return self.render(request, year, month, form)
 
     def get(self, request, year, month):
+        """
+        Cria um formulário vazio e o repassa pra
+        `EventsCalendarView.render`, junto com os outros argumentos.
+
+        Argumentos:
+            - request
+            - year: string; o ano passado pela URL
+            - month: string; o mês passado pela URL
+        """
+
         form = CalendarForm()
         return self.render(request, year, month, form)
 
     def render(self, request, year, month, form):
+        """
+        Exibe os dias e eventos do mês/ano passados pela URL, e o formulário
+        passado pelo método `get` ou `post`.
+        """
+
         my_year = int(year)
         my_month = int(month)
         my_calendar_from_month = date(my_year, my_month, 1)

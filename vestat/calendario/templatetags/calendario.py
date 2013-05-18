@@ -2,7 +2,7 @@
 """
 templatetags pra gerar um calendário.
 
-Fonte: http://williamjohnbert.com/2011/06/django-event-calendar-for-a-django-beginner/
+Adaptado de: http://williamjohnbert.com/2011/06/django-event-calendar-for-a-django-beginner/
 """
 
 import logging

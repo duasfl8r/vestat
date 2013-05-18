@@ -1,4 +1,26 @@
 # -*- encoding: utf-8 -*-
+"""
+Funções pra converter o dump (saída do `manage.py dumpdata`) da versão
+1.2.0 pra 1.2.1.
+
+Converte as categorias antigas (ChoiceField's) pras categorias novas
+(objetos `caixa.CategoriaDeMovimentacao`).
+
+Converte objetos `caixa.DespesaDeCaixa` e `caixa.MovimentacaoBancaria`
+pra usar as novas categorias, de acordo com uma tabela de conversão
+fornecida pelo cliente.
+
+Remove o antigo método de declaração de feriados (através de um atributo
+de `caixa.Dia`)
+
+Converte objetos `caixa.Bandeira` para o novo modelo, com informações de
+contagem de dias pra depósito em conta.
+
+Converte objetos `caixa.PagamentoComCartao` para usar o novo modelo de
+bandeiras.
+
+"""
+
 import codecs
 import json
 
@@ -9,6 +31,12 @@ BANDEIRAS__LAST_PK = 0
 CATEGORIAS__NOVAS = {}
 
 def converter(filename):
+    """
+    Abre o arquivo de dump JSON fornecido, faz as conversões, e retorna
+    uma string com um novo arquivo de dump JSON, apropriado pra ser
+    importado pela nova versão do Vestat.
+    """
+
     CATEGORIAS__NOVAS["aluguel"] = Cat(nome=u"Aluguel")
     CATEGORIAS__NOVAS["contador"] = Cat(nome=u"Contador")
     CATEGORIAS__NOVAS["energia"] = Cat(nome=u"Energia")

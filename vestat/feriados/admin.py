@@ -1,4 +1,7 @@
 # -*- encoding: utf-8 -*-
+"""
+Configurações do Django Admin Site pra aplicação `feriados`.
+"""
 
 from django.contrib import admin
 

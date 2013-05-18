@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 """
-Modelos da app 'feriados'.
+Modelos da aplicação 'feriados'.
 """
 
 from datetime import date, timedelta
@@ -53,6 +53,22 @@ class Feriado(models.Model):
     def __unicode__(self):
         return self.nome
 
+    def _data_anual_movel_em(self, ano):
+        """
+        Retorna a data anual móvel no ano fornecido.
+
+        Assume que o feriado é anual móvel.
+
+        Esse método deve ser usado internamente.
+
+        Argumentos:
+            - ano: um inteiro; o ano consultado.
+        """
+        return eval(self.data_anual_movel, {
+            "pascoa": easter.easter(ano),
+            "d": timedelta,
+        })
+
     def clean(self, *args, **kwargs):
         """
         Valida os campos do objeto `Feriado`.
@@ -86,12 +102,6 @@ class Feriado(models.Model):
             raise ValidationError(u"Deve-se preencher um (e apenas um) dos campos {campos}" \
                 .format(campos=u", ".join(quoted_verbose_name(nome_campo) for nome_campo in Feriado._campos_de_data)))
 
-    def _data_anual_movel_em(self, ano):
-        return eval(self.data_anual_movel, {
-            "pascoa": easter.easter(ano),
-            "d": timedelta,
-        })
-
 
     @property
     def data(self):
@@ -107,6 +117,13 @@ class Feriado(models.Model):
             return "Anual móvel: `{0}`".format(self.data_anual_movel)
 
     def data_em(self, ano):
+        """
+        A data em que o feriado cai no ano fornecido.
+
+        Argumentos:
+            - ano: um inteiro; o ano consultado.
+        """
+
         if self.data_unica and self.data_unica.year == ano:
             return self.data_unica
         elif self.data_anual_fixa:
@@ -118,6 +135,14 @@ class Feriado(models.Model):
             return None
 
     def acontece_em(self, data):
+        """
+        Retorna `True` se o feriado acontece na data fornecida, e
+        `False` se não acontece.
+
+        Argumentos:
+            - data: objeto `datetime.date`; a data consultada.
+        """
+
         ano = data.year
 
         return data == self.data_em(ano)
@@ -130,3 +155,7 @@ config_pages["vestat"].add(
         "Adicionar/remover/editar"
     ),
 )
+"""
+Link na página de configurações: editar os feriados no Django Admin
+Site.
+"""

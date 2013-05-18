@@ -1,4 +1,11 @@
 # -*- encoding: utf-8 -*-
+"""
+Geradores de eventos da aplicação `caixa`.
+
+Funções se comportam de acordo com o esperado pela aplicação
+`calendario`.
+"""
+
 import logging
 
 from django.utils.safestring import mark_safe
