@@ -102,12 +102,29 @@ class ReportView(View):
 
 
 class DespesasPorMesChart(ReportElement):
+    """
+    Gera gráfico de barras de despesas de cada mês, e uma linha de tendência.
+
+    Gráfico de barras:
+
+    - eixo X -> meses
+    - eixo Y -> total de despesas de cada mês
+
+    """
+
     title = "Gráfico de despesas"
 
     def render_html(self):
+        """
+        Renderiza o gráfico em HTML, usando o matplotlib.
+
+        """
+
         despesas = []
         xlabels = []
 
+        # monta a lista de despesas totais por mês, iterando pelos anos
+        # e meses dos dias fornecidos como dados crus.
         for ano in Dia._anos(self.data):
             for mes in Dia._meses(ano, self.data):
                 dias = Dia._dias(ano, mes, self.data)
@@ -115,16 +132,21 @@ class DespesasPorMesChart(ReportElement):
                 despesas.append(-despesas_total)
                 xlabels.append("{:%m/%Y}".format(datetime.date(ano, mes, 1)))
 
-        # nenhuma despesa, nenhuma imagem
+        # nenhuma despesa => nenhuma imagem
         if not despesas:
             return u''
 
         x_locations = numpy.arange(len(despesas))
 
+        # largura de cada barra (inches)
         bar_width = 0.5
+        # largura mínima do gráfico (inches)
         min_width = 4
+        # espaçamento entre uma barra e outra (inches)
         padding = 0.3
 
+        # ajustes de espaçamento ao redor do gráfico (porcentagem de
+        # width/height)
         adjustments = {
             "bottom": 0.1,
             "left": 0.17,
@@ -140,6 +162,7 @@ class DespesasPorMesChart(ReportElement):
 
             pyplot.subplots_adjust(**adjustments)
 
+            # Gráfico de barras
             rects = ax.bar(x_locations, despesas, bar_width, color='r')
 
             # Linha de tendência
@@ -147,16 +170,21 @@ class DespesasPorMesChart(ReportElement):
             trendline_y = intercept + (slope * x_locations)
             line = ax.plot(x_locations, trendline_y, color="blue")
 
-
             ax.set_ylabel(u"Reais")
             ax.set_title(u"Despesas totais por mês")
-            ax.set_xticks(x_locations + padding)
             ax.set_xticklabels(xlabels)
+
+            # espaçamento à direita de todas as barras
+            ax.set_xticks(x_locations + padding)
+            # espaçamento à esquerda da primeira barra
             ax.set_xlim([0 - padding, len(despesas)])
 
+            # deixa o eixo Y um pouco maior, pra dar espaço pro rótulo
+            # em cima de cada barra
             x1, x2, y1, y2 = pyplot.axis()
             ax.set_ylim(y1, y2 * 1.1)
 
+            # configura rotação e tamanho do rótulo de cada mês no eixo X
             for label in ax.get_xticklabels():
                 label.set_rotation(45)
                 label.set_rotation_mode("anchor")
@@ -165,7 +193,11 @@ class DespesasPorMesChart(ReportElement):
                 label.set_size("8")
 
             def autolabel(ax, rects):
-                # attach some text labels
+                """
+                Rotula cada uma das barras com seu valor correspondente
+                (ie total de despesas do mês)
+                """
+
                 for rect in rects:
                     height = rect.get_height()
 
@@ -178,8 +210,6 @@ class DespesasPorMesChart(ReportElement):
 
                     ax.text(text_x, text_y, "{0}".format(format_currency(height)),
                             ha='center', va='bottom', size='8')
-
-
             autolabel(ax, rects)
 
             img_file, img_path = mkstemp(suffix=".png")
@@ -193,12 +223,28 @@ class DespesasPorMesChart(ReportElement):
 
 
 class FaturamentoPorMesChart(ReportElement):
+    """
+    Gera gráfico de barras de faturamento de cada mês, e uma linha de tendência.
+
+    Gráfico de barras:
+
+    - eixo X -> meses
+    - eixo Y -> faturamento de cada mês
+
+    """
+
     title = "Gráfico de faturamentos"
 
     def render_html(self):
+        """
+        Renderiza o gráfico em HTML, usando o matplotlib.
+
+        """
         faturamentos = []
         xlabels = []
 
+        # monta a lista de faturamento total por mês, iterando pelos anos
+        # e meses dos dias fornecidos como dados crus.
         for ano in Dia._anos(self.data):
             for mes in Dia._meses(ano, self.data):
                 dias = Dia._dias(ano, mes, self.data)
@@ -206,16 +252,21 @@ class FaturamentoPorMesChart(ReportElement):
                 faturamentos.append(faturamento_total)
                 xlabels.append("{:%m/%Y}".format(datetime.date(ano, mes, 1)))
 
-        # nenhum faturamento, nenhuma imagem
+        # nenhum faturamento => nenhuma imagem
         if not faturamentos:
             return u''
 
         x_locations = numpy.arange(len(faturamentos))
 
+        # largura de cada barra (inches)
         bar_width = 0.5
+        # largura mínima do gráfico (inches)
         min_width = 4
+        # espaçamento entre uma barra e outra (inches)
         padding = 0.3
 
+        # ajustes de espaçamento ao redor do gráfico (porcentagem de
+        # width/height)
         adjustments = {
             "bottom": 0.1,
             "left": 0.17,
@@ -231,6 +282,7 @@ class FaturamentoPorMesChart(ReportElement):
 
             pyplot.subplots_adjust(**adjustments)
 
+            # Gráfico de barras
             rects = ax.bar(x_locations, faturamentos, bar_width, color='g')
 
             # Linha de tendência
@@ -240,13 +292,19 @@ class FaturamentoPorMesChart(ReportElement):
 
             ax.set_ylabel(u"Reais")
             ax.set_title(u"Faturamento total por mês")
-            ax.set_xticks(x_locations + padding)
             ax.set_xticklabels(xlabels)
+
+            # espaçamento à direita de todas as barras
+            ax.set_xticks(x_locations + padding)
+            # espaçamento à esquerda da primeira barra
             ax.set_xlim([0 - padding, len(faturamentos)])
 
+            # deixa o eixo Y um pouco maior, pra dar espaço pro rótulo
+            # em cima de cada barra
             x1, x2, y1, y2 = pyplot.axis()
             ax.set_ylim(y1, y2 * 1.1)
 
+            # configura rotação e tamanho do rótulo de cada mês no eixo X
             for label in ax.get_xticklabels():
                 label.set_rotation(45)
                 label.set_rotation_mode("anchor")
@@ -255,6 +313,11 @@ class FaturamentoPorMesChart(ReportElement):
                 label.set_size("8")
 
             def autolabel(ax, rects):
+                """
+                Rotula cada uma das barras com seu valor correspondente
+                (ie faturamento do mês)
+                """
+
                 # attach some text labels
                 for rect in rects:
                     height = rect.get_height()
@@ -282,13 +345,29 @@ class FaturamentoPorMesChart(ReportElement):
 
 
 class ResultadoPorMesChart(ReportElement):
+    """
+    Gera gráfico de barras de resultado de cada mês, e uma linha de tendência.
+
+    Gráfico de barras:
+
+    - eixo X -> meses
+    - eixo Y -> resultado (faturamento menos as despesas) de cada mês
+
+    """
+
     title = "Gráfico de resultados"
 
     def render_html(self):
+        """
+        Renderiza o gráfico em HTML, usando o matplotlib.
+
+        """
         resultados = []
         xlabels = []
         colors = []
 
+        # monta a lista de despesas totais por mês, iterando pelos anos
+        # e meses dos dias fornecidos como dados crus.
         for ano in Dia._anos(self.data):
             for mes in Dia._meses(ano, self.data):
                 dias = Dia._dias(ano, mes, self.data)
@@ -303,10 +382,15 @@ class ResultadoPorMesChart(ReportElement):
 
         x_locations = numpy.arange(len(resultados))
 
+        # largura de cada barra (inches)
         bar_width = 0.5
+        # largura mínima do gráfico (inches)
         min_width = 4
+        # espaçamento entre uma barra e outra (inches)
         padding = 0.3
 
+        # ajustes de espaçamento ao redor do gráfico (porcentagem de
+        # width/height)
         adjustments = {
             "bottom": 0.1,
             "left": 0.17,
@@ -322,6 +406,7 @@ class ResultadoPorMesChart(ReportElement):
 
             pyplot.subplots_adjust(**adjustments)
 
+            # Gráfico de barras
             rects = ax.bar(x_locations, resultados, bar_width, color=colors)
 
             # Linha de tendência
@@ -331,13 +416,19 @@ class ResultadoPorMesChart(ReportElement):
 
             ax.set_ylabel(u"Reais")
             ax.set_title(u"Resultado total por mês")
-            ax.set_xticks(x_locations + padding)
             ax.set_xticklabels(xlabels)
+
+            # espaçamento à direita de todas as barras
+            ax.set_xticks(x_locations + padding)
+            # espaçamento à esquerda da primeira barra
             ax.set_xlim([0 - padding, len(resultados)])
 
+            # deixa o eixo Y um pouco maior, pra dar espaço pro rótulo
+            # em cima de cada barra
             x1, x2, y1, y2 = pyplot.axis()
-            ax.set_ylim(y1 * 1.1, y2 * 1.1)
+            ax.set_ylim(y1, y2 * 1.1)
 
+            # configura rotação e tamanho do rótulo de cada mês no eixo X
             for label in ax.get_xticklabels():
                 label.set_rotation(45)
                 label.set_rotation_mode("anchor")
@@ -346,7 +437,11 @@ class ResultadoPorMesChart(ReportElement):
                 label.set_size("8")
 
             def autolabel(ax, rects):
-                # attach some text labels
+                """
+                Rotula cada uma das barras com seu valor correspondente
+                (ie resultado do mês)
+                """
+
                 for rect in rects:
                     height = rect.get_height()
 
@@ -375,7 +470,9 @@ class ResultadoPorMesChart(ReportElement):
 
 class MesesReportTable(Table2):
     """
-    Tabela pro relatório anual.
+    Tabela pro relatório de meses. Cada linha da tabela exibe a
+    consolidação dos dados de cada mês
+
     """
     title = "Tabela"
 
@@ -435,15 +532,27 @@ class AnualReportView(ReportView):
 class MesesReport(Report2):
     """
     Relatório de meses.
+
+    Elementos:
+
+        - Gráfico de barras de despesas por mês
+        - Gráfico de barras de faturamento por mês
+        - Gráfico de barras de resultado por mês
+        - Tabela com vários dados por mês.
+
     """
+
     title="Relatório de meses"
     element_classes = [DespesasPorMesChart, FaturamentoPorMesChart, ResultadoPorMesChart, MesesReportTable]
 
 
 class MesesReportView(ReportView):
     """
-    Class-based view do relatório de meses.
+    Class-based view do relatório de meses. Filtra os dias por mês/ano
+    de início e mês/ano de fim.
+
     """
+
     Report = MesesReport
     FilterForm = IntervaloMesesFilterForm
 
@@ -670,10 +779,41 @@ def pgtos_por_bandeira(dias):
 
 
 class DespesasPorCategoriaCharts(ReportElement):
+    """
+    Gera gráficos de torta sobre o total de despesas, com a porcentagem
+    de cada categoria.
+
+    Gera um gráfico pra 'raiz' (categorias sem mãe), e um gráfico pra
+    cada categoria que tenha filhas, com as porcentagens das despesas
+    das filhas com relação à mãe.
+
+    """
+
     title = "Gráficos de torta"
 
     def render_html(self):
+        """
+        Renderiza o gráfico em HTML, usando o matplotlib.
+
+        """
+
         def arvore_categorias(categorias):
+            """
+            Retorna uma lista representando a árvore de categorias.
+
+            A lista tem como elementos dicionários, cada um
+            representando uma categoria e contendo as seguintes chaves:
+
+                - nome: o nome da categoria
+                - porcentagem: a porcentagem que essa categoria
+                  contribui pro total de despesas de sua categoria-mãe
+                  (ou pro total de todas as despesas, caso a categoria
+                  não tenha mãe).
+                - filhos: uma lista de dicionários com essas mesmas
+                  chaves, representando as categorias-filhas dessa
+                  categoria.
+
+            """
             despesas = list(DespesaDeCaixa.objects.filter(dia__in=self.data, categoria__in=categorias)) + \
                     list(MovimentacaoBancaria.objects.filter(dia__in=self.data, valor__lt=0, categoria__in=categorias))
             total_despesas_das_categorias = Decimal(sum(d.valor for d in despesas))
@@ -705,6 +845,33 @@ class DespesasPorCategoriaCharts(ReportElement):
 
 
         def montar_listas(nome, arvore, listas):
+            """
+            Transforma a árvore de categorias em uma lista de
+            dicionários não-recursiva.
+
+            Cada dicionário dessa lista representa categorias-irmã --
+            categorias que são filhas da mesma mãe, e no caso da raiz,
+            categorias que não têm mãe. Eles possuem as seguintes chaves:
+
+                - mae: o nome da categoria-mãe, ou "Raiz" caso não haja
+                  mãe.
+
+                - irmas: uma lista de dicionários, cada um com as
+                  seguintes chaves:
+
+                    - nome: o nome da categoria
+
+                    - porcentagem: a porcentagem que essa categoria
+                      contribui pro total de despesas de sua categoria-mãe
+                      (ou pro total de todas as despesas, caso a categoria
+                      não tenha mãe).
+
+            Categorias com porcentagem menor que a designada na variável
+            `LIMITE` são agrupadas sob o rótulo "Outros", pra evitar que
+            sejam exibidas diversas frações da torta muito pequenas e
+            seus rótulos se embaralhem.
+            """
+
             LIMITE = Decimal("0.05")
 
             lista = { "mae": nome, "irmas": [] }
@@ -753,7 +920,9 @@ class DespesasPorCategoriaCharts(ReportElement):
 class DespesasPorCategoriaReportTable(Table2):
     """
     Tabela pro relatório de despesas agrupadas por categoria.
+
     """
+
     title = "Tabela"
 
     fields = (
@@ -877,14 +1046,23 @@ class DespesasPorCategoriaReportTable(Table2):
 class DespesasPorCategoriaReport(Report2):
     """
     Relatório de meses.
+
+    Elementos:
+
+        - Graficos de torta de totais de despesas por categorias
+        - Tabela de despesas por categoria
+
     """
     title="Relatório de despesas por categoria"
     element_classes = [DespesasPorCategoriaCharts, DespesasPorCategoriaReportTable]
 
 class DespesasPorCategoriaReportView(ReportView):
     """
-    Class-based view do relatório de despesas por categoria.
+    Class-based view do relatório de despesas por categoria. Filtra os
+    dias por data de início e data de fim.
+
     """
+
     Report = DespesasPorCategoriaReport
     FilterForm = DateFilterForm
 

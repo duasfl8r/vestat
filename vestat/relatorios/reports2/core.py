@@ -1,4 +1,8 @@
 # -*- encoding: utf-8 -*-
+"""
+Novo sistema de relatórios do Vestat.
+
+"""
 
 from django.template import Context, loader, TemplateDoesNotExist
 from django.template.defaultfilters import slugify
@@ -6,6 +10,9 @@ from django.template.defaultfilters import slugify
 class Report2():
     """
     Classe abstrata pra um relatório.
+
+    Um relatório possui vários *elementos*, construídos a partir do
+    atributo de classe `Report2.element_classes`.
 
     Subclasses devem sobrecrever os atributos `title` e
     `element_classes`.

@@ -1,4 +1,8 @@
 # -*- encoding: utf-8 -*-
+"""
+Widgets usados nos formulários da aplicação 'relatorios'
+"""
+
 import datetime
 import re
 
@@ -14,12 +18,11 @@ class MonthYearWidget(Widget):
     """
     A Widget that splits date input into two <select> boxes for month and year,
     with 'day' defaulting to the first of the month.
-    
-    Based on SelectDateWidget, in 
-    
+
+    Based on SelectDateWidget, in
+
     django/trunk/django/forms/extras/widgets.py
-    
-    
+
     """
     none_value = (0, '---')
     month_field = '%s_month'
