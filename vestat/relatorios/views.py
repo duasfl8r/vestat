@@ -497,7 +497,7 @@ class MesesReportTable(Table2):
                 dias = Dia._dias(ano, mes, self.data)
                 result.append(["%04d-%02d" % (ano, mes),              # mes
                              Dia.num_pessoas_total(dias),           # num pessoas
-                             colorir_num(Dia.vendas_total(dias)),                # vendas
+                             Dia.vendas_total(dias),                # vendas
                              Dia.permanencia_media_total(dias),     # permanencia medi
                              colorir_num(Dia.faturamento_total(dias)),           # faturamento
                              colorir_num(Dia.despesas_de_caixa_total(dias)),     # desp cx
