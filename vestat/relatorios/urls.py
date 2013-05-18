@@ -20,5 +20,5 @@ urlpatterns = patterns('',
 
      url(r'^despesas_por_categoria/$', views.DespesasPorCategoriaReportView.as_view()),
 
-     url(r'^meses/$', views.MesesReportView.as_view()),
+     url(r'^meses/$', views.MesesReportView.as_view(), name="relatorio_meses"),
 )
