@@ -993,3 +993,33 @@ config_pages["vestat"].add(
         "Adicionar/remover/editar"
     ),
 )
+
+config_pages["vestat"].add(
+    Link(
+        "categorias",
+        "Categorias de despesas de caixa e movimentações bancárias",
+        reverse_lazy("admin:caixa_categoriademovimentacao_changelist"),
+        "Adicionar/remover/editar"
+    ),
+    "Caixa",
+)
+
+config_pages["vestat"].add(
+    Link(
+        "despesadecaixa",
+        "Despesas de caixa",
+        reverse_lazy("admin:caixa_despesadecaixa_changelist"),
+        "Adicionar/remover/editar"
+    ),
+    "Caixa",
+)
+
+config_pages["vestat"].add(
+    Link(
+        "movbancaria",
+        "Movimentações bancárias",
+        reverse_lazy("admin:caixa_movimentacaobancaria_changelist"),
+        "Adicionar/remover/editar"
+    ),
+    "Caixa",
+)
