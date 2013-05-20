@@ -6,7 +6,7 @@ Representações dos modelos da app.
 """
 
 from django.contrib import admin
-from models import Bandeira, CategoriaDeMovimentacao
+from models import Bandeira, CategoriaDeMovimentacao, MovimentacaoBancaria, DespesaDeCaixa
 from forms import BandeiraForm
 
 
@@ -30,3 +30,25 @@ class CategoriaDeMovimentacaoAdmin(admin.ModelAdmin):
     ordering = ["nome"]
 
 admin.site.register(CategoriaDeMovimentacao, CategoriaDeMovimentacaoAdmin)
+
+class DespesaDeCaixaAdmin(admin.ModelAdmin):
+    def data(obj):
+        return obj.dia.data
+
+    list_display = ["id", data, "valor", "categoria"]
+    list_display_links = ["id"]
+    list_filter = ["categoria", "dia__data"]
+    ordering = ["-dia__data", "categoria"]
+
+admin.site.register(DespesaDeCaixa, DespesaDeCaixaAdmin)
+
+class MovimentacaoBancariaAdmin(admin.ModelAdmin):
+    def data(obj):
+        return obj.dia.data
+
+    list_display = ["id", data, "valor", "categoria", "pgto_cartao"]
+    list_display_links = ["id"]
+    list_filter = ["categoria", "dia__data"]
+    ordering = ["-dia__data", "categoria"]
+
+admin.site.register(MovimentacaoBancaria, MovimentacaoBancariaAdmin)
