@@ -102,7 +102,10 @@ class Dia(models.Model):
                                                          self.data.day)
 
     def __unicode__(self):
-        return self.data.strftime("%d/%m/%Y, %A") + (eh_feriado(self.data) and ", Feriado" or "")
+        return u"{0}, {1}".format(
+            self.data.strftime("%d/%m/%Y").decode("utf-8"),
+            self.categoria_semanal(),
+        )
 
     def categoria_semanal(self):
         if eh_feriado(self.data):
@@ -955,7 +958,7 @@ class DespesaDeCaixa(models.Model):
     descricao = models.CharField('Descrição', max_length=150, blank=True)
 
     def __unicode__(self):
-        return "R$ %.2f - %s - %s" % (self.valor, self.categoria, self.descricao)
+        return u"R$ %.2f - %s" % (self.valor, self.categoria)
 
     def get_absolute_url(self):
         return self.dia.get_absolute_url() + "despesa/{0}/".format(self.id)
@@ -977,7 +980,7 @@ class MovimentacaoBancaria(models.Model):
     pgto_cartao = models.ForeignKey('PagamentoComCartao', null=True, editable=False)
 
     def __unicode__(self):
-        return "R$ %.2f - %s - %s" % (self.valor, self.categoria, self.descricao)
+        return u"R$ %.2f - %s" % (self.valor, self.categoria)
 
     def get_absolute_url(self):
         return self.dia.get_absolute_url() + "movbancaria/{0}/".format(self.id)
@@ -989,4 +992,34 @@ config_pages["vestat"].add(
         reverse_lazy("admin:caixa_bandeira_changelist"),
         "Adicionar/remover/editar"
     ),
+)
+
+config_pages["vestat"].add(
+    Link(
+        "categorias",
+        "Categorias de despesas de caixa e movimentações bancárias",
+        reverse_lazy("admin:caixa_categoriademovimentacao_changelist"),
+        "Adicionar/remover/editar"
+    ),
+    "Caixa",
+)
+
+config_pages["vestat"].add(
+    Link(
+        "despesadecaixa",
+        "Despesas de caixa",
+        reverse_lazy("admin:caixa_despesadecaixa_changelist"),
+        "Adicionar/remover/editar"
+    ),
+    "Caixa",
+)
+
+config_pages["vestat"].add(
+    Link(
+        "movbancaria",
+        "Movimentações bancárias",
+        reverse_lazy("admin:caixa_movimentacaobancaria_changelist"),
+        "Adicionar/remover/editar"
+    ),
+    "Caixa",
 )

@@ -1,7 +1,6 @@
 # -*- encoding: utf-8 -*-
 """
 Novo sistema de relatórios do Vestat.
-
 """
 
 from django.template import Context, loader, TemplateDoesNotExist
