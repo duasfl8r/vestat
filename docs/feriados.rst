@@ -70,6 +70,5 @@ Os feriados são cadastrados como eventos do calendário, sendo exibidos na tela
 Links
 =====
 
-* `Legislação dos feriados bancários <http://www.sato.adm.br/guiadp/paginas/trib_feriado_bancario.htm>`
-* `Feriados no Brasil <http://pt.wikipedia.org/wiki/Feriados_no_Brasil>`
-    
+* `Legislação dos feriados bancários <http://www.sato.adm.br/guiadp/paginas/trib_feriado_bancario.htm>`_
+* `Feriados no Brasil <http://pt.wikipedia.org/wiki/Feriados_no_Brasil>`_

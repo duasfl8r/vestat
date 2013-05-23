@@ -11,8 +11,9 @@ Conteúdo:
    changelog
    caixa
    calendario
-   feriados
    configuracoes
+   feriados
+   banco_de_dados
    desenvolvimento
    glossario
 

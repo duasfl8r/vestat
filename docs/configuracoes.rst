@@ -1,6 +1,6 @@
-#############
-Configurações
-#############
+##################
+Tela Configurações
+##################
 
 A tela de configurações do Vestat pode ser acessada clicando em
 **Configurações**, na barra superior.
