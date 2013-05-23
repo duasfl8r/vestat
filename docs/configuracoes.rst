@@ -5,8 +5,10 @@ Configurações
 A tela de configurações do Vestat pode ser acessada clicando em
 **Configurações**, na barra superior.
 
-10%
-===
+Configurações gerais
+====================
+
+Configurações relativas ao cálculo de 10% a pagar.
 
 Parcelas pra casa
     Número de parcelas dos 10% a ser destinada à casa (numerador da
