@@ -19,18 +19,17 @@ from forms import CalendarForm
 
 logger = logging.getLogger("vestat")
 
+def named_month(month_number):
+    """
+    Return the name of the month, given the number.
+    """
+    return date(1900, month_number, 1).strftime("%B").decode("latin-1")
+
 
 class EventsCalendarView(View):
     """
     View que exibe os dias e eventos de um mês do calendário.
     """
-
-    def named_month(month_number):
-        """
-        Return the name of the month, given the number.
-        """
-
-        return date(1900, month_number, 1).strftime("%B").decode("latin-1")
 
     template_name = "cal_template.html"
 
