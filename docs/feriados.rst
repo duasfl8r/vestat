@@ -1,13 +1,19 @@
+.. _feriados:
+
 ########
 Feriados
 ########
 
-A django app ``feriados`` é responsável pelo cálculo de feriados bancários.
+O aplicativo ``feriados`` permite o cadastramento de feriados no banco
+de dados, consultar se um determinado dia é feriado e listar os feriados entre
+duas datas.
 
-Esses feriados são atualmente usados para:
+Esse aplicativo se manifesta pro usuário como a marcação de feriados no
+calendário, e podem ser editados através da tela de configurações.
 
-* Calcular o dia que um pagamento com cartão de crédito cai em conta corrente:
-  ver ``caixa.PagamentoComCartao.data_de_deposito``.
+Os feriados são usados para calcular o dia que um pagamento com cartão de
+crédito cai em conta corrente: ver
+``caixa.PagamentoComCartao.data_de_deposito``.
 
 Tipos de feriado
 ================
@@ -53,6 +59,7 @@ Adicionar/editar/remover feriados
    com 'pascoa' significando o dia da páscoa e com os dias envolvidos por
    ``d(...)``. Por exemplo, o Corpus Christi é definido por ``pascoa + d(60)``.
 
+.. _feriados-calendario:
 
 Feriados no calendário
 ======================
@@ -63,6 +70,6 @@ Os feriados são cadastrados como eventos do calendário, sendo exibidos na tela
 Links
 =====
 
-  * `Legislação dos feriados bancários <http://www.sato.adm.br/guiadp/paginas/trib_feriado_bancario.htm>`
-  * `Feriados no Brasil <http://pt.wikipedia.org/wiki/Feriados_no_Brasil>`
+* `Legislação dos feriados bancários <http://www.sato.adm.br/guiadp/paginas/trib_feriado_bancario.htm>`
+* `Feriados no Brasil <http://pt.wikipedia.org/wiki/Feriados_no_Brasil>`
     

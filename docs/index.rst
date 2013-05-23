@@ -9,9 +9,10 @@ Conteúdo:
 
    licenca
    changelog
-   configuracoes
+   caixa
+   calendario
    feriados
-   restaurante
+   configuracoes
    desenvolvimento
    glossario
 

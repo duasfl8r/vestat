@@ -147,7 +147,7 @@ v1.2.1
 v1.2.0
 ------
 
-- Aparência: criação de uma barra no topo da aplicação para acesso às
+- Aparência: criação de uma barra no topo do programa para acesso às
   diferentes telas do sistema.
 
 - Funcionalidade: edição direta das transações de contabilidade relativas aos
