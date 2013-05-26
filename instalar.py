@@ -5,10 +5,7 @@ import sys
 import argparse
 import platform
 
-import settings
-from django.core.management import setup_environ
-setup_environ(settings)
-from django.conf import settings
+import vestat.settings as settings
 
 if platform.system() == "Windows":
     DIRETORIO_DE_INSTALACAO = "C:\\vestat"
