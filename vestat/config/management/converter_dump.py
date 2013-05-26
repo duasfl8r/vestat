@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 """
 Funções pra converter o dump (saída do `manage.py dumpdata`) da versão
-1.2.0 pra 1.2.1.
+1.2.1 pra 1.2.2.
 
 Converte as categorias antigas (ChoiceField's) pras categorias novas
 (objetos `caixa.CategoriaDeMovimentacao`).
