@@ -18,11 +18,11 @@ else:
 
 ARQUIVOS = (
      {
-         "origem": ["vestat"],
+         "origem": ["vestat", "documentacao_v" + settings.VERSAO],
          "destino": ""
      },
      {
-         "origem": [os.path.join("trecos", "iniciar_servidor.bat")],
+         "origem": [os.path.join("vestat", "trecos", "iniciar_servidor.bat")],
          "destino": ""
      }
 )
