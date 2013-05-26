@@ -4,7 +4,7 @@ BUILD_DIR := _build
 BUILD_NAME := vestat_v$(VERSION)
 DOCS_NAME = documentacao_v$(VERSION)
 
-BUILD_FILES := CHANGELOG.txt deps requirements.txt vestat
+BUILD_FILES := CHANGELOG.txt deps requirements.txt vestat instalar.bat instalar.py
 
 $(BUILD_DIR):
 	mkdir $(BUILD_DIR)
