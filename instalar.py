@@ -3,13 +3,20 @@ import os.path
 import shutil
 import sys
 import argparse
+import platform
 
 import settings
 from django.core.management import setup_environ
 setup_environ(settings)
 from django.conf import settings
 
-DIRETORIO_DE_INSTALACAO = "C:\\vestat"
+if platform.system() == "Windows":
+    DIRETORIO_DE_INSTALACAO = "C:\\vestat"
+elif platform.system() == "Linux":
+    DIRETORIO_DE_INSTALACAO = "/opt/vestat/"
+else:
+    print("Plataforma não suportada")
+    exit(-1)
 
 ARQUIVOS = (
      {
