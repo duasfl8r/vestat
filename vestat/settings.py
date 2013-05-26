@@ -8,7 +8,7 @@ from utils import mkdir_p
 
 NOME_APLICACAO = "vestat"
 AUTOR = "Lucas Teixeira"
-VERSAO = "1.2.1"
+VERSAO = "1.2.2-rc1"
 
 dirs = appdirs.AppDirs(NOME_APLICACAO, AUTOR)
 
