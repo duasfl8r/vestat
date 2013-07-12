@@ -719,7 +719,7 @@ class Venda(models.Model):
     fechadas = VendasFechadasManager()
 
     def __unicode__(self):
-        return "%s - %s, %d %s, R$ %.2f, %s" % \
+        return u"%s - %s, %d %s, R$ %.2f, %s" % \
             (self.hora_entrada.strftime("%H:%M"),
              self.hora_saida.strftime("%H:%M"),
              self.num_pessoas, (self.num_pessoas == 1 and "pessoa" or "pessoas"),
@@ -851,7 +851,7 @@ class AjusteDeCaixa(models.Model):
     descricao = models.CharField('Descrição', max_length=150, blank=True)
 
     def __unicode__(self):
-        return "R$ %.2f - %s" % (self.valor, self.descricao)
+        return u"R$ %.2f - %s" % (self.valor, self.descricao)
 
     def get_absolute_url(self):
         return self.dia.get_absolute_url() + "ajuste/{0}/".format(self.id)

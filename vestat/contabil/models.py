@@ -74,7 +74,7 @@ class Transacao(models.Model):
         ordering = ["-data"]
 
     def __unicode__(self):
-        return "{data} - {descricao}".format(**vars(self))
+        return u"{data} - {descricao}".format(**vars(self))
 
     @property
     def eh_consistente(self):
@@ -99,7 +99,7 @@ class Lancamento(models.Model):
         ordering = ["-transacao"]
 
     def __unicode__(self):
-        return "{conta}: {valor}".format(**vars(self))
+        return u"{conta}: {valor}".format(**vars(self))
 
     def save(self, *args, **kwargs):
         if self.conta == "":
