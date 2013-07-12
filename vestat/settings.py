@@ -48,7 +48,7 @@ LOGGING = {
     'disable_existing_loggers': True,
     'formatters': {
         'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d \n\n%(message)s\n\n#################\n'
+            'format': '%(levelname)s %(asctime)s %(module)s: %(message)s'
         },
         'simple': {
             'format': '%(levelname)s %(message)s'
@@ -71,8 +71,11 @@ LOGGING = {
             'formatter':'verbose',
             'filename': os.path.join(LOGS_DIR, NOME_APLICACAO + '.log'),
             'maxBytes': 1048576,
-            'backupCount': 3,
 
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
         }
     },
     'loggers': {
@@ -82,9 +85,15 @@ LOGGING = {
             'level':'INFO',
         },
 
+        'django.request': {
+            'handlers': ['mail_admins', 'file'],
+             'level': 'ERROR',
+             'propagate': True,
+        },
+
         NOME_APLICACAO: {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
+            'handlers': ['console', 'file', 'mail_admins'],
+            'level': 'INFO',
         }
     }
 }
