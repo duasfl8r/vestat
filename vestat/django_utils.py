@@ -5,13 +5,15 @@ Classes e funções utilitárias que dependem do Django.
 """
 
 import locale
+import platform
 
 from django.core.management import call_command
 from django.conf import settings
 from django.contrib.auth.models import User
 import django.forms
 
-locale.setlocale(locale.LC_ALL, settings.PYTHON_LOCALE)
+system = platform.system()
+locale.setlocale(locale.LC_ALL, settings.SYSTEM_LOCALE.get(system))
 
 class LocalizedModelForm(django.forms.ModelForm):
     """

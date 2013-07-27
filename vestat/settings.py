@@ -120,7 +120,10 @@ NUMBER_GROUPING = 3
 
 TIME_ZONE = 'America/Sao_Paulo'
 LANGUAGE_CODE = 'pt-br'
-PYTHON_LOCALE = "pt_BR"
+SYSTEM_LOCALE = {
+    'Windows': 'ptb',
+    'Linux': 'pt_BR',
+}
 SITE_ID = 1
 
 SITE_URL = "http://localhost:8000/"
