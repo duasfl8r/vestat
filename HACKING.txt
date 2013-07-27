@@ -1,0 +1,5 @@
+O que fazer logo após dar "bump" na versão
+------------------------------------------
+
+- Fazer novo deps/vestat.pybundle com as dependências corretas
+- Rever `README.txt`
