@@ -332,7 +332,7 @@ class CaixaFecharVendaSemCartaoTestCase(TestCaseVestatBoilerplate):
         self.assertEqual(list(self.venda.pagamentocomcartao_set.all()), [])
 
 class CaixaFecharVendaComCartaoTestCase(TestCaseVestatBoilerplate):
-    fixtures = ['cartoes_teste.json']
+    fixtures = ['cartoes_teste.json', 'categorias_de_movimentacao_teste.json']
 
     def setUp(self):
         super(CaixaFecharVendaComCartaoTestCase, self).setUp()
