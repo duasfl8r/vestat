@@ -70,6 +70,8 @@ def versao_1_2_2(cmd, *args):
     print("Carregando fixture de feriados bancários...")
     call_command("loaddata", "feriados_bancarios")
 
+    print("Reunindo arquivos estáticos...")
+    call_command("collectstatic", interactive=False)
 
 def versao_1_2_0(cmd, *args):
     sync_and_evolve()
