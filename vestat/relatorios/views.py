@@ -96,7 +96,7 @@ class ReportView(View):
 
         if format == "csv":
             response.mimetype = "text/csv"
-            response['Content-Disposition'] = 'attachment; filename=anual.csv'
+            response['Content-Disposition'] = 'attachment; filename=report.csv'
 
         return response
 
