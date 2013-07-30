@@ -15,6 +15,7 @@ Conteúdo:
    feriados
    banco_de_dados
    desenvolvimento
+   atualizar
    erros
    glossario
 
