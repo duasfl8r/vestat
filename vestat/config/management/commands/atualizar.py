@@ -9,7 +9,9 @@ from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
+from django.db.models import Model
 
+from vestat.caixa.models import PagamentoComCartao
 from vestat.config.management.converter_dump import converter
 from vestat.django_utils import criar_superusuario
 
@@ -72,6 +74,12 @@ def versao_1_2_2(cmd, *args):
 
     print("Reunindo arquivos estáticos...")
     call_command("collectstatic", interactive=False)
+
+    print("Re-salvando os pagamentos com cartões pra preencher data de depósito")
+    for pagamento in PagamentoComCartao.objects.all():
+        pagamento.data_do_deposito = pagamento._data_do_deposito()
+        Model.save(pagamento)
+
 
 def versao_1_2_0(cmd, *args):
     sync_and_evolve()
