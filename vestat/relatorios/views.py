@@ -1039,7 +1039,9 @@ class DespesasPorCategoriaReport(Report2):
 
     """
     title="Relatório de despesas por categoria"
-    element_classes = [DespesasPorCategoriaCharts, DespesasPorCategoriaReportTable]
+    # FIXME: gráficos de torta estão saindo errados
+    #element_classes = [DespesasPorCategoriaCharts, DespesasPorCategoriaReportTable]
+    element_classes = [DespesasPorCategoriaReportTable]
 
 class DespesasPorCategoriaReportView(ReportView):
     """
