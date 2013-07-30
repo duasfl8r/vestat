@@ -921,6 +921,9 @@ class DespesasPorCategoriaReportTable(Table2):
 
         self._total_despesas = Decimal(sum(d.valor for d in despesas))
 
+        if not self._total_despesas:
+            return []
+
         vendas = Venda.objects.filter(dia__in=self.data)
         total_vendas = Decimal(sum(v.conta for v in vendas))
 
