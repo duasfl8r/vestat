@@ -8,7 +8,7 @@ import vestat.config.urls
 import vestat.calendario.urls
 
 import views
-from vestat.settings import MEDIA_ROOT
+from vestat.settings import MEDIA_ROOT, STATIC_ROOT
 from vestat import temp
 
 temp.clear()
@@ -29,6 +29,8 @@ urlpatterns = patterns('',
      (r'^calendario/', include(vestat.calendario.urls, namespace="calendario")),
      (r'^m/(?P<path>.*)$', 'django.views.static.serve',
              {'document_root': MEDIA_ROOT}),
+     (r'^static/(?P<path>.*)$', 'django.views.static.serve',
+             {'document_root': STATIC_ROOT}),
 )
 
 handler500 = 'views.server_error'
