@@ -10,13 +10,13 @@ Conteúdo:
    licenca
    changelog
    instalacao
+   atualizar
    caixa
    calendario
    configuracoes
    feriados
    banco_de_dados
    desenvolvimento
-   atualizar
    erros
    glossario
 
