@@ -10,7 +10,7 @@ Atualizando
   * ``numpy-<versao>.exe``
   * ``instalar_bundle.bat``
 
-#. Faça um backup do banco de dados (veja ref:`Banco de Dados <banco_de_dados>`).
+#. Faça um backup do banco de dados (veja :ref:`Banco de Dados <banco-de-dados>`).
 
 #. Exportar os dados da versão antiga:::
 
