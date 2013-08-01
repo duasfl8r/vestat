@@ -1,14 +1,27 @@
 # -*- encoding: utf8 -*-
-NOME_APLICACAO = "vestat"
-VERSAO = "1.2.1"
-
-### NÃO ALTERE NADA DAQUI PRA FRENTE SE NÃO SOUBER O QUE ESTÁ FAZENDO ###
-
 import os
 import os.path
 
+import appdirs
+
+from utils import mkdir_p
+
+NOME_APLICACAO = "vestat"
+AUTOR = "Lucas Teixeira"
+VERSAO = "1.2.2-rc1"
+
+dirs = appdirs.AppDirs(NOME_APLICACAO, AUTOR)
+
 BASE_DIR = os.path.join(os.getcwd())
-BANCO_DE_DADOS = os.path.join(BASE_DIR, NOME_APLICACAO + '.sqlite')
+DATA_DIR = dirs.user_data_dir
+LOGS_DIR = dirs.user_log_dir
+
+for d in [DATA_DIR, LOGS_DIR]:
+    if not os.path.exists(d):
+        print("Diretório {d} não existe; criando...".format(**vars()))
+        mkdir_p(d)
+
+BANCO_DE_DADOS = os.path.join(DATA_DIR, NOME_APLICACAO + '.sqlite')
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
@@ -28,12 +41,14 @@ ID_CONFIG = 1
 AUTOLOGIN_USERNAME = "vestat"
 AUTOLOGIN_PASSWORD = "a vespa e o gestalt"
 
+ALLOWED_HOSTS = ['*']
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
     'formatters': {
         'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d \n\n%(message)s\n\n#################\n'
+            'format': '%(levelname)s %(asctime)s %(module)s: %(message)s'
         },
         'simple': {
             'format': '%(levelname)s %(message)s'
@@ -54,31 +69,48 @@ LOGGING = {
             'level':'DEBUG',
             'class':'logging.handlers.RotatingFileHandler',
             'formatter':'verbose',
-            'filename':NOME_APLICACAO+'.log',
+            'filename': os.path.join(LOGS_DIR, NOME_APLICACAO + '.log'),
             'maxBytes': 1048576,
-            'backupCount': 3,
 
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
         }
     },
     'loggers': {
         'django': {
-            'handlers':['console'],
+            'handlers':['console', 'file'],
             'propagate': True,
             'level':'INFO',
         },
+
+        'django.request': {
+            'handlers': ['mail_admins', 'file'],
+             'level': 'ERROR',
+             'propagate': True,
+        },
+
         NOME_APLICACAO: {
-            'handlers': ['file'],
-            'level': 'DEBUG',
+            'handlers': ['console', 'file', 'mail_admins'],
+            'level': 'INFO',
         }
     }
 }
 
 DATE_FORMAT = "j \de F \de Y"
-DATE_INPUT_FORMATS = "%d/%m/%Y",
+DATE_INPUT_FORMATS = ("%d/%m/%Y",)
 
 DATETIME_FORMAT = "j \de F \de Y, H:i"
 
 SHORT_DATE_FORMAT = "d/m/Y"
+
+# Formato de data igual ao SHORT_DATE_FORMAT, mas no formato do
+# `strftime`.
+#
+# Usado pra formatar objetos `datetime.date`.
+SHORT_DATE_FORMAT_PYTHON = "%d/%m/%Y"
+
 SHORT_DATETIME_FORMAT = "d/m/Y H:i"
 
 DECIMAL_SEPARATOR = ","
@@ -88,11 +120,33 @@ NUMBER_GROUPING = 3
 
 TIME_ZONE = 'America/Sao_Paulo'
 LANGUAGE_CODE = 'pt-br'
+SYSTEM_LOCALE = {
+    'Windows': 'ptb',
+    'Linux': 'pt_BR',
+}
 SITE_ID = 1
+
+SITE_URL = "http://localhost:8000/"
+
 USE_I18N = True
 USE_L10N = True
-MEDIA_URL = 'http://localhost:8000/m/'
-MEDIA_PREFIX = '/m/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/m/'
+
+ADMIN_MEDIA_PREFIX =  '/static/admin/'
+
+STATICFILES_DIRS = (
+)
+
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
 SECRET_KEY = 'e*fg6gmbnx_+4*ftc&biozg+7+zkshn97yyltu9z7)j(gn$=cs'
 TEMPLATE_LOADERS = (
         'django.template.loaders.filesystem.Loader',
@@ -118,6 +172,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.static",
     "django.contrib.messages.context_processors.messages",
     "vestat.context_processors.project_settings",
+    "vestat.context_processors.data_hora",
 )
 
 ROOT_URLCONF = 'vestat.urls'
@@ -126,6 +181,8 @@ TEMPLATE_DIRS = (
 )
 INSTALLED_APPS = (
     'vestat.config',
+    'vestat.calendario',
+    'vestat.feriados',
     'vestat.caixa',
     'vestat.relatorios',
     'vestat.contabil',
@@ -135,4 +192,5 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.messages',
     'django.contrib.auth',
+    'django.contrib.staticfiles',
 )

@@ -1,3 +1,8 @@
+.title h2 {
+    text-align: center;
+    color: #5f0070;
+}
+
 body {
     font-size: 11px;
 }
@@ -8,6 +13,7 @@ body {
 }
 
 table {
+    font-size: 11px;
     border-collapse: collapse;
 }
 

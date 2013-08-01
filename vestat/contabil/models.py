@@ -22,6 +22,9 @@ from decimal import Decimal
 from django.db import models
 from django.core.exceptions import ValidationError
 
+from vestat.config import config_pages, Link
+from django.core.urlresolvers import reverse_lazy
+
 class Registro(models.Model):
     nome = models.TextField(unique=True)
 
@@ -71,7 +74,7 @@ class Transacao(models.Model):
         ordering = ["-data"]
 
     def __unicode__(self):
-        return "{data} - {descricao}".format(**vars(self))
+        return u"{data} - {descricao}".format(**vars(self))
 
     @property
     def eh_consistente(self):
@@ -96,10 +99,20 @@ class Lancamento(models.Model):
         ordering = ["-transacao"]
 
     def __unicode__(self):
-        return "{conta}: {valor}".format(**vars(self))
+        return u"{conta}: {valor}".format(**vars(self))
 
     def save(self, *args, **kwargs):
         if self.conta == "":
             raise ValidationError("Campo 'conta' não pode estar vazio!")
 
         super(Lancamento, self).save(*args, **kwargs)
+
+
+config_pages["vestat"].add(
+    Link(
+        "transacoes-de-contabilidade",
+        "Transações de contabilidade",
+        reverse_lazy("admin:contabil_transacao_changelist"),
+        "Adicionar/remover/editar"
+    ),
+)

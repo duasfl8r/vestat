@@ -1,0 +1,7 @@
+{{ title|upper }}
+
+{% for field in fields %}{{ field.header }}{% if not forloop.last %}; {% endif %}{% endfor %}
+{% for row in body %}{% for elem in row %}{{ elem|striptags|safe }}{% if not forloop.last %}; {% endif %}{% endfor %}
+{% endfor %}
+{% for row in footer %}{% for elem in row %}{{ elem|striptags|safe }}{% if not forloop.last %}; {% endif %}{% endfor %}
+{% endfor %}

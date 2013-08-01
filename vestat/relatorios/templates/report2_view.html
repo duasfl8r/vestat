@@ -1,0 +1,17 @@
+{% extends "relatorios/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<p>
+    <form id="filtro_form">
+        {% for field in filter_form %}
+            {{ field.label_tag }} {{ field }}
+        {% endfor %}
+        <input type="submit" value="Filtrar">
+    </form>
+</p>
+
+
+{{ report_contents }}
+
+{% endblock %}

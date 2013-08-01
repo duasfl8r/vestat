@@ -1,5 +1,6 @@
 {% extends "relatorios/base.html" %}
 {% load vestat_extras %}
+{% load feriados %}
 
 {% block head %}
     {{ block.super }}
@@ -69,7 +70,7 @@
                         </strong>
                     </td>
                     <td class="{{ dia.categoria_semanal }}">
-                        {{ dia.data|date:"D" }}{% if dia.feriado %}, F{% endif %}
+                        {{ dia.data|date:"D" }}{% if dia.data|eh_feriado %}, F{% endif %}
                     </td>
                     <td>{{ dia.num_pessoas }}</td>
                     <td>

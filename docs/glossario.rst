@@ -5,6 +5,13 @@ Glossário
 .. glossary::
         :sorted:
 
+        tela
+                Uma tela de interface com o usuário, através da qual o programa
+                exibe informações e recebe *input*.
+
+        aplicativo
+                Um *aplicativo*, ou *aplicativo do django*, é um módulo python 
+
         10%
                 Pagamento adicional ao total da :term:`venda`, feito por um :term:`cliente`.
 

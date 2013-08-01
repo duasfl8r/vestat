@@ -1,17 +1,31 @@
 # -*- encoding: utf-8 -*-
-import django.forms
+import os, errno
+from datetime import timedelta
 
-class LocalizedModelForm(django.forms.ModelForm):
+"""
+Classes e funções utilitárias que NÃO dependem do Django.
+"""
+
+def mkdir_p(path):
     """
-    Estende o `ModelForm` do django, tornando os campos `DecimalField`
-    *localized* -- com a formatação dependente do *locale* do sistema.
-
+    Cria o diretório fornecido (e seus pais, se necessário) caso ele não exista.  (imita `mkdir -p`)
     """
+    try:
+        os.makedirs(path)
+    except OSError as exc:
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
 
-    def __new__(cls, *args, **kwargs):
-        new_class = super(LocalizedModelForm, cls).__new__(cls, *args, **kwargs)
-        for field in new_class.base_fields.values():
-            if isinstance(field, django.forms.DecimalField):
-                field.localize = True
-                field.widget.is_localized = True
-        return new_class
+def daterange_inclusive(d1, d2):
+    """
+    Retorna uma iterator com todos os objetos `datetime.date` entre duas datas.
+
+    Argumentos:
+        - d1: um objeto `datetime.date`
+        - d2: um objeto `datetime.date`
+    """
+    while d1 <= d2:
+        yield d1
+        d1 += timedelta(1)

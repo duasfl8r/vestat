@@ -1,0 +1,67 @@
+form#ir-para-mes {
+    text-align: center;
+}
+
+    #id_month {
+        width: 40px;
+    }
+
+    #id_year {
+        width: 60px;
+    }
+
+    input.error {
+        background-color: #fbe3e4;
+    }
+
+#calendar {
+}
+    #calendar table {
+        border-collapse: collapse;
+        max-width: 1000px;;
+        margin: 0 auto 10px;
+    }
+
+    #calendar th {
+        text-align: center;
+    }
+
+    #calendar th.month {
+        font-size: 1.3em;
+    }
+
+    #calendar td, #calendar th {
+        border: 1px solid #ccc;
+    }
+
+    #calendar td {
+        vertical-align: top;
+
+        width: 140px;
+        height: 140px;
+        font-size: 11px;
+    }
+
+    #calendar tr:first {
+        border: 0px;
+    }
+
+    .dayNumber, .dayNumberNos {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 2px;
+    }
+
+    .today .dayNumber, .today .dayNumberNos {
+        border-color: #5f0070;
+    }
+
+    #calendar ul {
+        list-style-type: none;
+        padding-left: 0;
+        margin-top: 5px;
+    }
+
+        #calendar ul li {
+            margin-top: 3px;
+        }

@@ -1,29 +1,45 @@
 # -*- coding: utf-8 -*-
-from django.db import models
-from django.db.models import Sum, Count
-from django.core.exceptions import ValidationError
-from django.db.utils import DatabaseError
-
 from fractions import Fraction
 from decimal import Decimal
 import datetime
-
-from durationfield.db.models.fields.duration import DurationField #@UnresolvedImport
-from django.db.models.query_utils import Q
-
-from django.conf import settings
-from django.core import serializers
 import operator
+import logging
 
-from caixa import NOME_DO_REGISTRO
+from django.core import serializers
+from django.core.urlresolvers import reverse_lazy
+from django.core.exceptions import ValidationError
+from django.conf import settings
+from django.db import models
+from django.db.models import Sum, Count
+from django.db.utils import DatabaseError
+from django.db.models.query_utils import Q
+from django.template.defaultfilters import slugify
+from durationfield.db.models.fields.duration import DurationField #@UnresolvedImport
+
+from vestat.caixa import NOME_DO_REGISTRO
+from vestat.feriados import eh_dia_util, eh_feriado
+from vestat.config import config_pages, Link
 from vestat.config.models import VestatConfiguration
 from vestat.contabil.models import Registro, Transacao, Lancamento
 from vestat.contabil import join
 
-MESES = ['janeiro', 'fevereiro', 'março', 'abril',
-     'maio', 'junho', 'julho', 'agosto',
-     'setembro', 'outubro', 'novembro',
-     'dezembro']
+logger = logging.getLogger(__name__)
+
+SLUG_CATEGORIA_GORJETA = "10"
+"""
+Slug do objeto CategoriaDeMovimentacao correspondente ao pagamento de
+10% pros funcionários.
+"""
+SLUG_CATEGORIA_TAXA_CARTAO = "taxas"
+"""
+Slug do objeto CategoriaDeMovimentacao correspondente ao pagamento de
+taxas das bandeiras de cartão.
+"""
+
+MESES = [u"janeiro", u"fevereiro", u"março", u"abril",
+     u"maio", u"junho", u"julho", u"agosto",
+     u"setembro", u"outubro", u"novembro",
+     u"dezembro"]
 
 FATOR_CONSIDERADO_10P = Decimal('0.9')
 """
@@ -73,7 +89,6 @@ class Dia(models.Model):
         ordering = ['data']
 
     data = models.DateField(unique=True)
-    feriado = models.BooleanField('feriado?')
     anotacoes = models.TextField(blank=True)
     dia_da_semana = models.IntegerField(editable=False, null=True)
 
@@ -87,11 +102,13 @@ class Dia(models.Model):
                                                          self.data.day)
 
     def __unicode__(self):
-        return self.data.strftime("%d/%m/%Y, %A") + (self.feriado and ", Feriado" or "")
-
+        return u"{0}, {1}".format(
+            self.data.strftime("%d/%m/%Y").decode("utf-8"),
+            self.categoria_semanal(),
+        )
 
     def categoria_semanal(self):
-        if self.feriado:
+        if eh_feriado(self.data):
             return 'feriado'
         else:
             dias = ['semana', 'semana', 'semana', 'semana', 'sexta', 'sabado', 'domingo']
@@ -194,13 +211,13 @@ class Dia(models.Model):
         return self.faturamento_cartao_credito() + self.faturamento_cartao_debito()
     
     def faturamento_cartao_debito(self):
-        cartao = self.vendas_fechadas().filter(pagamentocomcartao__categoria='D') \
+        cartao = self.vendas_fechadas().filter(pagamentocomcartao__bandeira__categoria='D') \
                                   .aggregate(Sum('pagamentocomcartao__valor')) \
                                     ['pagamentocomcartao__valor__sum'] 
         return cartao if cartao else 0
     
     def faturamento_cartao_credito(self):
-        cartao = self.vendas_fechadas().filter(pagamentocomcartao__categoria='C') \
+        cartao = self.vendas_fechadas().filter(pagamentocomcartao__bandeira__categoria='C') \
                                           .aggregate(Sum('pagamentocomcartao__valor')) \
                                             ['pagamentocomcartao__valor__sum'] 
         return cartao if cartao else 0
@@ -229,7 +246,7 @@ class Dia(models.Model):
     @classmethod
     def faturamento_total_cartao_debito(cls, objects=None):
         if objects is None: objects = Dia.objects.all()
-        pgto = objects.filter(venda__fechada=True, venda__pagamentocomcartao__categoria='D') \
+        pgto = objects.filter(venda__fechada=True, venda__pagamentocomcartao__bandeira__categoria='D') \
                          .aggregate(Sum('venda__pagamentocomcartao__valor')) \
                            ['venda__pagamentocomcartao__valor__sum']
         return pgto if pgto else 0
@@ -237,7 +254,7 @@ class Dia(models.Model):
     @classmethod
     def faturamento_total_cartao_credito(cls, objects=None):
         if objects is None: objects = Dia.objects.all()
-        pgto = objects.filter(venda__fechada=True, venda__pagamentocomcartao__categoria='C') \
+        pgto = objects.filter(venda__fechada=True, venda__pagamentocomcartao__bandeira__categoria='C') \
                          .aggregate(Sum('venda__pagamentocomcartao__valor')) \
                            ['venda__pagamentocomcartao__valor__sum']
         return pgto if pgto else 0
@@ -349,14 +366,17 @@ class Dia(models.Model):
     def descontos_da_gorjeta(cls, dias=None):
         if dias is None: dias = Dia.objects.all()
 
-        despesas_de_caixa = DespesaDeCaixa.objects.filter(categoria="G",
-                                                          dia__in=dias)
+        try:
+            categoria_gorjeta = CategoriaDeMovimentacao.objects.get(pk=SLUG_CATEGORIA_GORJETA)
+        except CategoriaDeMovimentacao.DoesNotExist:
+            return Decimal("0")
+
+        despesas_de_caixa = DespesaDeCaixa.objects.filter(categoria=categoria_gorjeta, dia__in=dias)
         pagamento_com_gorjetas_caixa = despesas_de_caixa.aggregate(Sum('valor'))['valor__sum']
         if not pagamento_com_gorjetas_caixa:
             pagamento_com_gorjetas_caixa = 0
 
-        despesas_banco = MovimentacaoBancaria.objects.filter(categoria="G",
-                                                          dia__in=dias)
+        despesas_banco = MovimentacaoBancaria.objects.filter(categoria=categoria_gorjeta, dia__in=dias)
         pagamento_com_gorjetas_banco = despesas_banco.aggregate(Sum('valor'))['valor__sum']
         if not pagamento_com_gorjetas_banco:
             pagamento_com_gorjetas_banco = 0
@@ -484,13 +504,9 @@ class Dia(models.Model):
         return dias
     
     @classmethod
-    def listar_dias(cls, de=None, ateh=None, dias_da_semana=range(0, 8), forcar_feriado=False):
+    def listar_dias(cls, de=None, ateh=None, dias_da_semana=range(0, 8)):
         dias = cls.dias_entre(de, ateh).order_by("-data")
-        if forcar_feriado:
-            dias = dias.filter(dia_da_semana__in=dias_da_semana)
-        else:
-            dias = dias.filter(Q(dia_da_semana__in=dias_da_semana) | Q(feriado=True))
-    
+
         dados = {
                    "faturamento_total": {
                                             "total": cls.faturamento_total(dias),
@@ -569,48 +585,82 @@ class Dia(models.Model):
 
 
 class Bandeira(models.Model):
+    CONTAGEM_DE_DIAS_CHOICES = (
+        ('U', 'Dias úteis'),
+        ('C', 'Dias corridos')
+    )
+
+    CATEGORIA_CHOICES = (
+        ('C', 'Crédito'),
+        ('D', 'Débito')
+    )
+
+    ativa = models.BooleanField("Ativa?", help_text="Bandeiras ativas podem ser escolhidas pra um pagamento.", default=True)
     nome = models.CharField(max_length=20)
-    taxa_credito = models.DecimalField("Taxa de débito", max_digits=6, decimal_places=5)
-    taxa_debito = models.DecimalField("Taxa de débito", max_digits=6, decimal_places=5)
+    taxa = models.DecimalField("Taxa coletada pela bandeira", max_digits=6, decimal_places=5)
+    prazo_de_deposito = models.IntegerField("Dias até o depósito")
+    contagem_de_dias = models.CharField(max_length=1, choices=CONTAGEM_DE_DIAS_CHOICES)
+    categoria = models.CharField(max_length=1, choices=CATEGORIA_CHOICES)
 
     def __unicode__(self):
         return self.nome
 
 
 class PagamentoComCartao(models.Model):
-    CATEGORIA_CHOICES = (
-        ('D', u'Débito'),
-        ('C', u'Crédito')
-    )
-
     valor = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
     venda = models.ForeignKey('Venda', editable=False)
     bandeira = models.ForeignKey(Bandeira)
-    categoria = models.CharField(max_length=1, choices=CATEGORIA_CHOICES)
 
+    data_do_deposito = models.DateField("Data do depósito do pagamento", editable=False, null=True)
+    # Data do depósito do pagamento feito pelo cliente na conta do restaurante.
+    #
+    # Embora ter essa data como um campo viole o princípio DRY (Don't Repeat Yourself),
+    # isso torna muito mais fácil a montagem do calendário com a
+    # previsão dos dias de pagamento.
+
+    @property
     def taxa(self):
         """Retorna a taxa cobrada pela bandeira do cartão por esse pagamento."""
-        if self.categoria == 'C':
-            return self.valor * self.bandeira.taxa_debito
-        else:
-            return self.valor * self.bandeira.taxa_debito
+        return self.valor * self.bandeira.taxa
 
     def get_absolute_url(self):
         return self.venda.get_absolute_url() + "cartao/{0}/".format(self.id)
 
+    def _data_do_deposito(self):
+        data_da_venda = self.venda.dia.data
+        um_dia = datetime.timedelta(1)
+        intervalo = datetime.timedelta(0)
+        faltam_dias = self.bandeira.prazo_de_deposito
+        soh_dias_uteis = self.bandeira.contagem_de_dias == "U"
+
+        while faltam_dias:
+            intervalo += um_dia
+            data_teste = data_da_venda + intervalo
+
+            if soh_dias_uteis:
+                if eh_dia_util(data_teste):
+                    faltam_dias -= 1
+            else:
+                faltam_dias -= 1
+
+        return data_da_venda + intervalo
+
     def save(self, *args, **kwargs):
         super(PagamentoComCartao, self).save(*args, **kwargs)
 
-        # cria despesa de caixa pra taxa do cartão de crédito
-        self.venda.dia.movimentacaobancaria_set.create(valor=-self.taxa(),
-            categoria='T', descricao=u"{0} {1}".format(
-                self.bandeira.nome, self.get_categoria_display()),
+        categoria_taxas = CategoriaDeMovimentacao.objects.get(slug=SLUG_CATEGORIA_TAXA_CARTAO)
+
+        self.venda.dia.movimentacaobancaria_set.create(valor=-self.taxa,
+            categoria=categoria_taxas, descricao=self.bandeira.nome,
             pgto_cartao=self)
 
         self.venda.dia.save()
 
+        self.data_do_deposito = self._data_do_deposito()
+        super(PagamentoComCartao, self).save(*args, **kwargs)
+
     def __unicode__(self):
-        return "R$ %.2f, %s, %s" % (self.valor, self.bandeira, self.get_categoria_display())
+        return u"R$ %.2f, %s" % (self.valor, self.bandeira)
 
 
 class Venda(models.Model):
@@ -669,7 +719,7 @@ class Venda(models.Model):
     fechadas = VendasFechadasManager()
 
     def __unicode__(self):
-        return "%s - %s, %d %s, R$ %.2f, %s" % \
+        return u"%s - %s, %d %s, R$ %.2f, %s" % \
             (self.hora_entrada.strftime("%H:%M"),
              self.hora_saida.strftime("%H:%M"),
              self.num_pessoas, (self.num_pessoas == 1 and "pessoa" or "pessoas"),
@@ -801,10 +851,100 @@ class AjusteDeCaixa(models.Model):
     descricao = models.CharField('Descrição', max_length=150, blank=True)
 
     def __unicode__(self):
-        return "R$ %.2f - %s" % (self.valor, self.descricao)
+        return u"R$ %.2f - %s" % (self.valor, self.descricao)
 
     def get_absolute_url(self):
         return self.dia.get_absolute_url() + "ajuste/{0}/".format(self.id)
+
+
+class CategoriaDeMovimentacao(models.Model):
+    """
+    Categoria aninhável, usada nas classes `DespesaDeCaixa` e
+    `MovimentacaoBancaria`.
+
+    Uma categoria `A` é *filha* de uma categoria `B` se ``B.mae == A``.
+    """
+
+    class Meta:
+        verbose_name = "Categoria de movimentação"
+        verbose_name_plural = "Categorias de movimentação"
+
+    nome = models.CharField(max_length=200)
+    """
+    Nome da categoria (e.g. "Tarifas bancárias")
+    """
+    slug = models.SlugField()
+    """
+    Nome da categoria, usando somente letras, números e hífens (e.g. "tarifas-bancarias").
+    """
+    mae = models.ForeignKey("self", blank=True, null=True, related_name="filhas")
+    """
+    Nome da categoria-mãe; se não for especificado, a categoria é de nível primário.
+    """
+
+    SEPARADOR = " > "
+    """
+    String usada pra separar categorias no nome completo de uma categoria
+    (e.g. "Fornecedor > Bebidas").
+    """
+
+    def __unicode__(self):
+        return self.nome
+
+    def save(self, *args, **kwargs):
+        """
+        Gera slug automático caso não seja especificado, e salva o objeto no banco de dados.
+        """
+
+        if not self.slug:
+            logger.debug(u"Gerando slug automático pra categoria '{0}'...".format(self.nome))
+            self.slug = slugify(self.nome)
+
+        super(CategoriaDeMovimentacao, self).save(*args, **kwargs)
+
+    @property
+    def ascendentes(self):
+        """
+        Retorna lista das categorias ascendentes de uma categoria.
+
+        Por exemplo:
+
+        >>> categoria
+        <CategoriaDeMovimentacao: Vinhos>
+        >>> categoria.nome_completo
+        'Fornecedor > Bebidas > Vinhos'
+        >>> categoria.ascendentes
+        [<CategoriaDeMovimentacao: Fornecedor>, <CategoriaDeMovimentacao: Bebidas>]
+
+        """
+        def ascendentes_(categoria):
+            yield categoria
+            if categoria.mae:
+                ascendentes_(categoria.mae)
+
+        return list(ascendentes_(self.mae)) if self.mae else []
+
+    @property
+    def nome_completo(self):
+        """
+        Retorna o nome da categoria e de todas as categorias
+        ascendentes, na ordem da mais alta pra própria categoria,
+        separados por `CategoriaDeMovimentacao.SEPARADOR`.
+
+        Por exemplo:
+
+        >>> categoria
+        <CategoriaDeMovimentacao: Vinhos>
+        >>> categoria.mae
+        <CategoriaDeMovimentacao: Bebidas>
+        >>> categoria.mae.mae
+        <CategoriaDeMovimentacao: Fornecedores>
+        >>> categoria.mae.mae.mae is None
+        True
+        >>> categoria.nome_completo
+        'Fornecedor > Bebidas > Vinhos'
+        """
+        return self.SEPARADOR.join(unicode(a) for a in self.ascendentes + [self])
 
 
 class DespesaDeCaixa(models.Model):
@@ -812,38 +952,13 @@ class DespesaDeCaixa(models.Model):
         verbose_name = "Despesa de caixa"
         verbose_name_plural = "Despesas de caixa"
 
-    CATEGORIA_CHOICES = (
-        ('A', 'Aluguel'),
-        ('C', 'Contador'),
-        ('E', 'Energia'),
-        ('F', 'Fornecedor'),
-        ('L', 'Fornecedores - Alemães'),
-        ('1', 'Fornecedores - Açougue'),
-        ('Y', 'Fornecedores - Mercearia'),
-        ('V', 'Fornecedores - Vinho'),
-        ('I', 'Impostos'),
-        ('Q', 'Manutenção Predial'),
-        ('M', 'Marketing'),
-        ('O', 'Outros'),
-        ('G', 'Pessoal - 10%'),
-        ('X', 'Pessoal - Extra'),
-        ('P', 'Pessoal - Salário'),
-        ('S', 'Prestação de serviço'),
-        ('U', 'Reposição Utensílios'),
-        ('R', 'Retirada'),
-        ('B', 'Tarifas Bancárias'),
-        ('T', 'Taxas'),
-        ('N', 'Telefone')
-    )
-
     dia = models.ForeignKey('Dia', editable=False)
     valor = models.DecimalField(max_digits=10, decimal_places=2)
-    categoria = models.CharField(max_length=1, choices=CATEGORIA_CHOICES)
+    categoria = models.ForeignKey('CategoriaDeMovimentacao', null=True, blank=True)
     descricao = models.CharField('Descrição', max_length=150, blank=True)
 
     def __unicode__(self):
-        return "R$ %.2f - %s - %s" % (self.valor, self.get_categoria_display(),
-            self.descricao)
+        return u"R$ %.2f - %s" % (self.valor, self.categoria)
 
     def get_absolute_url(self):
         return self.dia.get_absolute_url() + "despesa/{0}/".format(self.id)
@@ -858,38 +973,53 @@ class MovimentacaoBancaria(models.Model):
         verbose_name = "Movimentação bancária"
         verbose_name_plural = "Movimentações bancárias"
 
-    CATEGORIA_CHOICES = (
-        ('A', 'Aluguel'),
-        ('C', 'Contador'),
-        ('E', 'Energia'),
-        ('F', 'Fornecedor'),
-        ('L', 'Fornecedores - Alemães'),
-        ('1', 'Fornecedores - Açougue'),
-        ('Y', 'Fornecedores - Mercearia'),
-        ('V', 'Fornecedores - Vinho'),
-        ('I', 'Impostos'),
-        ('Q', 'Manutenção Predial'),
-        ('M', 'Marketing'),
-        ('O', 'Outros'),
-        ('G', 'Pessoal - 10%'),
-        ('X', 'Pessoal - Extra'),
-        ('P', 'Pessoal - Salário'),
-        ('S', 'Prestação de serviço'),
-        ('U', 'Reposição Utensílios'),
-        ('R', 'Retirada'),
-        ('B', 'Tarifas Bancárias'),
-        ('T', 'Taxas'),
-        ('N', 'Telefone')
-    )
-
     dia = models.ForeignKey('Dia', editable=False)
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     descricao = models.CharField('Descrição', max_length=150, blank=True)
-    categoria = models.CharField(max_length=1, choices=CATEGORIA_CHOICES)
+    categoria = models.ForeignKey('CategoriaDeMovimentacao', null=True, blank=True)
     pgto_cartao = models.ForeignKey('PagamentoComCartao', null=True, editable=False)
 
     def __unicode__(self):
-        return "R$ %.2f - %s" % (self.valor, self.descricao)
+        return u"R$ %.2f - %s" % (self.valor, self.categoria)
 
     def get_absolute_url(self):
         return self.dia.get_absolute_url() + "movbancaria/{0}/".format(self.id)
+
+config_pages["vestat"].add(
+    Link(
+        "bandeiras",
+        "Bandeiras de cartão de crédito/débito",
+        reverse_lazy("admin:caixa_bandeira_changelist"),
+        "Adicionar/remover/editar"
+    ),
+)
+
+config_pages["vestat"].add(
+    Link(
+        "categorias",
+        "Categorias de despesas de caixa e movimentações bancárias",
+        reverse_lazy("admin:caixa_categoriademovimentacao_changelist"),
+        "Adicionar/remover/editar"
+    ),
+    "Caixa",
+)
+
+config_pages["vestat"].add(
+    Link(
+        "despesadecaixa",
+        "Despesas de caixa",
+        reverse_lazy("admin:caixa_despesadecaixa_changelist"),
+        "Adicionar/remover/editar"
+    ),
+    "Caixa",
+)
+
+config_pages["vestat"].add(
+    Link(
+        "movbancaria",
+        "Movimentações bancárias",
+        reverse_lazy("admin:caixa_movimentacaobancaria_changelist"),
+        "Adicionar/remover/editar"
+    ),
+    "Caixa",
+)

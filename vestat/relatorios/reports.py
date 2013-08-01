@@ -7,7 +7,6 @@ Defined classes:
 - `Table`, a table generator, based on `tablib.Dataset`.
 - `TableField`, a field of a `Table`.
 - `Report`, the actual report generator.
-- `FilterForm`, a filter for reports based on `django.models.Form`.
 """
 
 import types
@@ -56,14 +55,6 @@ class Table(tablib.Dataset):
 
         Wrapper for the processing function passed on the initialization."""
         return self._process_data(*args, **kwargs)
-
-
-class FilterForm(forms.Form):
-    def __init__(self, *args, **kwargs):
-        super(FilterForm, self).__init__(*args, **kwargs)
-
-    def filter(self, data):
-        pass
 
 
 class Report():
@@ -125,38 +116,3 @@ class Report():
             table.headers = headers
 
             table.process_data(self.filtered_data)
-
-
-
-class DateFilterForm(FilterForm):
-    from_date = forms.DateField(label="Início", required=False)
-    to_date = forms.DateField(label="Fim", required=False)
-
-    def __init__(self, datefield_name=None, **kwargs):
-        super(DateFilterForm, self).__init__(**kwargs)
-        self.datefield_name = datefield_name
-
-    def filter(self, data):
-        filtered = data
-        from_date, to_date = map(self.cleaned_data.get, ["from_date", "to_date"])
-
-        if from_date:
-            filtered = filtered.filter(**{ self.datefield_name + "__gte": from_date })
-        if to_date:
-            filtered = filtered.filter(**{ self.datefield_name + "__lte": to_date })
-
-        return filtered
-
-
-class AnoFilterForm(FilterForm):
-    ano = forms.IntegerField(label="Ano", required=True)
-
-    def __init__(self, datefield_name=None, **kwargs):
-        super(AnoFilterForm, self).__init__(**kwargs)
-        self.datefield_name = datefield_name
-
-    def filter(self, data):
-        ano = self.cleaned_data.get("ano")
-        return data.filter(**{ self.datefield_name + "__year": ano })
-
-
