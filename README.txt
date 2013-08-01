@@ -2,7 +2,8 @@ Vestat
 ======
 
 Para instruções de instalação, atualização e uso do programa, veja a
-documentação no diretório "documentacao/".
+documentação abrindo o arquivo "documentacao/index.html" presente no pacote de
+instalação.
 
 Licença
 -------
