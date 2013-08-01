@@ -2,7 +2,7 @@ VERSION := $(shell cd vestat && python -c 'import settings; print(settings.VERSA
 
 BUILD_DIR := _build
 BUILD_NAME := vestat_v$(VERSION)
-DOCS_NAME = documentacao_v$(VERSION)
+DOCS_NAME = documentacao
 
 BUILD_FILES := CHANGELOG.txt deps requirements.txt vestat instalar.bat instalar.py
 
