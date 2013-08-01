@@ -1,13 +1,8 @@
 Vestat
 ======
 
-Instalação
-----------
-
-1. Instalar o Python 2.7.x (há um instalador em `deps`)
-2. Colocar o Python no PATH do Windows
-3. Instalar o módulo python `setuptools` (há um instalador em `deps`)
-4. Rodar o script `deps/instalar_bundle.bat`, pra instalar os outros módulos python necessários
+Para instruções de instalação, atualização e uso do programa, veja a
+documentação no diretório "documentacao/".
 
 Licença
 -------
