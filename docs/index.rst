@@ -9,6 +9,7 @@ Conteúdo:
 
    licenca
    changelog
+   instalacao
    caixa
    calendario
    configuracoes
