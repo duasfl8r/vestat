@@ -5,6 +5,11 @@ Passo-a-passo de atualizações
 1.2.1 pra 1.2.2
 ===============
 
+#. Instalar as seguintes dependências (diretório `deps`):
+   - `matplotlib-<versao>.exe`
+   - `numpy-<versao>.exe`
+   - `instalar_bundle.bat`
+
 #. Faça um backup do banco de dados (veja ref:`Banco de Dados <banco_de_dados>`).
 
 #. Exportar os dados da versão antiga:
