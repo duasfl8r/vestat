@@ -367,7 +367,7 @@ class Dia(models.Model):
         if dias is None: dias = Dia.objects.all()
 
         try:
-            categoria_gorjeta = CategoriaDeMovimentacao.objects.get(pk=SLUG_CATEGORIA_GORJETA)
+            categoria_gorjeta = CategoriaDeMovimentacao.objects.get(slug=SLUG_CATEGORIA_GORJETA)
         except CategoriaDeMovimentacao.DoesNotExist:
             return Decimal("0")
 
