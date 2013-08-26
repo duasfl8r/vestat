@@ -141,13 +141,9 @@ Esses 10% pagos são divididos da seguinte maneira:
 * Uma certa parcela, chamada de **parcela dos funcionários**, é dividida
   igualmente entre os funcionários do restaurante.
 
-**PENDENTE**: verificar com o Carlos se é isso mesmo.
-
 No programa, a parcela dos funcionários é acumulada em um mostrador
 chamado **10% a pagar**, até atingir um valor significativo o suficiente
 para ser pago aos funcionários.
-
-Saldo negativo significa que há algo a ser pago 
 
 Cálculo dos 10% a pagar
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -167,12 +163,13 @@ Onde:
 
 Ou seja:
 
-* um valor positivo significa que se está devendo pros funcionários
+* um valor positivo (mostrado em **vermelho**) significa que se está devendo
+  pros funcionários
 
 * 0 significa que não há dívida
 
-* um valor negativo significa que se tem crédito com os funcionários
-  para próximas dívidas de 10% a pagar.
+* um valor negativo (mostrado em **verde**) significa que se tem crédito com os
+  funcionários para próximas dívidas de 10% a pagar.
 
 Dívidas de 10% a pagar
 ----------------------
