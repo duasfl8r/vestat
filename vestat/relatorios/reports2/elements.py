@@ -1,4 +1,7 @@
 # -*- encoding: utf-8 -*-
+"""
+Alguns elementos pra serem usados em relatórios `Report2`.
+"""
 
 from django.template import Context, loader
 from django.template.defaultfilters import slugify

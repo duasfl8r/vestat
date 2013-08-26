@@ -9,9 +9,14 @@ Conteúdo:
 
    licenca
    changelog
+   instalacao
+   atualizar
+   caixa
+   calendario
    configuracoes
    feriados
-   restaurante
+   banco_de_dados
    desenvolvimento
+   erros
    glossario
 

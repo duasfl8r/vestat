@@ -7,6 +7,7 @@
 {% block content %}
 <div id="pagina-configuracoes">
     {% for group in page.groups %}
+        {% if group.name %}<h2>{{ group.name }}</h2>{% endif %}
         {% if group.links %}
             <ul>
             {% for link in group.links %}

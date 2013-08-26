@@ -1,23 +1,28 @@
 # -*- encoding: utf-8 -*-
+from __future__ import print_function
 import os.path
 import shutil
 import sys
 import argparse
+import platform
 
-import settings
-from django.core.management import setup_environ
-setup_environ(settings)
-from django.conf import settings
+import vestat.settings as settings
 
-DIRETORIO_DE_INSTALACAO = "C:\\vestat"
+if platform.system() == "Windows":
+    DIRETORIO_DE_INSTALACAO = "C:\\vestat"
+elif platform.system() == "Linux":
+    DIRETORIO_DE_INSTALACAO = "/opt/vestat/"
+else:
+    print("Plataforma não suportada")
+    exit(-1)
 
 ARQUIVOS = (
      {
-         "origem": ["vestat"],
+         "origem": ["vestat", "documentacao_v" + settings.VERSAO],
          "destino": ""
      },
      {
-         "origem": [os.path.join("trecos", "iniciar_servidor.bat")],
+         "origem": [os.path.join("vestat", "trecos", "iniciar_servidor.bat")],
          "destino": ""
      }
 )
@@ -29,7 +34,17 @@ parser.add_argument("-v, --verbose", help="Exibe informações adicionais", dest
 args = parser.parse_args()
 
 if os.path.exists(DIRETORIO_DE_INSTALACAO):
-    shutil.rmtree(DIRETORIO_DE_INSTALACAO)
+    opt = ""
+
+    while opt.lower() not in ["s", "n"]:
+        print("Diretório {0} existe; remover?".format(DIRETORIO_DE_INSTALACAO), end=" ")
+        opt = raw_input("[s/n] ")
+
+    if opt == "s":
+        shutil.rmtree(DIRETORIO_DE_INSTALACAO)
+    else:
+        print("Instalação cancelada")
+        exit(0)
 else:
     if args.verbose:
         print("Diretório {0} não existe; criando...".format(DIRETORIO_DE_INSTALACAO))

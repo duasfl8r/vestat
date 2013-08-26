@@ -12,7 +12,7 @@ from vestat.caixa.models import Dia, Venda, DespesaDeCaixa, \
     secs_to_time, CategoriaDeMovimentacao
 
 from vestat.caixa.templatetags.vestat_extras import colorir_num
-from vestat.relatorios.forms import RelatorioSimplesForm, AnoFilterForm, DateFilterForm, IntervaloMesesFilterForm
+from vestat.relatorios.forms import RelatorioSimplesForm, AnoFilterForm, DateFilterForm, DateFilterForm2, IntervaloMesesFilterForm
 from vestat.relatorios.reports import Table, Report, TableField
 from vestat.django_utils import format_currency, format_date
 from vestat.temp import mkstemp, path2url
@@ -96,7 +96,7 @@ class ReportView(View):
 
         if format == "csv":
             response.mimetype = "text/csv"
-            response['Content-Disposition'] = 'attachment; filename=anual.csv'
+            response['Content-Disposition'] = 'attachment; filename=report.csv'
 
         return response
 
@@ -921,6 +921,9 @@ class DespesasPorCategoriaReportTable(Table2):
 
         self._total_despesas = Decimal(sum(d.valor for d in despesas))
 
+        if not self._total_despesas:
+            return []
+
         vendas = Venda.objects.filter(dia__in=self.data)
         total_vendas = Decimal(sum(v.conta for v in vendas))
 
@@ -1036,7 +1039,9 @@ class DespesasPorCategoriaReport(Report2):
 
     """
     title="Relatório de despesas por categoria"
-    element_classes = [DespesasPorCategoriaCharts, DespesasPorCategoriaReportTable]
+    # FIXME: gráficos de torta estão saindo errados
+    #element_classes = [DespesasPorCategoriaCharts, DespesasPorCategoriaReportTable]
+    element_classes = [DespesasPorCategoriaReportTable]
 
 class DespesasPorCategoriaReportView(ReportView):
     """
@@ -1046,7 +1051,7 @@ class DespesasPorCategoriaReportView(ReportView):
     """
 
     Report = DespesasPorCategoriaReport
-    FilterForm = DateFilterForm
+    FilterForm = DateFilterForm2
 
     def get_raw_data(self):
         return Dia.objects.all()
@@ -1144,6 +1149,11 @@ def index(request):
                                         "from_date": inicio_do_mes.strftime("%d/%m/%Y"),
                                         "to_date": hoje.strftime("%d/%m/%Y"),
                                       }, datefield_name="data")
+    date_filter_form2 = DateFilterForm2(initial={
+                                        "from_date": inicio_do_mes.strftime("%d/%m/%Y"),
+                                        "to_date": hoje.strftime("%d/%m/%Y"),
+                                      }, datefield_name="data")
+
 
     return render_to_response('relatorios/index.html', {
                                 'title': "Relatórios",
@@ -1151,6 +1161,7 @@ def index(request):
                                 'relatorio_meses_form': relatorio_meses_form,
                                 'ano_filter_form': ano_filter_form,
                                 'date_filter_form': date_filter_form,
+                                'date_filter_form2': date_filter_form2,
                                   'voltar_link': '/',
                                   'voltar_label': 'Módulos',
                              },

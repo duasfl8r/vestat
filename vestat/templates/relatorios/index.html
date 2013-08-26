@@ -24,6 +24,7 @@
         <p>
             {{ relatorio_meses_form.from_date.label_tag }} {{ relatorio_meses_form.from_date }}
             {{ relatorio_meses_form.to_date.label_tag }} {{ relatorio_meses_form.to_date }}
+            {{ relatorio_meses_form.format.label_tag }} {{ relatorio_meses_form.format }}
             <input type="submit" value="Gerar">
         </p>
     </form>
@@ -58,8 +59,9 @@
     <form action="despesas_por_categoria/" name="relatorio_cartao">
         <p>Mostra despesas agrupadas por categoria</p>
         <p>
-            {{ relatorio_simples_form.de.label_tag }} {{ relatorio_simples_form.de }}
-            {{ relatorio_simples_form.ateh.label_tag }} {{ relatorio_simples_form.ateh }}
+            {{ date_filter_form2.from_date.label_tag }} {{ date_filter_form2.from_date }}
+            {{ date_filter_form2.to_date.label_tag }} {{ date_filter_form2.to_date }}
+            {{ date_filter_form2.format.label_tag }} {{ date_filter_form2.format }}
             <input type="submit" value="Gerar">
         </p>
     </form>

@@ -8,7 +8,7 @@ from utils import mkdir_p
 
 NOME_APLICACAO = "vestat"
 AUTOR = "Lucas Teixeira"
-VERSAO = "1.2.1"
+VERSAO = "1.2.2-rc1"
 
 dirs = appdirs.AppDirs(NOME_APLICACAO, AUTOR)
 
@@ -23,7 +23,7 @@ for d in [DATA_DIR, LOGS_DIR]:
 
 BANCO_DE_DADOS = os.path.join(DATA_DIR, NOME_APLICACAO + '.sqlite')
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 ADMINS = (("Lucas", "lucas@lucasteixeira.com"))
 MANAGERS = ADMINS
@@ -48,7 +48,7 @@ LOGGING = {
     'disable_existing_loggers': True,
     'formatters': {
         'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d \n\n%(message)s\n\n#################\n'
+            'format': '%(levelname)s %(asctime)s %(module)s: %(message)s'
         },
         'simple': {
             'format': '%(levelname)s %(message)s'
@@ -71,8 +71,11 @@ LOGGING = {
             'formatter':'verbose',
             'filename': os.path.join(LOGS_DIR, NOME_APLICACAO + '.log'),
             'maxBytes': 1048576,
-            'backupCount': 3,
 
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
         }
     },
     'loggers': {
@@ -82,9 +85,15 @@ LOGGING = {
             'level':'INFO',
         },
 
+        'django.request': {
+            'handlers': ['mail_admins', 'file'],
+             'level': 'ERROR',
+             'propagate': True,
+        },
+
         NOME_APLICACAO: {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
+            'handlers': ['console', 'file', 'mail_admins'],
+            'level': 'INFO',
         }
     }
 }
@@ -111,7 +120,10 @@ NUMBER_GROUPING = 3
 
 TIME_ZONE = 'America/Sao_Paulo'
 LANGUAGE_CODE = 'pt-br'
-PYTHON_LOCALE = "pt_BR"
+SYSTEM_LOCALE = {
+    'Windows': 'ptb',
+    'Linux': 'pt_BR',
+}
 SITE_ID = 1
 
 SITE_URL = "http://localhost:8000/"

@@ -55,6 +55,32 @@ class DateFilterForm(FilterForm):
         return filtered
 
 
+class DateFilterForm2(FilterForm):
+    FORMAT_CHOICES = (
+        ("html", "HTML"),
+        ("csv", "CSV"),
+    )
+
+    from_date = forms.DateField(label="Início", required=False)
+    to_date = forms.DateField(label="Fim", required=False)
+    format = forms.ChoiceField(label="Formato", choices=FORMAT_CHOICES, initial="html")
+
+    def __init__(self, datefield_name="data", **kwargs):
+        super(DateFilterForm2, self).__init__(**kwargs)
+        self.datefield_name = datefield_name
+
+    def filter(self, data):
+        filtered = data
+        from_date, to_date = map(self.cleaned_data.get, ["from_date", "to_date"])
+
+        if from_date:
+            filtered = filtered.filter(**{ self.datefield_name + "__gte": from_date })
+        if to_date:
+            filtered = filtered.filter(**{ self.datefield_name + "__lte": to_date })
+
+        return filtered
+
+
 class AnoFilterForm(FilterForm):
     ano = forms.IntegerField(label="Ano", required=True)
 
@@ -78,10 +104,16 @@ class AnoFilterForm(FilterForm):
 
 
 class IntervaloMesesFilterForm(FilterForm):
+    FORMAT_CHOICES = (
+        ("html", "HTML"),
+        ("csv", "CSV"),
+    )
+
     _anos_com_dias = [d.year for d in Dia.objects.dates("data", "year")]
 
     from_date = forms.DateField(label="Início", widget=MonthYearWidget(years=_anos_com_dias))
     to_date = forms.DateField(label="Fim", widget=MonthYearWidget(years=_anos_com_dias))
+    format = forms.ChoiceField(label="Formato", choices=FORMAT_CHOICES, initial="html")
 
     def __init__(self, datefield_name="data", **kwargs):
         super(IntervaloMesesFilterForm, self).__init__(**kwargs)
