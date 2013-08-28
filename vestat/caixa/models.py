@@ -910,12 +910,13 @@ class CategoriaDeMovimentacao(models.Model):
 
         Por exemplo:
 
-        >>> categoria
-        <CategoriaDeMovimentacao: Vinhos>
-        >>> categoria.nome_completo
-        'Fornecedor > Bebidas > Vinhos'
-        >>> categoria.ascendentes
-        [<CategoriaDeMovimentacao: Fornecedor>, <CategoriaDeMovimentacao: Bebidas>]
+        >>> fornecedor = CategoriaDeMovimentacao(nome='Fornecedor')
+        >>> bebidas = CategoriaDeMovimentacao(nome='Bebidas', mae=fornecedor)
+        >>> vinhos = CategoriaDeMovimentacao(nome='Vinhos', mae=bebidas)
+        >>> vinhos.nome_completo
+        u'Fornecedor > Bebidas > Vinhos'
+        >>> vinhos.ascendentes
+        [<CategoriaDeMovimentacao: Bebidas>, <CategoriaDeMovimentacao: Fornecedor>]
 
         """
 
@@ -935,16 +936,19 @@ class CategoriaDeMovimentacao(models.Model):
 
         Por exemplo:
 
-        >>> categoria
+        >>> fornecedor = CategoriaDeMovimentacao(nome='Fornecedor')
+        >>> bebidas = CategoriaDeMovimentacao(nome='Bebidas', mae=fornecedor)
+        >>> vinhos = CategoriaDeMovimentacao(nome='Vinhos', mae=bebidas)
+        >>> vinhos
         <CategoriaDeMovimentacao: Vinhos>
-        >>> categoria.mae
+        >>> vinhos.mae
         <CategoriaDeMovimentacao: Bebidas>
-        >>> categoria.mae.mae
-        <CategoriaDeMovimentacao: Fornecedores>
-        >>> categoria.mae.mae.mae is None
+        >>> vinhos.mae.mae
+        <CategoriaDeMovimentacao: Fornecedor>
+        >>> vinhos.mae.mae.mae is None
         True
-        >>> categoria.nome_completo
-        'Fornecedor > Bebidas > Vinhos'
+        >>> vinhos.nome_completo
+        u'Fornecedor > Bebidas > Vinhos'
         """
         return self.SEPARADOR.join(unicode(a) for a in self.ascendentes[::-1] + [self])
 
@@ -1025,3 +1029,4 @@ config_pages["vestat"].add(
     ),
     "Caixa",
 )
+
