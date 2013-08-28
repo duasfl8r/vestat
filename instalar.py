@@ -18,7 +18,7 @@ else:
 
 ARQUIVOS = (
      {
-         "origem": ["vestat", "documentacao_v" + settings.VERSAO],
+         "origem": ["vestat", "documentacao"],
          "destino": ""
      },
      {
