@@ -367,7 +367,7 @@ class Dia(models.Model):
         if dias is None: dias = Dia.objects.all()
 
         try:
-            categoria_gorjeta = CategoriaDeMovimentacao.objects.get(pk=SLUG_CATEGORIA_GORJETA)
+            categoria_gorjeta = CategoriaDeMovimentacao.objects.get(slug=SLUG_CATEGORIA_GORJETA)
         except CategoriaDeMovimentacao.DoesNotExist:
             return Decimal("0")
 
@@ -905,24 +905,27 @@ class CategoriaDeMovimentacao(models.Model):
     @property
     def ascendentes(self):
         """
-        Retorna lista das categorias ascendentes de uma categoria.
+        Retorna lista das categorias ascendentes de uma categoria,
+        ordenados da mais próxima (mãe) pra mais distante).
 
         Por exemplo:
 
-        >>> categoria
-        <CategoriaDeMovimentacao: Vinhos>
-        >>> categoria.nome_completo
-        'Fornecedor > Bebidas > Vinhos'
-        >>> categoria.ascendentes
-        [<CategoriaDeMovimentacao: Fornecedor>, <CategoriaDeMovimentacao: Bebidas>]
+        >>> fornecedor = CategoriaDeMovimentacao(nome='Fornecedor')
+        >>> bebidas = CategoriaDeMovimentacao(nome='Bebidas', mae=fornecedor)
+        >>> vinhos = CategoriaDeMovimentacao(nome='Vinhos', mae=bebidas)
+        >>> vinhos.nome_completo
+        u'Fornecedor > Bebidas > Vinhos'
+        >>> vinhos.ascendentes
+        [<CategoriaDeMovimentacao: Bebidas>, <CategoriaDeMovimentacao: Fornecedor>]
 
         """
-        def ascendentes_(categoria):
-            yield categoria
-            if categoria.mae:
-                ascendentes_(categoria.mae)
 
-        return list(ascendentes_(self.mae)) if self.mae else []
+        resultado = []
+        categoria = self.mae
+        while categoria:
+            resultado.append(categoria)
+            categoria = categoria.mae
+        return resultado
 
     @property
     def nome_completo(self):
@@ -933,18 +936,21 @@ class CategoriaDeMovimentacao(models.Model):
 
         Por exemplo:
 
-        >>> categoria
+        >>> fornecedor = CategoriaDeMovimentacao(nome='Fornecedor')
+        >>> bebidas = CategoriaDeMovimentacao(nome='Bebidas', mae=fornecedor)
+        >>> vinhos = CategoriaDeMovimentacao(nome='Vinhos', mae=bebidas)
+        >>> vinhos
         <CategoriaDeMovimentacao: Vinhos>
-        >>> categoria.mae
+        >>> vinhos.mae
         <CategoriaDeMovimentacao: Bebidas>
-        >>> categoria.mae.mae
-        <CategoriaDeMovimentacao: Fornecedores>
-        >>> categoria.mae.mae.mae is None
+        >>> vinhos.mae.mae
+        <CategoriaDeMovimentacao: Fornecedor>
+        >>> vinhos.mae.mae.mae is None
         True
-        >>> categoria.nome_completo
-        'Fornecedor > Bebidas > Vinhos'
+        >>> vinhos.nome_completo
+        u'Fornecedor > Bebidas > Vinhos'
         """
-        return self.SEPARADOR.join(unicode(a) for a in self.ascendentes + [self])
+        return self.SEPARADOR.join(unicode(a) for a in self.ascendentes[::-1] + [self])
 
 
 class DespesaDeCaixa(models.Model):
@@ -1023,3 +1029,4 @@ config_pages["vestat"].add(
     ),
     "Caixa",
 )
+
