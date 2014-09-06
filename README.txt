@@ -8,7 +8,7 @@ instalação.
 Licença
 -------
 
-Copyright 2011, 2012, 2013, Lucas Teixeira <lucas@lucasteixeira.com>
+Copyright 2011, 2012, 2013, 2014, Lucas Teixeira <lucas@lucasteixeira.com>
 
 Todo o código-fonte do Vestat está sob a licença GNU General Public
 License (GPL), versão 3.

@@ -29,6 +29,10 @@ build: $(BUILD_DIR) $(BUILD_FILES) docs
 
 	mv $(DOCS_NAME) $(BUILD_DIR)
 
+pybundle:
+	rm -f deps/vestat.pybundle
+	pip bundle deps/vestat.pybundle `cat requirements.txt | grep -v matplotlib | grep -v numpy`
+
 test:
 	cd vestat && python manage.py test caixa contabil relatorios feriados
 
