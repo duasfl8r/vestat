@@ -1,6 +1,8 @@
 Vestat
 ======
 
+http://dev.lucasteixeira.com/vestat/
+
 Para instruções de instalação, atualização e uso do programa, veja a
 documentação abrindo o arquivo "documentacao/index.html" presente no pacote de
 instalação.
