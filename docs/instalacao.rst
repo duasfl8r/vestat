@@ -11,6 +11,6 @@ Windows
     - setuptools
     - matplotlib
     - numpy
-#. Rodar o script ``deps/instalar_bundle.bat``, pra instalar os outros módulos python necessários
+#. Rodar o script ``instalar_bundle.bat`` de dentro do diretório ``deps/``, pra instalar os outros módulos python necessários
 #. Rodar o script ``instalar.py``
 
